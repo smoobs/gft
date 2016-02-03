@@ -30,7 +30,7 @@ CREATE TABLE `wp_usermeta` (
   PRIMARY KEY (`umeta_id`),
   KEY `user_id` (`user_id`),
   KEY `meta_key` (`meta_key`(191))
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,6 +54,7 @@ INSERT INTO `wp_usermeta` VALUES (12,1,'dismissed_wp_pointers','');
 INSERT INTO `wp_usermeta` VALUES (13,1,'show_welcome_panel','1');
 INSERT INTO `wp_usermeta` VALUES (14,1,'session_tokens','a:1:{s:64:\"19c82ebd047731f1032fb3f637ccf23d38c660f464d78c37029909c1f63f969e\";a:4:{s:10:\"expiration\";i:1454674815;s:2:\"ip\";s:12:\"2.30.193.189\";s:2:\"ua\";s:65:\"Mozilla/5.0 (Windows NT 6.1; rv:43.0) Gecko/20100101 Firefox/43.0\";s:5:\"login\";i:1454502015;}}');
 INSERT INTO `wp_usermeta` VALUES (15,1,'wp_dashboard_quick_press_last_post_id','3');
+INSERT INTO `wp_usermeta` VALUES (16,1,'wporg_favorites','');
 /*!40000 ALTER TABLE `wp_usermeta` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+export DB_USER='root'
+export DB_NAME='asn'
+
+export SQL_DIR='sql'
+
+export FIX_INDOM='http://www.goldenfleecetrading.co.uk'
+export FIX_OUTDOM='http://gft.tthtesting.co.uk'
+
+[ -e "$HERE/../config-local" ] && source "$HERE/../config-local"
+
+# vim:ts=2:sw=2:sts=2:et:ft=sh
+

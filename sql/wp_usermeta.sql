@@ -30,7 +30,7 @@ CREATE TABLE `wp_usermeta` (
   PRIMARY KEY (`umeta_id`),
   KEY `user_id` (`user_id`),
   KEY `meta_key` (`meta_key`(191))
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ INSERT INTO `wp_usermeta` VALUES (5,1,'rich_editing','true');
 INSERT INTO `wp_usermeta` VALUES (6,1,'comment_shortcuts','false');
 INSERT INTO `wp_usermeta` VALUES (7,1,'admin_color','fresh');
 INSERT INTO `wp_usermeta` VALUES (8,1,'use_ssl','0');
-INSERT INTO `wp_usermeta` VALUES (9,1,'show_admin_bar_front','true');
+INSERT INTO `wp_usermeta` VALUES (9,1,'show_admin_bar_front','false');
 INSERT INTO `wp_usermeta` VALUES (10,1,'wp_capabilities','a:1:{s:13:\"administrator\";b:1;}');
 INSERT INTO `wp_usermeta` VALUES (11,1,'wp_user_level','10');
 INSERT INTO `wp_usermeta` VALUES (12,1,'dismissed_wp_pointers','');
@@ -55,6 +55,10 @@ INSERT INTO `wp_usermeta` VALUES (13,1,'show_welcome_panel','1');
 INSERT INTO `wp_usermeta` VALUES (14,1,'session_tokens','a:1:{s:64:\"d04a71dde19be8c6f9369b2b948224fc95f1918588ac64c66a30992271ccca52\";a:4:{s:10:\"expiration\";i:1461251798;s:2:\"ip\";s:12:\"2.30.204.246\";s:2:\"ua\";s:65:\"Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0\";s:5:\"login\";i:1461078998;}}');
 INSERT INTO `wp_usermeta` VALUES (15,1,'wp_dashboard_quick_press_last_post_id','39');
 INSERT INTO `wp_usermeta` VALUES (16,1,'wporg_favorites','');
+INSERT INTO `wp_usermeta` VALUES (17,1,'wp_user-settings','editor=html&libraryContent=browse');
+INSERT INTO `wp_usermeta` VALUES (18,1,'wp_user-settings-time','1461092149');
+INSERT INTO `wp_usermeta` VALUES (19,1,'managenav-menuscolumnshidden','a:5:{i:0;s:11:\"link-target\";i:1;s:11:\"css-classes\";i:2;s:3:\"xfn\";i:3;s:11:\"description\";i:4;s:15:\"title-attribute\";}');
+INSERT INTO `wp_usermeta` VALUES (20,1,'metaboxhidden_nav-menus','a:5:{i:0;s:21:\"add-post-type-project\";i:1;s:12:\"add-post_tag\";i:2;s:15:\"add-post_format\";i:3;s:20:\"add-project_category\";i:4;s:15:\"add-project_tag\";}');
 /*!40000 ALTER TABLE `wp_usermeta` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

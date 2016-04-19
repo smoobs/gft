@@ -1,8 +1,8 @@
--- MySQL dump 10.15  Distrib 10.0.23-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: gft
 -- ------------------------------------------------------
--- Server version	10.0.23-MariaDB-1~wheezy-log
+-- Server version	10.0.24-MariaDB-1~wheezy
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;

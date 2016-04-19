@@ -1,8 +1,8 @@
--- MySQL dump 10.15  Distrib 10.0.23-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: gft
 -- ------------------------------------------------------
--- Server version	10.0.23-MariaDB-1~wheezy-log
+-- Server version	10.0.24-MariaDB-1~wheezy
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -52,8 +52,8 @@ INSERT INTO `wp_usermeta` VALUES (10,1,'wp_capabilities','a:1:{s:13:\"administra
 INSERT INTO `wp_usermeta` VALUES (11,1,'wp_user_level','10');
 INSERT INTO `wp_usermeta` VALUES (12,1,'dismissed_wp_pointers','');
 INSERT INTO `wp_usermeta` VALUES (13,1,'show_welcome_panel','1');
-INSERT INTO `wp_usermeta` VALUES (14,1,'session_tokens','a:1:{s:64:\"19c82ebd047731f1032fb3f637ccf23d38c660f464d78c37029909c1f63f969e\";a:4:{s:10:\"expiration\";i:1454674815;s:2:\"ip\";s:12:\"2.30.193.189\";s:2:\"ua\";s:65:\"Mozilla/5.0 (Windows NT 6.1; rv:43.0) Gecko/20100101 Firefox/43.0\";s:5:\"login\";i:1454502015;}}');
-INSERT INTO `wp_usermeta` VALUES (15,1,'wp_dashboard_quick_press_last_post_id','3');
+INSERT INTO `wp_usermeta` VALUES (14,1,'session_tokens','a:1:{s:64:\"d04a71dde19be8c6f9369b2b948224fc95f1918588ac64c66a30992271ccca52\";a:4:{s:10:\"expiration\";i:1461251798;s:2:\"ip\";s:12:\"2.30.204.246\";s:2:\"ua\";s:65:\"Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0\";s:5:\"login\";i:1461078998;}}');
+INSERT INTO `wp_usermeta` VALUES (15,1,'wp_dashboard_quick_press_last_post_id','39');
 INSERT INTO `wp_usermeta` VALUES (16,1,'wporg_favorites','');
 /*!40000 ALTER TABLE `wp_usermeta` ENABLE KEYS */;
 UNLOCK TABLES;

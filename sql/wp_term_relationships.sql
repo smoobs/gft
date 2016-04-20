@@ -44,6 +44,7 @@ INSERT INTO `wp_term_relationships` VALUES (94,2,0);
 INSERT INTO `wp_term_relationships` VALUES (95,2,0);
 INSERT INTO `wp_term_relationships` VALUES (96,2,0);
 INSERT INTO `wp_term_relationships` VALUES (146,2,0);
+INSERT INTO `wp_term_relationships` VALUES (246,2,0);
 /*!40000 ALTER TABLE `wp_term_relationships` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

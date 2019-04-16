@@ -3,3 +3,7 @@
 .DS_Store
 /private/
 Session.vim
+.AppleDouble
+.afpDeleted*
+/tmp/
+hs~*

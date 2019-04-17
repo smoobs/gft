@@ -23,7 +23,7 @@ CREATE TABLE `wp_posts` (
   `post_status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'publish',
   `comment_status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
   `ping_status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'open',
-  `post_password` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `post_password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `post_name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `to_ping` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `pinged` text COLLATE utf8mb4_unicode_ci NOT NULL,

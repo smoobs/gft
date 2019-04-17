@@ -3,6 +3,7 @@
       "database" : "gft",
       "host" : "localhost",
       "pass" : "",
+      "prefix" : "wp_",
       "user" : "root"
    },
    "dirs" : {

@@ -1,0 +1,17 @@
+{
+   "db" : {
+      "database" : "gft",
+      "host" : "localhost",
+      "pass" : "",
+      "user" : "root"
+   },
+   "dirs" : {
+      "sql" : "sql"
+   },
+   "site" : {
+      "emit" : {
+         "base" : "http://gft.tthtesting.co.uk",
+         "home" : "/opt/gft"
+      }
+   }
+}

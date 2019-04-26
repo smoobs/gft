@@ -1,9 +1,11 @@
-// SmoothScroll for websites v1.2.1
-// Licensed under the terms of the MIT license.
-
-// People involved
-//  - Balazs Galambosi (maintainer)
-//  - Michael Herf     (Pulse Algorithm)
+/*!
+* SmoothScroll for websites v1.2.1
+* Licensed under the terms of the MIT license.
+*
+* People involved
+* - Balazs Galambosi (maintainer)
+* - Michael Herf     (Pulse Algorithm)
+*/
 
 (function(){
 
@@ -68,7 +70,8 @@ var options = defaultOptions;
  */
 function initTest() {
 
-    var disableKeyboard = false;
+    // Disable keyboard in VB/BFB
+    var disableKeyboard = document.body.classList.contains('et-fb');
 
     // disable keyboard support if anything above requested it
     if (disableKeyboard) {
@@ -270,12 +273,17 @@ function wheel(event) {
 
     var target = event.target;
     var overflowing = overflowingAncestor(target);
+    var isVBTopWindowScroll = document.documentElement.className.split(' ').filter(function(className) {
+        return className === 'et-fb-preview--tablet' || className === 'et-fb-preview--phone' || className === 'et-fb-preview--zoom';
+    }).length > 0;
+
 
     // use default if there's no overflowing
     // element or default action is prevented
     if (!overflowing || event.defaultPrevented ||
         isNodeName(activeElement, "embed") ||
-       (isNodeName(target, "embed") && /\.pdf/i.test(target.src))) {
+       (isNodeName(target, "embed") && /\.pdf/i.test(target.src)) ||
+       isVBTopWindowScroll) {
         return true;
     }
 
@@ -357,7 +365,7 @@ function keydown(event) {
             y = clientHeight * 0.9;
             break;
         case key.home:
-            y = -elem.scrollTop;
+            y = -window.pageYOffset;
             break;
         case key.end:
             var damt = elem.scrollHeight - elem.scrollTop - clientHeight;
@@ -526,10 +534,25 @@ if ("onwheel" in document.createElement("div"))
 else if ("onmousewheel" in document.createElement("div"))
 	wheelEvent = "mousewheel";
 
-if (wheelEvent && isChrome) {
-	addEvent(wheelEvent, wheel);
+var isSmoothScrollActive = document.body.className.split(' ').filter( function( className ) { return className === 'et_smooth_scroll' } ).length > 0;
+
+if (wheelEvent && isChrome && isSmoothScrollActive) {
+	window.addEventListener(wheelEvent, wheel, { passive: false });
 	addEvent("mousedown", mousedown);
 	addEvent("load", init);
 }
+
+/***********************************************
+ * Interface for Divi Visual Builder
+ ***********************************************/
+window.ET_SmoothScroll = {
+    toggleKeydown: function(enable) {
+        if (enable) {
+            addEvent("keydown", keydown);
+        } else {
+            removeEvent("keydown", keydown);
+        }
+    },
+};
 
 })();

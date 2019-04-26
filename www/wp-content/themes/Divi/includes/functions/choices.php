@@ -68,16 +68,26 @@ if ( ! function_exists( 'et_divi_footer_column_choices' ) ) :
  */
 function et_divi_footer_column_choices() {
 	return apply_filters( 'et_divi_footer_column_choices', array(
-		'4'			=> sprintf( esc_html__( '%1$s Columns', 'Divi' ), '4' ),
-		'3' 		=> sprintf( esc_html__( '%1$s Columns', 'Divi' ), '3' ),
-		'2' 		=> sprintf( esc_html__( '%1$s Columns', 'Divi' ), '2' ),
-		'1'  		=> esc_html__( '1 Column', 'Divi' ),
-		'_1_4__3_4' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/4 + 3/4' ),
-		'_3_4__1_4' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '3/4 + 1/4' ),
-		'_1_3__2_3' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/3 + 2/3' ),
-		'_2_3__1_3' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '2/3 + 1/3' ),
-		'_1_4__1_2' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/4 + 1/4 + 1/2' ),
-		'_1_2__1_4' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/2 + 1/4 + 1/4' ),
+		'4'            => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '4' ),
+		'3'            => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '3' ),
+		'2'            => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '2' ),
+		'1'            => esc_html__( '1 Column', 'Divi' ),
+		'_1_4__3_4'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/4 + 3/4' ),
+		'_3_4__1_4'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '3/4 + 1/4' ),
+		'_1_3__2_3'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/3 + 2/3' ),
+		'_2_3__1_3'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '2/3 + 1/3' ),
+		'_1_4__1_2'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/4 + 1/4 + 1/2' ),
+		'_1_2__1_4'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/2 + 1/4 + 1/4' ),
+		'_1_5__3_5'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/5 + 1/5 + 3/5' ),
+		'_3_5__1_5'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '3/5 + 1/5 + 1/5' ),
+		'5'            => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '5' ),
+		'_3_5__2_5'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '3/5 + 2/5' ),
+		'_2_5__3_5'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '2/5 + 3/5' ),
+		'6'            => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '6' ),
+		'_1_2__1_6'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/2 + 1/6 + 1/6 + 1/6' ),
+		'_1_6__1_2'    => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/6 + 1/6 + 1/6 + 1/2' ),
+		'_1_4_1_2_1_4' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/4 + 1/2 + 1/4' ),
+		'_1_5_3_5_1_5' => sprintf( esc_html__( '%1$s Columns', 'Divi' ), '1/5 + 3/5 + 1/5' ),
 	) );
 }
 endif;
@@ -154,6 +164,34 @@ function et_divi_divider_position_choices() {
 		'top'		=> esc_html__( 'Top', 'Divi' ),
 		'center'	=> esc_html__( 'Vertically Centered', 'Divi' ),
 		'bottom'	=> esc_html__( 'Bottom', 'Divi' ),
+	) );
+}
+endif;
+
+if ( ! function_exists( 'et_divi_background_repeat_choices' ) ) :
+/**
+ * Returns background repeat choices
+ * @return array
+ */
+function et_divi_background_repeat_choices() {
+	return apply_filters( 'et_divi_background_repeat_choices', array(
+		'no-repeat'  => esc_html__( 'No Repeat', 'Divi' ),
+		'repeat'     => esc_html__( 'Tile', 'Divi' ),
+		'repeat-x'   => esc_html__( 'Tile Horizontally', 'Divi' ),
+		'repeat-y'   => esc_html__( 'Tile Vertically', 'Divi' ),
+	) );
+}
+endif;
+
+if ( ! function_exists( 'et_divi_background_attachment_choices' ) ) :
+/**
+ * Returns background attachment choices
+ * @return array
+ */
+function et_divi_background_attachment_choices() {
+	return apply_filters( 'et_divi_background_attachment_choices', array(
+		'scroll' => esc_html__( 'Scroll', 'Divi' ),
+		'fixed'  => esc_html__( 'Fixed', 'Divi' ),
 	) );
 }
 endif;

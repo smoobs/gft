@@ -198,9 +198,15 @@
 			}, 600 );
 		}
 
-		// Portability integration.
-		etCore.portability.save = function( callback ) {
-			et_pb_save_roles( callback, false );
+		// Ensure the first tab's settings are visible when initialized
+		$('.et-pb-layout-buttons').first().addClass('et_pb_roles_active_menu');
+		$('.et_pb_roles_container_all .et_pb_roles_options_container').first().addClass('active-container');
+
+		if ( typeof etCore !== 'undefined' ) {
+			// Portability integration.
+			etCore.portability.save = function( callback ) {
+				et_pb_save_roles( callback, false );
+			}
 		}
 	});
 })(jQuery)

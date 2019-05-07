@@ -64,7 +64,6 @@ class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
 				),
 			),
 			'max_width'             => array(
-				'use_module_alignment' => false,
 				'css'                  => array(
 					'module_alignment' => "%%order_class%%.et_pb_toggle",
 				),

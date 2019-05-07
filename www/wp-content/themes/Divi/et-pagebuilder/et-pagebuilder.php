@@ -24,10 +24,10 @@ function et_divi_maybe_adjust_row_advanced_options_config( $advanced_options ) {
 	if ( $module && 'post' === $module->get_post_type() ) {
 		$selector = implode( ', ', array(
 			'%%order_class%%',
-			'#page-container %%order_class%%.et_pb_row',
-			'.et_pb_pagebuilder_layout.single #page-container %%order_class%%.et_pb_row',
-			'.et_pb_pagebuilder_layout.single.et_full_width_page #page-container %%order_class%%.et_pb_row',
-			'.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container %%order_class%%.et_pb_row',
+			'body #page-container .et-db #et-boc %%order_class%%.et_pb_row',
+			'body.et_pb_pagebuilder_layout.single #page-container #et-boc %%order_class%%.et_pb_row',
+			'body.et_pb_pagebuilder_layout.single.et_full_width_page #page-container #et-boc %%order_class%%.et_pb_row',
+			'body.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container #et-boc %%order_class%%.et_pb_row',
 		) );
 
 		et_()->array_set( $advanced_options, 'max_width.css.width', $selector );
@@ -40,10 +40,10 @@ function et_divi_maybe_adjust_row_advanced_options_config( $advanced_options ) {
 
 	$selector = implode( ', ', array(
 		'%%order_class%%',
-		'.et_boxed_layout #page-container %%order_class%%.et_pb_row',
-		'.et_boxed_layout.et_pb_pagebuilder_layout.single #page-container %%order_class%%.et_pb_row',
-		'.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_page #page-container %%order_class%%.et_pb_row',
-		'.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container %%order_class%%.et_pb_row',
+		'body.et_boxed_layout #page-container %%order_class%%.et_pb_row',
+		'body.et_boxed_layout.et_pb_pagebuilder_layout.single #page-container #et-boc %%order_class%%.et_pb_row',
+		'body.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_page #page-container #et-boc %%order_class%%.et_pb_row',
+		'body.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container #et-boc %%order_class%%.et_pb_row',
 	) );
 
 	et_()->array_set( $advanced_options, 'max_width.css.width', $selector );
@@ -60,26 +60,26 @@ if ( ! function_exists( 'et_divi_maybe_adjust_section_advanced_options_config' )
 function et_divi_maybe_adjust_section_advanced_options_config( $advanced_options ) {
 	$is_post_type = is_singular( 'post' ) || ( 'et_fb_update_builder_assets' === et_()->array_get( $_POST, 'action' ) && 'post' === et_()->array_get( $_POST, 'et_post_type' ) );
 
-	if ( $is_post_type ) {
-		if ( et_get_option( 'boxed_layout', false ) ) {
-			$selector = implode( ', ', array(
-				'%%order_class%% > .et_pb_row',
-				'.et_boxed_layout #page-container %%order_class%% > .et_pb_row',
-				'.et_boxed_layout.et_pb_pagebuilder_layout.single #page-container %%order_class%% > .et_pb_row',
-				'.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_page #page-container %%order_class%% > .et_pb_row',
-				'.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container %%order_class%% > .et_pb_row',
-			) );
+	if ( et_get_option( 'boxed_layout', false ) ) {
+		$selector = implode( ', ', array(
+			'%%order_class%% > .et_pb_row',
+			'body.et_boxed_layout #page-container %%order_class%% > .et_pb_row',
+			'body.et_boxed_layout.et_pb_pagebuilder_layout.single #page-container #et-boc %%order_class%% > .et_pb_row',
+			'body.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_page #page-container #et-boc %%order_class%% > .et_pb_row',
+			'body.et_boxed_layout.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container #et-boc %%order_class%% > .et_pb_row',
+		) );
 
-		} else {
-			$selector = implode( ', ', array(
-				'%%order_class%% > .et_pb_row',
-				'#page-container %%order_class%% > .et_pb_row',
-				'.et_pb_pagebuilder_layout.single #page-container %%order_class%% > .et_pb_row',
-				'.et_pb_pagebuilder_layout.single.et_full_width_page #page-container %%order_class%% > .et_pb_row',
-				'.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container %%order_class%% > .et_pb_row',
-			) );
-		}
-
+		et_()->array_set( $advanced_options, 'max_width.extra.inner.options.width.default', '90%' );
+		et_()->array_set( $advanced_options, 'max_width.extra.inner.options.max_width.default', '1200px' );
+		et_()->array_set( $advanced_options, 'max_width.extra.inner.css.main', $selector );
+	} else if ( $is_post_type ) {
+		$selector = implode( ', ', array(
+			'%%order_class%% > .et_pb_row',
+			'body #page-container .et-db #et-boc %%order_class%% > .et_pb_row',
+			'body.et_pb_pagebuilder_layout.single #page-container #et-boc %%order_class%% > .et_pb_row',
+			'body.et_pb_pagebuilder_layout.single.et_full_width_page #page-container #et-boc %%order_class%% > .et_pb_row',
+			'body.et_pb_pagebuilder_layout.single.et_full_width_portfolio_page #page-container #et-boc %%order_class%% > .et_pb_row',
+		) );
 		et_()->array_set( $advanced_options, 'max_width.extra.inner.css.main', $selector );
 	}
 

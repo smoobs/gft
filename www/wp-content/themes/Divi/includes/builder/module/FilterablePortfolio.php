@@ -102,7 +102,7 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 					'tab_slug'        => 'advanced',
 					'toggle_slug'     => 'image',
 					'css'             => array(
-						'main'    => '%%order_class%% .project .et_portfolio_image',
+						'main'    => '%%order_class%% .et_pb_portfolio_item .et_portfolio_image',
 						'overlay' => 'inset',
 					),
 					'default_on_fronts'  => array(

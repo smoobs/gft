@@ -61,7 +61,6 @@ class ET_Builder_Module_Bar_Counters_Item extends ET_Builder_Module {
 				),
 			),
 			'max_width'             => array(
-				'use_module_alignment' => false,
 				'css' => array(
 					'module_alignment' => ".et_pb_counters {$this->main_css_element}",
 				),

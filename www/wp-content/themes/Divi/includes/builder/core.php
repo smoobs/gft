@@ -5052,9 +5052,12 @@ function et_builder_show_bfb_optin_modal() {
 		return;
 	}
 	
-	$valid_for_optin_modal = et_pb_is_pagebuilder_used() && ! et_builder_bfb_enabled();
+	// Exit if no pagebuilder enabled or BFB activated already.
+	if ( ! et_pb_is_pagebuilder_used() || et_builder_bfb_enabled() ) {
+		return;
+	}
 
-	if ( apply_filters( 'et_builder_show_bfb_optin_modal', $valid_for_optin_modal ) === false ) {
+	if ( false === apply_filters( 'et_builder_show_bfb_optin_modal', true ) ) {
 		return;
 	}
 

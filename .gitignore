@@ -7,3 +7,6 @@ Session.vim
 .afpDeleted*
 /tmp/
 hs~*
+/*.gz
+/*.zip
+/.wp_update_done

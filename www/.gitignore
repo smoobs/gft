@@ -1,1 +1,3 @@
 /wp-config.php
+/.user.ini
+/wordfence-waf.php

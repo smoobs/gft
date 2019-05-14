@@ -59,3 +59,4 @@
 2.25.90.139 - - [14/May/2019:10:40:08 +0100] "GET /wp-cron.php?doing_wp_cron HTTP/1.1" 200 180 "-" "curl/7.58.0"
 2.25.90.139 - - [14/May/2019:10:50:10 +0100] "GET /wp-cron.php?doing_wp_cron HTTP/1.1" 200 180 "-" "curl/7.58.0"
 2.25.90.139 - - [14/May/2019:10:52:09 +0100] "POST /wp-cron.php?doing_wp_cron=1557827529.5139789581298828125000 HTTP/1.1" 200 199 "-" "WordPress/5.1.1; http://gft.tthtesting.co.uk"
+2.25.90.139 - - [14/May/2019:10:55:02 +0100] "POST /wp-admin/upgrade.php?step=upgrade_db HTTP/1.1" 200 293 "-" "WordPress/5.1.1; http://gft.tthtesting.co.uk"

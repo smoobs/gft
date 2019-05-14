@@ -1,2 +1,0 @@
-[Thu May 02 20:51:32.304204 2019] [php7:error] [pid 31132] [client 192.99.0.107:53005] script '/opt/gft/www/wp-content/vuln.php' not found or unable to stat
-[Thu May 02 20:52:19.739009 2019] [php7:error] [pid 31217] [client 192.99.0.107:63080] script '/opt/gft/www/wp-content/uploads/2019/05/settings_auto.php' not found or unable to stat

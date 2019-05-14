@@ -138,3 +138,4 @@
 2.25.90.139 - - [14/May/2019:23:30:05 +0100] "GET /wp-cron.php?doing_wp_cron HTTP/1.1" 200 180 "-" "curl/7.58.0"
 2.25.90.139 - - [14/May/2019:23:40:23 +0100] "GET /wp-cron.php?doing_wp_cron HTTP/1.1" 200 180 "-" "curl/7.58.0"
 2.25.90.139 - - [14/May/2019:23:50:03 +0100] "GET /wp-cron.php?doing_wp_cron HTTP/1.1" 200 180 "-" "curl/7.58.0"
+2.25.90.139 - - [14/May/2019:23:52:39 +0100] "POST /wp-cron.php?doing_wp_cron=1557874359.8160030841827392578125 HTTP/1.1" 200 199 "http://gft.tthtesting.co.uk/wp-cron.php?doing_wp_cron=1557874359.8160030841827392578125" "WordPress/5.2; http://gft.tthtesting.co.uk"

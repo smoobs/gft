@@ -10,3 +10,9 @@ hs~*
 /*.gz
 /*.zip
 /.wp_update_done
+
+error_log
+/*.sql
+/Session.vim
+/misc/
+/work/

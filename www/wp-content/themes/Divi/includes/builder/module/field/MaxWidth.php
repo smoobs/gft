@@ -37,6 +37,7 @@ class ET_Builder_Module_Field_MaxWidth extends ET_Builder_Module_Field_Base {
 						'description'    => __( 'By default, elements will extend the full width of their parent element. If you would like to set a custom static width, you can do so using this option.', 'et_builder' ),
 						'default'        => 'auto',
 						'default_tablet' => 'auto',
+						'allowed_values' => et_builder_get_acceptable_css_string_values( 'width' ),
 					),
 					$this->get_base_field()
 				)
@@ -67,6 +68,7 @@ class ET_Builder_Module_Field_MaxWidth extends ET_Builder_Module_Field_Base {
 						'description'    => __( 'Setting a maximum width will prevent your element from ever surpassing the defined width value. Maximum width can be used in combination with the standard width setting. Maximum width supersedes the normal width value.', 'et_builder' ),
 						'default'        => 'none',
 						'default_tablet' => 'none',
+						'allowed_values' => et_builder_get_acceptable_css_string_values( 'max-width' ),
 					),
 					$this->get_base_field()
 				)
@@ -94,11 +96,13 @@ class ET_Builder_Module_Field_MaxWidth extends ET_Builder_Module_Field_Base {
 		$depends_responsive = array();
 		$field              = array(
 			'label'           => esc_html__( 'Module Alignment', 'et_builder' ),
+			'description'     => esc_html__( 'Align the module to the left, right or center.', 'et_builder' ),
 			'type'            => 'text_align',
 			'option_category' => 'layout',
 			'options'         => et_builder_get_text_orientation_options( array( 'justified' ) ),
 			'tab_slug'        => 'advanced',
 			'toggle_slug'     => 'width',
+			'mobile_options'  => true,
 		);
 
 		if ( $settings['use_width'] ) {
@@ -125,15 +129,16 @@ class ET_Builder_Module_Field_MaxWidth extends ET_Builder_Module_Field_Base {
 
 	private function get_base_field() {
 		return array(
-			'type'           => 'range',
-			'hover'          => 'tabs',
-			'mobile_options' => true,
-			'validate_unit'  => true,
-			'default_unit'   => '%',
-			'allow_empty'    => true,
-			'tab_slug'       => 'advanced',
-			'toggle_slug'    => 'width',
-			'range_settings' => array(
+			'type'             => 'range',
+			'hover'            => 'tabs',
+			'default_on_child' => true,
+			'mobile_options'   => true,
+			'validate_unit'    => true,
+			'default_unit'     => '%',
+			'allow_empty'      => true,
+			'tab_slug'         => 'advanced',
+			'toggle_slug'      => 'width',
+			'range_settings'   => array(
 				'min'  => 0,
 				'max'  => 100,
 				'step' => 1,

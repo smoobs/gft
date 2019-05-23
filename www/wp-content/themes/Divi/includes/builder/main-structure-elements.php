@@ -160,6 +160,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 			),
 			'make_equal' => array(
 				'label'             => esc_html__( 'Equalize Column Heights', 'et_builder' ),
+				'description'       => esc_html__( 'Equalizing column heights will force all columns to assume the height of the tallest column in the row. All columns will have the same height, keeping their appearance uniform.', 'et_builder' ),
 				'type'              => 'yes_no_button',
 				'option_category'   => 'layout',
 				'options'           => array(
@@ -173,6 +174,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 			),
 			'use_custom_gutter' => array(
 				'label'             => esc_html__( 'Use Custom Gutter Width', 'et_builder' ),
+				'description'       => esc_html__( 'Enable this option to define custom gutter width for this section.', 'et_builder' ),
 				'type'              => 'yes_no_button',
 				'option_category'   => 'layout',
 				'options'           => array(
@@ -206,6 +208,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 				'fixed_range'      => true,
 				'default_on_front' => et_get_option( 'gutter_width', 3 ),
 				'hover'            => 'tabs',
+				'description'      => esc_html__( 'Gutter width controls the space between each column in a row. Lowering the gutter width will cause modules to become closer together.', 'et_builder' ),
 			),
 			'columns_background' => array(
 				'type'            => 'column_settings_background',
@@ -252,7 +255,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 			),
 			'__video_background' => array(
 				'type' => 'computed',
-				'computed_callback' => array( 'ET_Builder_Section', 'get_video_background' ),
+				'computed_callback' => array( 'ET_Builder_Module_Helper_ResponsiveOptions', 'get_video_background' ),
 				'computed_depends_on' => array(
 					'background_video_mp4',
 					'background_video_webm',
@@ -522,6 +525,11 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 		$prev_background_color                        = $this->props['prev_background_color'];
 		$next_background_color                        = $this->props['next_background_color'];
 
+		// Background Color.
+		$is_background_color_responsive = et_pb_responsive_options()->is_responsive_enabled( $this->props, 'background' );
+		$background_color_tablet        = $is_background_color_responsive ? et_pb_responsive_options()->get_any_value( $this->props, 'background_color_tablet' ) : '';
+		$background_color_phone         = $is_background_color_responsive ? et_pb_responsive_options()->get_any_value( $this->props, 'background_color_phone' ) : '';
+
 		$hover = et_pb_hover_options();
 
 		if ( '' !== $global_module ) {
@@ -779,15 +787,13 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 			$background_video = $this->video_background();
 		}
 
-		if ( '' !== $background_color && 'rgba(255,255,255,0)' !== $background_color ) {
-			ET_Builder_Element::set_style( $function_name, array(
-				'selector'    => '%%order_class%%.et_pb_section',
-				'declaration' => sprintf(
-					'background-color:%s !important;',
-					esc_attr( $background_color )
-				),
-			) );
-		}
+		// Background Color.
+		$background_color_values = array(
+			'desktop' => 'rgba(255,255,255,0)' !== $background_color ? esc_html( $background_color ) : '',
+			'tablet'  => 'rgba(255,255,255,0)' !== $background_color_tablet ? esc_html( $background_color_tablet ) : '',
+			'phone'   => 'rgba(255,255,255,0)' !== $background_color_phone ? esc_html( $background_color_phone ) : '',
+		);
+		et_pb_responsive_options()->generate_responsive_css( $background_color_values, '%%order_class%%.et_pb_section', 'background-color', $function_name, ' !important;', 'color' );
 
 		// Background hover styles
 		$bg_color = $hover->get_value( 'background_color', $this->props );
@@ -842,44 +848,49 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 		// pass section number for background color usage.
 		$divider->count = $this->render_count();
 
-		// Check if style is not default.
-		if ( '' !== $this->props['bottom_divider_style'] ) {
-			// get an svg for using in ::before
-			$divider->process_svg( 'bottom', $this->props );
+		// Divider Placement.
+		foreach ( array( 'bottom', 'top' ) as $placement ) {
+			// Divider Responsive.
+			foreach ( array( 'desktop', 'tablet', 'phone' ) as $device ) {
+				// Ensure responsive settings for style is active on tablet and phone.
+				$is_desktop          = 'desktop' === $device;
+				$is_responsive_style = et_pb_responsive_options()->is_responsive_enabled( $this->props, "{$placement}_divider_style" );
 
-			// apply responsive styling
-			$bottom_divider_responsive = et_pb_get_responsive_status( $this->props['bottom_divider_height_last_edited'] ) || et_pb_get_responsive_status( $this->props['bottom_divider_repeat_last_edited'] );
+				// Get all responsive values if it's exist and not empty.
+				$values = array();
+				if ( ! $is_desktop ) {
+					$values = et_pb_responsive_options()->get_any_responsive_values( $this->props, array(
+						"{$placement}_divider_color"       => '',
+						"{$placement}_divider_height"      => '',
+						"{$placement}_divider_repeat"      => '',
+						"{$placement}_divider_flip"        => '',
+						"{$placement}_divider_arrangement" => '',
+					), false, $device );
+				}
 
-			if ( $bottom_divider_responsive ) {
-				$divider->process_svg( 'bottom', $this->props, 'tablet' );
-				$divider->process_svg( 'bottom', $this->props, 'phone' );
+				// Get Divider Style.
+				$divider_style = $is_desktop || ! empty( $values ) ? et_pb_responsive_options()->get_any_value( $this->props, "{$placement}_divider_style" ) : '';
+				if ( ! $is_desktop && $is_responsive_style ) {
+					$divider_style = et_pb_responsive_options()->get_any_value( $this->props, "{$placement}_divider_style", '', true, $device );
+				}
+
+				// Check if style is not default.
+				if ( '' !== $divider_style ) {
+					// get an svg for using in ::before
+					$breakpoint = ! $is_desktop ? $device : '';
+					$divider->process_svg( $placement, $this->props, $breakpoint, $values );
+
+					// Get the placeholder for the bottom/top.
+					if ( 'bottom' === $placement && '' === $bottom ) {
+						$bottom = $divider->get_svg( 'bottom' );
+					} else if ( 'top' === $placement && '' === $top ) {
+						$top = $divider->get_svg( 'top' );
+					}
+
+					// add a corresponding class
+					$this->add_classname( $divider->classes );
+				}
 			}
-
-			// get the placeholder for the bottom
-			$bottom = $divider->get_svg( 'bottom' );
-
-			// add a corresponding class
-			$this->add_classname( $divider->classes );
-		}
-
-		// Check if style is not default.
-		if ( '' !== $this->props['top_divider_style'] ) {
-			// process the top section divider.
-			$divider->process_svg( 'top', $this->props );
-
-			// apply responsive styling
-			$top_divider_responsive = et_pb_get_responsive_status( $this->props['top_divider_height_last_edited'] ) || et_pb_get_responsive_status( $this->props['top_divider_repeat_last_edited'] );
-
-			if ( $top_divider_responsive ) {
-				$divider->process_svg( 'top', $this->props, 'tablet' );
-				$divider->process_svg( 'top', $this->props, 'phone' );
-			}
-
-			// get the placeholder for the top
-			$top = $divider->get_svg( 'top' );
-
-			// add a corresponding class
-			$this->add_classname( $divider->classes );
 		}
 
 		// Remove automatically added classnames
@@ -1041,6 +1052,8 @@ class ET_Builder_Row extends ET_Builder_Structure_Element {
 					),
 					'module_alignment' => array(
 						'label' => esc_html__( 'Row Alignment', 'et_builder' ),
+						'mobile_options' => true,
+						'description'    => esc_html__( 'Rows can be aligned to the left, right or center. By default, rows are centered within their parent section.', 'et_builder' ),
 					),
 				),
 				'toggle_slug'     => 'width',
@@ -1178,7 +1191,7 @@ class ET_Builder_Row extends ET_Builder_Structure_Element {
 				'hover'            => 'tabs',
 			),
 			'custom_padding' => array(
-				'label'           => esc_html__( 'Custom Padding', 'et_builder' ),
+				'label'           => esc_html__( 'Padding', 'et_builder' ),
 				'type'            => 'custom_padding',
 				'mobile_options'  => true,
 				'option_category' => 'layout',
@@ -1186,6 +1199,7 @@ class ET_Builder_Row extends ET_Builder_Structure_Element {
 				'tab_slug'        => 'advanced',
 				'toggle_slug'     => 'margin_padding',
 				'hover'           => 'tabs',
+				'allowed_units'   => array( '%', 'em', 'rem', 'px', 'cm', 'mm', 'in', 'pt', 'pc', 'ex', 'vh', 'vw' ),
 			),
 			'custom_padding_tablet' => array(
 				'type'        => 'skip',
@@ -1207,15 +1221,18 @@ class ET_Builder_Row extends ET_Builder_Structure_Element {
 				'default_on_front' => '',
 			),
 			'custom_margin' => array(
-				'label'           => esc_html__( 'Custom Margin', 'et_builder' ),
+				'label'           => esc_html__( 'Margin', 'et_builder' ),
+				'description'     => esc_html__( 'Margin adds extra space to the outside of the element, increasing the distance between the element and other items on the page.', 'et_builder' ),
 				'type'            => 'custom_margin',
 				'option_category' => 'layout',
 				'tab_slug'        => 'advanced',
 				'hover'           => 'tabs',
 				'toggle_slug'     => 'margin_padding',
+				'allowed_units'   => array( '%', 'em', 'rem', 'px', 'cm', 'mm', 'in', 'pt', 'pc', 'ex', 'vh', 'vw' ),
 			),
 			'make_equal' => array(
 				'label'             => esc_html__( 'Equalize Column Heights', 'et_builder' ),
+				'description'       => esc_html__( 'Equalizing column heights will force all columns to assume the height of the tallest column in the row. All columns will have the same height, keeping their appearance uniform.', 'et_builder' ),
 				'type'              => 'yes_no_button',
 				'option_category'   => 'layout',
 				'options'           => array(
@@ -1265,7 +1282,7 @@ class ET_Builder_Row extends ET_Builder_Structure_Element {
 			),
 			'__video_background' => array(
 				'type' => 'computed',
-				'computed_callback' => array( 'ET_Builder_Row', 'get_video_background' ),
+				'computed_callback' => array( 'ET_Builder_Module_Helper_ResponsiveOptions', 'get_video_background' ),
 				'computed_depends_on' => array(
 					'background_video_mp4',
 					'background_video_webm',
@@ -2170,6 +2187,7 @@ class ET_Builder_Row_Inner extends ET_Builder_Structure_Element {
 				'options' => array(
 					'module_alignment' => array(
 						'label' => esc_html__( 'Row Alignment', 'et_builder' ),
+						'description' => esc_html__( 'Rows can be aligned to the left, right or center. By default, rows are centered within their parent section.', 'et_builder' ),
 					),
 				),
 			),
@@ -2250,7 +2268,8 @@ class ET_Builder_Row_Inner extends ET_Builder_Structure_Element {
 	function get_fields() {
 		$fields = array(
 			'custom_padding' => array(
-				'label'           => esc_html__( 'Custom Padding', 'et_builder' ),
+				'label'           => esc_html__( 'Padding', 'et_builder' ),
+				'description'     => esc_html__( 'Padding adds extra space to the inside of the element, increasing the distance between the edge of the element and its inner contents.', 'et_builder' ),
 				'type'            => 'custom_padding',
 				'mobile_options'  => true,
 				'option_category' => 'layout',
@@ -2258,6 +2277,7 @@ class ET_Builder_Row_Inner extends ET_Builder_Structure_Element {
 				'tab_slug'        => 'advanced',
 				'toggle_slug'     => 'margin_padding',
 				'hover'           => 'tabs',
+				'allowed_units'   => array( '%', 'em', 'rem', 'px', 'cm', 'mm', 'in', 'pt', 'pc', 'ex', 'vh', 'vw' ),
 			),
 			'custom_padding_tablet' => array(
 				'type'        => 'skip',
@@ -2313,6 +2333,7 @@ class ET_Builder_Row_Inner extends ET_Builder_Structure_Element {
 			),
 			'make_equal' => array(
 				'label'             => esc_html__( 'Equalize Column Heights', 'et_builder' ),
+				'description'       => esc_html__( 'Equalizing column heights will force all columns to assume the height of the tallest column in the row. All columns will have the same height, keeping their appearance uniform.', 'et_builder' ),
 				'type'              => 'yes_no_button',
 				'option_category'   => 'layout',
 				'options'           => array(

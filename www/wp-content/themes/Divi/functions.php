@@ -9101,9 +9101,9 @@ if ( ! function_exists( 'et_divi_get_top_nav_items' ) ) {
 	function et_divi_get_top_nav_items() {
 		$items = new stdClass;
 
-		$items->phone_number = et_get_option( 'phone_number' );
+		$items->phone_number = trim( et_get_option( 'phone_number' ) );
 
-		$items->email = et_get_option( 'header_email' );
+		$items->email = trim( et_get_option( 'header_email' ) );
 
 		$items->contact_info_defined = $items->phone_number || $items->email;
 

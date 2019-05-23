@@ -140,6 +140,15 @@ class ET_Support_Center {
 	protected $support_user_expiration_time = '+4 days';
 
 	/**
+	 * Provide nicename equivalents for boolean values
+	 *
+	 * @since 3.23
+	 *
+	 * @type array
+	 */
+	protected $boolean_label = array( 'False', 'True' );
+
+	/**
 	 * Collection of plugins that we will NOT disable when Safe Mode is activated.
 	 *
 	 * @since 3.20
@@ -200,6 +209,10 @@ class ET_Support_Center {
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 		}
 
+		// Add extra User Role capabilities needed for Remote Access to work with 3rd party software
+		add_filter( 'add_et_support_standard_capabilities', array( $this, 'support_user_extra_caps_standard' ), 10, 1 );
+		add_filter( 'add_et_support_elevated_capabilities', array( $this, 'support_user_extra_caps_elevated' ), 10, 1 );
+
 		// Make sure that our Support Account's roles are set up
 		add_filter( 'add_et_builder_role_options', array( $this, 'support_user_add_role_options' ), 10, 1 );
 
@@ -222,8 +235,7 @@ class ET_Support_Center {
 			register_deactivation_hook( __FILE__, array( $this, 'unlist_support_center' ) );
 		}
 		if ( 'theme' === $this->child_of ) {
-			add_action( 'switch_theme', array( $this, 'support_user_delete_account' ) );
-			add_action( 'switch_theme', array( $this, 'unlist_support_center' ) );
+			add_action( 'switch_theme', array( $this, 'maybe_deactivate_on_theme_switch' ) );
 		}
 
 		// Automatically delete our Support User when the time runs out
@@ -242,10 +254,6 @@ class ET_Support_Center {
 
 		// Safe Mode: Block restricted actions when Safe Mode active
 		add_action( 'admin_footer', array( $this, 'render_safe_mode_block_restricted' ) );
-
-		// Safe Mode: Temporarily disable Child Theme
-		add_filter( 'stylesheet', array( $this, 'maybe_disable_child_theme' ) );
-		add_filter( 'template', array( $this, 'maybe_disable_child_theme' ) );
 
 		// Safe Mode: Temporarily disable Custom CSS
 		add_action( 'init', array( $this, 'maybe_disable_custom_css' ) );
@@ -649,7 +657,7 @@ class ET_Support_Center {
 		}
 
 		$html = sprintf( '<div class="et_docs_videos">'
-						 . '<div class="wrapper"><div id="et_documentation_player" data-playlist="%2$s"></div></div>'
+						 . '<div class="wrapper"><div id="et_documentation_player" data-playlist="%1$s"></div></div>'
 						 . '<ul class="et_documentation_videos_list">%2$s</ul>'
 						 . '</div>',
 			esc_attr( implode( ',', $playlist ) ),
@@ -933,14 +941,14 @@ class ET_Support_Center {
 		/** @var array Collection of system settings to run diagnostic checks on. */
 		$system_diagnostics_settings = array(
 			array(
-				'name'           => esc_attr__( 'File Permissions', 'et-core' ),
+				'name'           => esc_attr__( 'Writable wp-content Directory', 'et-core' ),
 				'environment'    => 'server',
-				'type'           => 'size',
-				'pass_minus_one' => false,
-				'pass_zero'      => false,
+				'type'           => 'truthy_falsy',
+				'pass_minus_one' => null,
+				'pass_zero'      => null,
 				'minimum'        => null,
-				'recommended'    => 755,
-				'actual'         => (int) substr( sprintf( '%o', fileperms( WP_CONTENT_DIR ) ), -4 ),
+				'recommended'    => true,
+				'actual'         => wp_is_writable( WP_CONTENT_DIR ),
 				'help_text'      => et_core_intentionally_unescaped( __( 'We recommend that the wp-content directory on your server be writable by WordPress in order to ensure the full functionality of Divi Builder themes and plugins.', 'et-core' ), 'html' ),
 				'learn_more'     => 'https://wordpress.org/support/article/changing-file-permissions/',
 			),
@@ -1031,15 +1039,15 @@ class ET_Support_Center {
 			array(
 				'name'           => esc_attr__( 'display_errors', 'et-core' ),
 				'environment'    => 'server',
-				'type'           => 'string',
+				'type'           => 'truthy_falsy',
 				'pass_minus_one' => null,
 				'pass_zero'      => null,
-				'pass_exact'     => true,
+				'pass_exact'     => null,
 				'minimum'        => null,
 				'recommended'    => '0',
-				'actual'         => ini_get( 'display_errors' ),
-				'help_text'      => et_get_safe_localization( sprintf( __( 'This setting determines whether or not errors should be printed as part of the page output. This is a feature to support your site\'s development and should never be used on production sites. You can edit this setting within your <a href="%1$s" target="_blank">php.ini file</a>, or by contacting your host for assistance.', 'et-core' ), 'http://php.net/manual/en/info.configuration.php#ini.display-errors' ) ),
-				'learn_more'     => 'http://php.net/manual/en/info.configuration.php#ini.display-errors',
+				'actual'         => !ini_get( 'display_errors' ) ? '0' : ini_get( 'display_errors' ),
+				'help_text'      => et_get_safe_localization( sprintf( __( 'This setting determines whether or not errors should be printed as part of the page output. This is a feature to support your site\'s development and should never be used on production sites. You can edit this setting within your <a href="%1$s" target="_blank">php.ini file</a>, or by contacting your host for assistance.', 'et-core' ), 'http://php.net/manual/en/errorfunc.configuration.php#ini.display-errors' ) ),
+				'learn_more'     => 'http://php.net/manual/en/errorfunc.configuration.php#ini.display-errors',
 			),
 		);
 
@@ -1086,14 +1094,14 @@ class ET_Support_Center {
 			$message_minimum = '';
 			if ( ! is_null( $scan['minimum'] ) && 'fail' === $system_diagnostics_settings[ $i ]['pass_fail'] ) {
 				$message_minimum = sprintf(
-					esc_html__( 'This fails to meet our minimum required value (%1$s). ', 'et-core' ),
-					$scan['minimum']
+					esc_html__( 'This fails to meet our minimum required value of %1$s. ', 'et-core' ),
+					esc_html( is_bool( $scan['minimum'] ) ? $this->boolean_label[ $scan['minimum'] ] : $scan['minimum'] )
 				);
 			}
 			if ( ! is_null( $scan['minimum'] ) && 'minimal' === $system_diagnostics_settings[ $i ]['pass_fail'] ) {
 				$message_minimum = sprintf(
-					esc_html__( 'This meets our minimum required value (%1$s). ', 'et-core' ),
-					esc_html( $scan['minimum'] )
+					esc_html__( 'This meets our minimum required value of %1$s. ', 'et-core' ),
+					esc_html( is_bool( $scan['minimum'] ) ? $this->boolean_label[ $scan['minimum'] ] : $scan['minimum'] )
 				);
 			}
 
@@ -1114,7 +1122,7 @@ class ET_Support_Center {
 						'- %1$s %2$s',
 						sprintf(
 							esc_html__( 'Congratulations! This meets or exceeds our recommendation of %1$s.', 'et-core' ),
-							esc_html( $scan['recommended'] )
+							esc_html( is_bool( $scan['recommended'] ) ? $this->boolean_label[ $scan['recommended'] ] : $scan['recommended'] )
 						),
 						et_core_intentionally_unescaped( $learn_more_link, 'html' )
 					);
@@ -1126,7 +1134,7 @@ class ET_Support_Center {
 						esc_html( $message_minimum ),
 						sprintf(
 							esc_html__( 'We recommend %1$s for the best experience.', 'et-core' ),
-							esc_html( $scan['recommended'] )
+							esc_html( is_bool( $scan['recommended'] ) ? $this->boolean_label[ $scan['recommended'] ] : $scan['recommended'] )
 						),
 						et_core_intentionally_unescaped( $learn_more_link, 'html' )
 					);
@@ -1188,7 +1196,7 @@ class ET_Support_Center {
 					esc_attr( $item['pass_fail'] ),
 					esc_html( $item['name'] ),
 					et_core_intentionally_unescaped( $help_text, 'html' ),
-					esc_html( $item['actual'] ),
+					esc_html( is_bool( $item['actual'] ) ? $this->boolean_label[ $item['actual'] ] : $item['actual'] ),
 					et_core_intentionally_unescaped( $item['description'], 'html' )
 				);
 			}
@@ -1268,14 +1276,16 @@ class ET_Support_Center {
 	 *
 	 * @since 3.20.2
 	 *
-	 * @param string|int|float $a Value to compare against
-	 * @param string|int|float $b Value being compared
+	 * @param string|int|float $a Our value to compare against
+	 * @param string|int|float $b Server value being compared
 	 * @param string $type Comparison type
 	 *
 	 * @return bool Whether the second value is equal to or greater than the first
 	 */
 	protected function value_is_at_least( $a, $b, $type = 'size' ) {
 		switch ( $type ) {
+			case 'truthy_falsy':
+				return $this->value_is_falsy($a) === $this->value_is_falsy($b);
 			case 'version':
 				return (float) $a <= (float) $b;
 			case 'seconds':
@@ -1284,6 +1294,24 @@ class ET_Support_Center {
 			default:
 				return $this->get_size_in_bytes( $a ) <= $this->get_size_in_bytes( $b );
 		}
+	}
+
+	/**
+	 * Check value against a collection of "falsy" values
+	 *
+	 * @since 3.23
+	 *
+	 * @param string|int|float $a Value to compare against
+	 *
+	 * @return bool Whether the second value is equal to or greater than the first
+	 */
+	protected function value_is_falsy( $a ) {
+		// Accept falsy strings regardless of case (e.g. 'off', 'Off', 'OFF', 'oFf')
+		if ( is_string( $a ) ) {
+			$a = strtolower( $a );
+		}
+
+		return in_array( $a, array( false, 'false', 0, '0', 'off' ), true );
 	}
 
 	/**
@@ -1326,6 +1354,76 @@ class ET_Support_Center {
 		);
 
 		return $all_role_options;
+	}
+
+	/**
+	 * Add third party capabilities to Remote Access roles
+	 *
+	 * @return array Capabilities to add to the Remote Access user roles.
+	 */
+	public function support_user_extra_caps_standard( $extra_capabilities = array() ) {
+		// The Events Calendar (if active on the site)
+		if ( class_exists( 'Tribe__Events__Main' ) ) {
+			$the_events_calendar = array(
+				// Events
+				'edit_tribe_event' => 1,
+				'read_tribe_event' => 1,
+				'delete_tribe_event' => 1,
+				'delete_tribe_events' => 1,
+				'edit_tribe_events' => 1,
+				'edit_others_tribe_events' => 1,
+				'delete_others_tribe_events' => 1,
+				'publish_tribe_events' => 1,
+				'edit_published_tribe_events' => 1,
+				'delete_published_tribe_events' => 1,
+				'delete_private_tribe_events' => 1,
+				'edit_private_tribe_events' => 1,
+				'read_private_tribe_events' => 1,
+				// Venues
+				'edit_tribe_venue' => 1,
+				'read_tribe_venue' => 1,
+				'delete_tribe_venue' => 1,
+				'delete_tribe_venues' => 1,
+				'edit_tribe_venues' => 1,
+				'edit_others_tribe_venues' => 1,
+				'delete_others_tribe_venues' => 1,
+				'publish_tribe_venues' => 1,
+				'edit_published_tribe_venues' => 1,
+				'delete_published_tribe_venues' => 1,
+				'delete_private_tribe_venues' => 1,
+				'edit_private_tribe_venues' => 1,
+				'read_private_tribe_venues' => 1,
+				// Organizers
+				'edit_tribe_organizer' => 1,
+				'read_tribe_organizer' => 1,
+				'delete_tribe_organizer' => 1,
+				'delete_tribe_organizers' => 1,
+				'edit_tribe_organizers' => 1,
+				'edit_others_tribe_organizers' => 1,
+				'delete_others_tribe_organizers' => 1,
+				'publish_tribe_organizers' => 1,
+				'edit_published_tribe_organizers' => 1,
+				'delete_published_tribe_organizers' => 1,
+				'delete_private_tribe_organizers' => 1,
+				'edit_private_tribe_organizers' => 1,
+				'read_private_tribe_organizers' => 1,
+			);
+
+			$extra_capabilities = array_merge( $extra_capabilities, $the_events_calendar );
+		}
+
+		return $extra_capabilities;
+	}
+
+	/**
+	 * Add third party capabilities to the *Elevated* Remote Access role only
+	 *
+	 * @return array Capabilities to add to the Elevated Remote Access user role.
+	 */
+	public function support_user_extra_caps_elevated() {
+		$extra_capabilities = array();
+
+		return $extra_capabilities;
 	}
 
 	/**
@@ -1775,6 +1873,35 @@ class ET_Support_Center {
 	}
 
 	/**
+	 * Maybe delete support account and the plugin options when switching themes
+	 *
+	 * If a theme change is one of:
+	 * - [Divi/Extra] > [Divi/Extra] child theme
+	 * - [Divi/Extra] child theme > [Divi/Extra] child theme
+	 * - [Divi/Extra] child theme > [Divi/Extra]
+	 * ...then we won't change the state of the Remote Access toggle.
+	 *
+	 * @since 3.23
+	 *
+	 * @return string | WP_Error  Confirmation message on success, WP_Error on failure
+	 */
+	public function maybe_deactivate_on_theme_switch() {
+		// Don't do anything if the user isn't logged in
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		// Don't do anything if the parent theme's name matches the parent of this Support Center instance
+		if ( get_option( 'template' ) === $this->parent_nicename ) {
+			return;
+		}
+
+		// Leaving Divi/Extra environment; deactivate Support Center
+		$this->support_user_delete_account();
+		$this->unlist_support_center();
+	}
+
+	/**
 	 * Is this user the ET Support User?
 	 *
 	 * @since 3.22
@@ -2020,39 +2147,6 @@ class ET_Support_Center {
 		</script>
 		<?php
 
-	}
-
-	/**
-	 * Disable Child Theme (if Safe Mode is active)
-	 *
-	 * The `is_child_theme()` function returns TRUE if a child theme is active. Parent theme info can be gathered from
-	 * the child theme's settings, so in the case of an active child theme we can capture the parent theme's info and
-	 * temporarily push the parent theme as active (similar to how WP lets the user preview a theme before activation).
-	 *
-	 * @since 3.20
-	 *
-	 * @param $current_theme
-	 *
-	 * @return false|string
-	 */
-	function maybe_disable_child_theme( $current_theme ) {
-		// Don't do anything if the user isn't logged in
-		if ( ! is_user_logged_in() ) {
-			return $current_theme;
-		}
-
-		if ( ! is_child_theme() ) {
-			return $current_theme;
-		}
-
-		if ( et_core_is_safe_mode_active() ) {
-			$child_theme = wp_get_theme( $current_theme );
-			if ( $parent_theme = $child_theme->get( 'Template' ) ) {
-				return $parent_theme;
-			}
-		}
-
-		return $current_theme;
 	}
 
 	/**
@@ -2342,10 +2436,10 @@ class ET_Support_Center {
 
 						$safe_mode_active = ( et_core_is_safe_mode_active() ) ? ' et_pb_on_state' : ' et_pb_off_state';
 						$plugins_list     = array();
-						$plugins_output = '';
+						$plugins_output   = '';
 
-						$has_mu_plugins_dir        = file_exists( WPMU_PLUGIN_DIR ) && is_writable( WPMU_PLUGIN_DIR );
-						$can_create_mu_plugins_dir = is_writable( WP_CONTENT_DIR ) && ! file_exists( WPMU_PLUGIN_DIR );
+						$has_mu_plugins_dir        = wp_mkdir_p( WPMU_PLUGIN_DIR ) && wp_is_writable( WPMU_PLUGIN_DIR );
+						$can_create_mu_plugins_dir = wp_is_writable( WP_CONTENT_DIR ) && ! wp_mkdir_p( WPMU_PLUGIN_DIR );
 
 						if ( $has_mu_plugins_dir || $can_create_mu_plugins_dir ) {
 							// Gather list of plugins that will be temporarily deactivated in Safe Mode

@@ -37,6 +37,7 @@ class ET_Builder_Module_Field_Height extends ET_Builder_Module_Field_Base {
 						'default'        => 'auto',
 						'default_tablet' => 'auto',
 						'default_phone'  => 'auto',
+						'allowed_values' => et_builder_get_acceptable_css_string_values( 'min-height' ),
 						'range_settings' => array(
 							'min'  => 100,
 							'max'  => 1000,
@@ -67,6 +68,7 @@ class ET_Builder_Module_Field_Height extends ET_Builder_Module_Field_Base {
 						'default'        => 'auto',
 						'default_tablet' => 'auto',
 						'default_phone'  => 'auto',
+						'allowed_values' => et_builder_get_acceptable_css_string_values( 'height' ),
 						'range_settings' => array(
 							'min'  => 100,
 							'max'  => 1000,
@@ -96,6 +98,7 @@ class ET_Builder_Module_Field_Height extends ET_Builder_Module_Field_Base {
 						'default'        => 'none',
 						'default_tablet' => 'none',
 						'default_phone'  => 'none',
+						'allowed_values' => et_builder_get_acceptable_css_string_values( 'max-height' ),
 						'range_settings' => array(
 							'min'  => 100,
 							'max'  => 1000,
@@ -111,14 +114,15 @@ class ET_Builder_Module_Field_Height extends ET_Builder_Module_Field_Base {
 
 	private function get_base_field() {
 		return array(
-			'type'           => 'range',
-			'hover'          => 'tabs',
-			'mobile_options' => true,
-			'validate_unit'  => true,
-			'default_unit'   => 'px',
-			'allow_empty'    => true,
-			'tab_slug'       => 'advanced',
-			'toggle_slug'    => 'width',
+			'type'             => 'range',
+			'hover'            => 'tabs',
+			'default_on_child' => true,
+			'mobile_options'   => true,
+			'validate_unit'    => true,
+			'default_unit'     => 'px',
+			'allow_empty'      => true,
+			'tab_slug'         => 'advanced',
+			'toggle_slug'      => 'width',
 		);
 	}
 

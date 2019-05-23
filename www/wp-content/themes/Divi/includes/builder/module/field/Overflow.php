@@ -8,10 +8,8 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 			'tab_slug'       => 'custom_css',
 			'toggle_slug'    => 'visibility',
 			'hover'          => 'tabs',
-			'mobile_options' => false,
+			'mobile_options' => true,
 			'default'        => ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT,
-			'default_tablet' => ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT,
-			'default_phone'  => ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT,
 		);
 	}
 
@@ -48,11 +46,8 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 			'type'           => 'select',
 			'id'             => $field,
 			'hover'          => $args['hover'],
-			// Disabled temporary responsive support, as select control doesn't support responsive tabs
-			//'mobile_options' => $args['mobile_options'],
+			'mobile_options' => $args['mobile_options'],
 			'default'        => $args['default'],
-			'default_tablet' => $args['default_tablet'],
-			'default_phone'  => $args['default_phone'],
 			'tab_slug'       => $args['tab_slug'],
 			'toggle_slug'    => $args['toggle_slug'],
 			'options'        => array(
@@ -69,24 +64,6 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 		);
 
 		$options = array( $field => $settings );
-
-		if ( $args['mobile_options'] ) {
-			$options["{$field}_tablet"]      = array(
-				'type'        => 'skip',
-				'tab_slug'    => $settings['tab_slug'],
-				'toggle_slug' => $settings['toggle_slug'],
-			);
-			$options["{$field}_phone"]       = array(
-				'type'        => 'skip',
-				'tab_slug'    => $settings['tab_slug'],
-				'toggle_slug' => $settings['toggle_slug'],
-			);
-			$options["{$field}_last_edited"] = array(
-				'type'        => 'skip',
-				'tab_slug'    => $settings['tab_slug'],
-				'toggle_slug' => $settings['toggle_slug'],
-			);
-		}
 
 		return $options;
 	}

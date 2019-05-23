@@ -126,12 +126,14 @@ class ET_Builder_Module_Bar_Counters_Item extends ET_Builder_Module {
 				'default_on_front' => '0',
 			),
 			'bar_background_color' => array(
-				'label'        => esc_html__( 'Bar Background Color', 'et_builder' ),
-				'type'         => 'color-alpha',
-				'custom_color' => true,
-				'hover'        => 'tabs',
-				'tab_slug'     => 'advanced',
-				'toggle_slug'  => 'bar',
+				'label'          => esc_html__( 'Bar Background Color', 'et_builder' ),
+				'description'    => esc_html__( 'This will change the fill color for the bar.', 'et_builder' ),
+				'type'           => 'color-alpha',
+				'custom_color'   => true,
+				'hover'          => 'tabs',
+				'tab_slug'       => 'advanced',
+				'toggle_slug'    => 'bar',
+				'mobile_options' => true,
 			),
 		);
 
@@ -241,6 +243,17 @@ class ET_Builder_Module_Bar_Counters_Item extends ET_Builder_Module {
 		$background_image              = $this->props['background_image'];
 		$use_background_color_gradient = $this->props['use_background_color_gradient'];
 
+		// Bar background color responsive. First of all, check if value from bar counters item is
+		// exist and responsive setting is enabled. If it doesn't exist, get it from bar counters
+		// and also ensure responsive setting is enabled.
+		$is_bar_background_color_responsive = et_pb_responsive_options()->is_responsive_enabled( $this->props, 'bar_background_color' );
+
+		$bar_background_color_tablet = $is_bar_background_color_responsive ? et_pb_responsive_options()->get_any_value( $this->props, 'bar_background_color_tablet' ) : '';
+		$bar_background_color_tablet = '' === $bar_background_color_tablet ? $et_pb_counters_settings['bar_bg_color_tablet'] : $bar_background_color_tablet;
+
+		$bar_background_color_phone = $is_bar_background_color_responsive ? et_pb_responsive_options()->get_any_value( $this->props, 'bar_background_color_phone' ) : '';
+		$bar_background_color_phone = '' === $bar_background_color_phone ? $et_pb_counters_settings['bar_bg_color_phone'] : $bar_background_color_phone;
+
 		// Add % only if it hasn't been added to the attribute
 		if ( '%' !== substr( trim( $percent ), -1 ) ) {
 			$percent .= '%';
@@ -282,27 +295,18 @@ class ET_Builder_Module_Bar_Counters_Item extends ET_Builder_Module {
 			) );
 		}
 
-		if ( '' !== $bar_background_color ) {
-			ET_Builder_Element::set_style( $render_slug, array(
-				'selector'    => '%%order_class%% .et_pb_counter_amount',
-				'declaration' => sprintf(
-					'background-color: %1$s;',
-					esc_html( $bar_background_color )
-				),
-			) );
-
-			ET_Builder_Element::set_style( $render_slug, array(
-				'selector'    => '%%order_class%% .et_pb_counter_amount.overlay',
-				'declaration' => sprintf(
-					'color: %1$s;',
-					esc_html( $bar_background_color )
-				),
-			) );
-		}
+		// Bar background color.
+		$bar_background_color_values = array(
+			'desktop' => esc_html( $bar_background_color ),
+			'tablet'  => esc_html( $bar_background_color_tablet ),
+			'phone'   => esc_html( $bar_background_color_phone ),
+		);
+		et_pb_responsive_options()->generate_responsive_css( $bar_background_color_values, '%%order_class%% .et_pb_counter_amount', 'background-color', $render_slug, '', 'color' );
+		et_pb_responsive_options()->generate_responsive_css( $bar_background_color_values, '%%order_class%% .et_pb_counter_amount.overlay', 'color', $render_slug, '', 'color' );
 
 		if ( '' !== $bar_background_hover_color ) {
 			ET_Builder_Element::set_style( $render_slug, array(
-				'selector'    => '.et_pb_counters %%order_class%% .et_pb_counter_amount',
+				'selector'    => '.et_pb_counters %%order_class%%:hover .et_pb_counter_amount',
 				'declaration' => sprintf(
 					'background-color: %1$s;',
 					esc_html( $bar_background_hover_color )

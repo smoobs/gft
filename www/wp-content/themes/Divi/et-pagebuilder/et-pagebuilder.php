@@ -83,6 +83,8 @@ function et_divi_maybe_adjust_section_advanced_options_config( $advanced_options
 		et_()->array_set( $advanced_options, 'max_width.extra.inner.css.main', $selector );
 	}
 
+	et_()->array_set( $advanced_options, 'margin_padding.css.main', '%%order_class%%.et_pb_section' );
+
 	return $advanced_options;
 }
 add_filter( 'et_pb_section_advanced_fields', 'et_divi_maybe_adjust_section_advanced_options_config' );

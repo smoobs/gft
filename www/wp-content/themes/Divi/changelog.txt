@@ -1,3 +1,65 @@
+version 3.23.1 ( updated 05-22-2019 )
+- Fix issue where animations would be triggered immediately on page load instead of when scrolled into view.
+	* includes/builder/scripts/frontend-builder-scripts.js
+
+version 3.23 ( updated 05-16-2019 )
+- Added hundreds of new module design settings.
+- Enabled responsive editing for all module design options.
+- Enabled hover editing for many more module design options.
+- Added missing help text to all options.
+- Filled in missing translations for all languages.
+- Added new option overflow icon to all areas of the builder so that important features are more easily accessible.
+- Improved options harmony between parent and child modules.
+- Improved the reliability of copying/pasting styles between different modules types.
+- Improved the reliability of extending styles between different modules types.
+- Added missing reset icons to various options.
+- Added color manager UI to background color options.
+- Added new margin and padding options to form fields and buttons.
+- Added button design options to all modules.
+- Added image box shadow options to all modules with image elements.
+- Fixed draggable sizing tooltip being hidden after module settings tooltip.
+- Fixed issue with removed module not receiving settings toolbar.
+- Fixed Width and Height capability to add auto and none values.
+- Fixed Accordion incorrect  Sizing default values.
+- Prevent removing transforms when settings modal is open.
+- Fixed modules margin settings overwriting module alignment.
+- Fixed a typo in a data attribute inside the Support Center's Documentation & Help video player.
+- Added responsive behavior to auto-save modal.
+- Fixed a permissions bug that prevented the Support Center's Remote Access feature from interacting with content and settings related to The Events Calendar plugin.
+- Added a check to hide the Email (and Phone) fields from the Header if they only contain whitespace characters.
+- Fixed FullWidth Section inability to add custom padding for mobile devices.
+- Fixed infinite loop of events when fullwidth module is set to fullscreen and blank template is used caused by et-pb-header-height-calculated and resize event being triggered due to false check.
+- Fixed module alignment on tablet and phone.
+- Fixed Audio Module player timer custom CSS selector.
+- Fixed a styling issue in the Classic Divi Builder introduced in WordPress 5.2.
+- Improved how we compare some server settings against our recommended values in the Support Center.
+- Fixed a bug where an active child theme's PHP functions would still be loaded while in Safe Mode.
+- Improved the Support Center's evaluation of file and directory permissions.
+- If the Support Center's Remote Access feature is active, switching to or from a child theme will no longer automatically deactivate it.
+- Fixed module alignment on tablet and phone.
+- Fixed undefined value supplied when opening Find & Replace feature.
+- Fixed PHP warning issue on 3rd Party Plugin because additional parameter on generating background fields.
+- Fixed animations not working with transformed modules.
+- Fixed columns spacing on mobile devices.
+- Fixed "Minified React error #188" JavaScript error that occurred in some cases.
+- Fixed number of columns on portfolio and gallery grid on landscape size.
+- Fixed issue with gravity forms signature field not working.
+	* core/admin/css/core.css
+	* core/components/mu-plugins/SupportCenterSafeModeDisableChildThemes.php
+	* core/components/SupportCenter.php
+	* et-pagebuilder/et-pagebuilder.php
+	* functions.php
+	* includes/builder/class-et-builder-element.php
+	* includes/builder/frontend-builder/bundle.js
+	* includes/builder/module/Audio.php
+	* includes/builder/module/field/Height.php
+	* includes/builder/module/field/MaxWidth.php
+	* includes/builder/module/field/Transform.php
+	* includes/builder/styles/style.css
+	* js/custom.js
+	* js/theme-customizer.js
+    * includes/builder/scripts/frontend-builder-scripts.js
+
 version 3.22.7 ( updated 05-03-2019 )
 - Fixed being able to add Gutenberg blocks in some cases while the Divi placeholder was active.
 	* includes/builder/frontend-builder/bundle.js
@@ -79,8 +141,8 @@ version 3.22.3 ( updated 04-17-2019 )
 version 3.22.2 ( updated 04-15-2019 )
 - Fixed row width options not working correctly on blog post types.
 - Fixed fullwidth rows not extending full width when Boxed Layout was enabled in the Divi Theme Customizer.
-- Fixed a bug that caused settings modals to close when hovering over the content area of a module sub item, such as tabs or accordion items. 
-- Fixed row alignment settings not working when no customer width was applied. 
+- Fixed a bug that caused settings modals to close when hovering over the content area of a module sub item, such as tabs or accordion items.
+- Fixed row alignment settings not working when no customer width was applied.
 - Fixed draggable width tooltip styles being overwritten by custom module styles.
 	* et-pagebuilder/et-pagebuilder.php
 	* includes/builder/core.php

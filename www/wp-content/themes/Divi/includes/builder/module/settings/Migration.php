@@ -40,6 +40,7 @@ abstract class ET_Builder_Module_Settings_Migration {
 		'3.22'    => 'RowCustomWidthToSizing',
 		'3.22.3'  => 'RowZeroGutter',
 		'3.23'    => 'OptionsHarmony2',
+		'3.23.4'  => 'DividerHeight',
 	);
 
 	public static $migrations_by_version = array();

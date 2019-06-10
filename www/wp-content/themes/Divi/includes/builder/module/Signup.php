@@ -266,7 +266,7 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 		et_core_nonce_verified_previously();
 
 		$fields  = self::providers()->account_fields( $provider_slug );
-		$is_VB   = ( et_core_is_fb_enabled() && ! et_fb_dynamic_asset_exists( 'definitions' ) ) || ( isset( $_REQUEST['action'] ) && in_array( $_REQUEST['action'], array(
+		$is_VB   = ( et_core_is_fb_enabled() && ! et_fb_dynamic_asset_exists( 'definitions' ) ) || apply_filters( 'et_builder_modules_is_saving_cache', false ) || ( isset( $_REQUEST['action'] ) && in_array( $_REQUEST['action'], array(
 			'et_fb_update_builder_assets',
 			'et_fb_retrieve_builder_data'
 		) ) );
@@ -401,7 +401,7 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 				),
 			);
 
-			$account_fields = is_admin() || ( et_core_is_fb_enabled() && ! et_fb_dynamic_asset_exists( 'definitions' ) ) ? self::_get_account_fields( $provider_slug ) : array();
+			$account_fields = is_admin() || et_core_is_saving_builder_modules_cache() || ( et_core_is_fb_enabled() && ! et_fb_dynamic_asset_exists( 'definitions' ) ) ? self::_get_account_fields( $provider_slug ) : array();
 			$fields         = array_merge( $fields, $account_fields );
 		}
 

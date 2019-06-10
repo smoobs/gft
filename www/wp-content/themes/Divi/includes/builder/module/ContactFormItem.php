@@ -434,15 +434,15 @@ class ET_Builder_Module_Contact_Form_Item extends ET_Builder_Module {
 		if ( in_array( $allowed_symbols, array( 'letters', 'numbers', 'alphanumeric' ) ) ) {
 			switch ( $allowed_symbols ) {
 				case 'letters':
-					$symbols_pattern = '[A-Z|a-z]';
+					$symbols_pattern = '[A-Z|a-z|\s-]';
 					$title           = __( 'Only letters allowed.', 'et_builder' );
 					break;
 				case 'numbers':
-					$symbols_pattern = '[0-9]';
+					$symbols_pattern = '[0-9\s-]';
 					$title           = __( 'Only numbers allowed.', 'et_builder' );
 					break;
 				case 'alphanumeric':
-					$symbols_pattern = '[A-Z|a-z|0-9]';
+					$symbols_pattern = '[\w\s-]';
 					$title           = __( 'Only letters and numbers allowed.', 'et_builder' );
 					break;
 			}

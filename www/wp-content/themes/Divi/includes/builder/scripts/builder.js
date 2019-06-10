@@ -5,7 +5,7 @@ window.wp = window.wp || {};
 /**
  * The builder version and product name will be updated by grunt release task. Do not edit!
  */
-window.et_builder_version = '3.23.1';
+window.et_builder_version = '3.24';
 window.et_builder_product_name = 'Divi';
 
 ( function($) {
@@ -15776,7 +15776,8 @@ window.et_builder_product_name = 'Divi';
 					range_value       = $this_el.val(),
 					$range_input      = 'all' === this_device ? $this_el.siblings( '.et-pb-range-input' ) : $this_el.siblings( '.et-pb-range-input.et_pb_setting_mobile_' + this_device ),
 					initial_value_set = $range_input.data( 'initial_value_set' ) || false,
-					range_input_value = et_pb_sanitize_input_unit_value( $.trim( $range_input.val() ), false, 'no_default_unit' ),
+					default_unit      = $range_input.data( 'unit' ) || 'no_default_unit',
+					range_input_value = et_pb_sanitize_input_unit_value( $.trim( $range_input.val() ), false, default_unit ),
 					number,
 					length;
 
@@ -15841,10 +15842,12 @@ window.et_builder_product_name = 'Divi';
 				} );
 			}
 
-			$range_input.on( 'keyup change', function( event ) {
+			$range_input.on( 'keyup change', _.debounce(function( event ) {
 				var $this_el      = $(this),
 					this_device   = typeof $this_el.data( 'device' ) === 'undefined' ? 'all' : $this_el.data( 'device' ),
-					this_value    = et_pb_get_range_input_value( $this_el, true ),
+					input_value   = et_pb_get_range_input_value( $this_el, true ),
+					default_unit  = $this_el.data( 'unit' ) || 'no_default_unit',
+					this_value    = et_pb_sanitize_input_unit_value( input_value, false, default_unit ),
 					$range_slider = 'all' === this_device ? $this_el.siblings( '.et-pb-range' ) : $this_el.siblings( '.et-pb-range.et_pb_setting_mobile_' + this_device ),
 					update_step   = false,
 					slider_value;
@@ -15858,10 +15861,11 @@ window.et_builder_product_name = 'Divi';
 
 				et_pb_check_range_boundaries( $range_slider, slider_value, update_step );
 
+				$this_el.val( this_value );
 				$range_slider.val( slider_value ).trigger( 'et_pb_setting:change' );
 
 				et_pb_update_mobile_defaults( $this_el );
-			} );
+			}, 700 ));
 
 			if ( $validate_unit_field.length ) {
 				$validate_unit_field.each( function() {
@@ -16787,7 +16791,7 @@ window.et_builder_product_name = 'Divi';
 
 			result = parseFloat( value );
 			if ( _.isUndefined( default_unit ) || 'no_default_unit' !== default_unit ) {
-				result += 'px';
+				result += default_unit || 'px';
 			}
 
 			// Return and automatically append px (default value)

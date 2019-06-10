@@ -5442,12 +5442,15 @@ function et_fb_delete_builder_assets() {
 	$new_files = glob( sprintf( '%s/*/*.js', $cache ) );
 	$new_files = is_array( $new_files ) ? $new_files : array();
 
-	foreach ( array_merge( $old_files, $new_files ) as $file ) {
+	// Modules cache
+	$modules_files = glob( sprintf( '%s/*/*.data', $cache ) );
+	$modules_files = is_array( $modules_files ) ? $modules_files : array();
+
+	foreach ( array_merge( $old_files, $new_files, $modules_files ) as $file ) {
 		@unlink( $file );
 	}
 }
 endif;
-
 
 if ( ! function_exists( 'et_fb_enqueue_open_sans' ) ):
 function et_fb_enqueue_open_sans() {

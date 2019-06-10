@@ -54,6 +54,18 @@ class ET_Builder_Module_Fullwidth_Map extends ET_Builder_Module {
 					'main' => '%%order_class%% .gm-style>div>div>div>div>div>img',
 				),
 			),
+			'height'                => array(
+				'css' => array(
+					'main'    => '%%order_class%% > .et_pb_map',
+				),
+				'options' => array(
+					'height' => array(
+						'default'         => '440px',
+						'default_tablet'  => '350px',
+						'default_phone'   => '200px',
+					),
+				),
+			),
 			'fonts'                 => false,
 			'text'                  => false,
 			'button'                => false,

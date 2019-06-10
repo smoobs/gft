@@ -333,7 +333,7 @@ class ET_Support_Center {
 		$file_path = dirname( __FILE__ );
 
 		// Exit if the `mu-plugins` directory doesn't exist & we're unable to create it
-		if ( ! et_()->ensure_directory_exists( WPMU_PLUGIN_DIR ) ) {
+		if ( ! wp_mkdir_p( WPMU_PLUGIN_DIR ) ) {
 			et_error( 'Support Center Safe Mode: mu-plugin folder not found.' );
 
 			return;
@@ -352,7 +352,7 @@ class ET_Support_Center {
 		// Try to create a new subdirectory for our mu-plugins; if it fails, log an error message
 		$pathname_plugins_from = dirname( __FILE__ ) . '/mu-plugins';
 		$pathname_plugins_to   = WPMU_PLUGIN_DIR . '/et-safe-mode';
-		if ( ! et_()->ensure_directory_exists( $pathname_plugins_to ) ) {
+		if ( ! wp_mkdir_p( $pathname_plugins_to ) ) {
 			et_error( 'Support Center Safe Mode: mu-plugins subfolder not found.' );
 
 			return;
@@ -1031,7 +1031,7 @@ class ET_Support_Center {
 				'pass_minus_one' => false,
 				'pass_zero'      => false,
 				'minimum'        => null,
-				'recommended'    => '3000',
+				'recommended'    => '1000',
 				'actual'         => ini_get( 'max_input_vars' ),
 				'help_text'      => et_get_safe_localization( sprintf( __( 'This setting affects how many input variables may be accepted. If the limit is too low, it may prevent the Divi Builder from loading. You can adjust your max input variables within your <a href="%1$s" target="_blank">php.ini file</a>, or by contacting your host for assistance.', 'et-core' ), 'http://php.net/manual/en/info.configuration.php#ini.max-input-vars' ) ),
 				'learn_more'     => 'http://php.net/manual/en/info.configuration.php#ini.max-input-vars',
@@ -1445,34 +1445,34 @@ class ET_Support_Center {
 
 		$password = $this->support_user_generate_password( $token );
 
-		$user_id = false;
-
-		if ( $password && ! is_wp_error( $password ) ) {
-			$user_id = wp_insert_user( array(
-				'user_login'   => $this->support_user_account_name,
-				'user_pass'    => $password,
-				'first_name'   => 'Elegant Themes',
-				'last_name'    => 'Support',
-				'display_name' => 'Elegant Themes Support',
-				'role'         => 'et_support',
-			) );
+		if ( is_wp_error( $password ) ) {
+			return $password;
 		}
 
-		if ( $user_id && ! is_wp_error( $user_id ) ) {
-			$account_settings = array(
-				'date_created' => time(),
-				'token'        => $token,
-			);
+		$user_id = wp_insert_user( array(
+			'user_login'   => $this->support_user_account_name,
+			'user_pass'    => $password,
+			'first_name'   => 'Elegant Themes',
+			'last_name'    => 'Support',
+			'display_name' => 'Elegant Themes Support',
+			'role'         => 'et_support',
+		) );
 
-			update_option( $this->support_user_options_name, $account_settings );
-
-			// update options variable
-			$this->support_user_get_options();
-
-			$this->support_user_init_cron_delete_account();
-		} else {
-			return new WP_Error( 'create_user_error', $user_id->get_error_message() );
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
 		}
+
+		$account_settings = array(
+			'date_created' => time(),
+			'token'        => $token,
+		);
+
+		update_option( $this->support_user_options_name, $account_settings );
+
+		// update options variable
+		$this->support_user_get_options();
+
+		$this->support_user_init_cron_delete_account();
 	}
 
 	/**
@@ -1738,7 +1738,7 @@ class ET_Support_Center {
 	 *
 	 * @param  string $token Token
 	 *
-	 * @return string $password Password
+	 * @return string|WP_Error Generated password if successful, WP Error object otherwise
 	 */
 	public function support_user_generate_password( $token ) {
 		global $wp_version;
@@ -1769,7 +1769,8 @@ class ET_Support_Center {
 			'username'  => esc_attr( $et_license['username'] ),
 			'api_key'   => esc_attr( $et_license['api_key'] ),
 			'site_url'  => esc_url( home_url( '/' ) ),
-			'login_url' => 'https://www.elegantthemes.com/members-area/admin/token/?url=' . urlencode( wp_login_url() )
+			'login_url' => 'https://www.elegantthemes.com/members-area/admin/token/'
+						   . '?url=' . urlencode( wp_login_url() )
 						   . '&token=' . urlencode( $token . '|' . $site_id ),
 		);
 
@@ -1779,25 +1780,90 @@ class ET_Support_Center {
 			'user-agent' => 'WordPress/' . $wp_version . '; ' . home_url( '/' ),
 		);
 
-		$request = wp_remote_post( 'https://www.elegantthemes.com/api/token.php', $support_user_options );
+		$request = wp_remote_post(
+			'https://www.elegantthemes.com/api/token.php',
+			$support_user_options
+		);
 
-		if ( ! is_wp_error( $request ) && 200 == wp_remote_retrieve_response_code( $request ) ) {
-			$response = unserialize( wp_remote_retrieve_body( $request ) );
-
-			if ( ! empty( $response['incorrect_token'] ) && $response['incorrect_token'] ) {
-				// Delete Site ID from database, if API returns the incorrect_token error
-				delete_option( 'et_support_site_id' );
-
-				return new WP_Error( 'incorrect_token', esc_html__( 'Please, try again.', 'et-core' ) );
-			} else if ( ! empty( $response['salt'] ) ) {
-				$salt = sanitize_text_field( $response['salt'] );
-			}
+		// Early exit if we don't get a good HTTP response from the API server
+		if ( 200 !== intval( wp_remote_retrieve_response_code( $request ) ) ) {
+			return new WP_Error(
+				'et_remote_access',
+				esc_html__(
+					'Elegant Themes API Error: HTTP error in API response',
+					'et-core'
+				)
+			);
 		}
+
+		// Early exit and pass along WP_Error report if the server response is an error
+		if ( is_wp_error( $request ) ) {
+			return new WP_Error(
+				'et_remote_access',
+				esc_html__(
+					'Elegant Themes API Error: WordPress Error in API response',
+					'et-core'
+				)
+			);
+		}
+
+		// Otherwise the response is good - let's load it and continue
+		$response = unserialize( wp_remote_retrieve_body( $request ) );
+
+		// If the API returns an error, we will return and log the accompanying message
+		$response_is_error          = array_key_exists( 'error', $response );
+		$response_has_error_message = array_key_exists( 'message', $response );
+
+		if ( $response_is_error && $response_has_error_message ) {
+			return new WP_Error(
+				'et_remote_access',
+				esc_html__(
+					'Elegant Themes API Error: ' . $response['message'],
+					'et-core'
+				)
+			);
+		}
+
+		// If we get an "Incorrect Token" response, delete the generated Site ID from database
+		$response_is_token_error = array_key_exists( 'incorrect_token', $response );
+
+		if ( $response_is_token_error && ! empty( $response['incorrect_token'] ) ) {
+			delete_option( 'et_support_site_id' );
+
+			return new WP_Error(
+				'et_remote_access',
+				esc_html__(
+					'Elegant Themes API Error: Incorrect Token. Please, try again.',
+					'et-core'
+				)
+			);
+		}
+
+		// If we get a normal-looking response, but it doesn't contain the salt we need
+		if ( empty( $response['salt'] ) ) {
+			return new WP_Error(
+				'et_remote_access',
+				esc_html__(
+					'Elegant Themes API Error: The API response was missing required data.',
+					'et-core'
+				)
+			);
+		}
+
+		// We have the salt; let's clean it and make sure we can use it
+		$salt = sanitize_text_field( $response['salt'] );
 
 		if ( empty( $salt ) ) {
-			return false;
+			return new WP_Error(
+				'et_remote_access',
+				esc_html__(
+					'Elegant Themes API Error: The API responded, but the response was empty.',
+					'et-core'
+				)
+			);
 		}
 
+		// Generate the password using the token we were initially passed & the salt from the API
 		$password = hash( 'sha256', $token . $salt );
 
 		return $password;
@@ -2001,26 +2067,46 @@ class ET_Support_Center {
 
 		// Update option(s)
 		if ( 'activate' === $support_update ) {
-			$this->support_user_maybe_create_user();
-			$this->support_user_set_role( 'et_support' );
-			$account_settings   = get_option( $this->support_user_options_name );
-			$site_id            = get_option( 'et_support_site_id' );
-			$response['expiry'] = strtotime( date( 'Y-m-d H:i:s ', $this->support_user_options['date_created'] ) . $this->support_user_expiration_time );
-			$response['token']  = '';
-			if ( ! empty( $site_id ) && is_string( $site_id ) ) {
-				$response['token'] = $account_settings['token'] . '|' . $site_id;
+			$maybe_create_user = $this->support_user_maybe_create_user();
+			// Only activate if we have a User ID and Password
+			if ( ! is_wp_error( $maybe_create_user ) ) {
+				$this->support_user_set_role( 'et_support' );
+				$account_settings   = get_option( $this->support_user_options_name );
+				$site_id            = get_option( 'et_support_site_id' );
+				$response['expiry'] = strtotime(
+					date(
+						'Y-m-d H:i:s ',
+						$this->support_user_options['date_created']
+					) . $this->support_user_expiration_time
+				);
+				$response['token']  = '';
+				if ( ! empty( $site_id ) && is_string( $site_id ) ) {
+					$response['token'] = $account_settings['token'] . '|' . $site_id;
+				}
+				$response['message'] = esc_html__(
+					'ET Support User role has been activated.',
+					'et-core'
+				);
+			} else {
+				et_error( $maybe_create_user->get_error_message() );
+				$response['error'] = $maybe_create_user->get_error_message();
 			}
-			$response['message'] = esc_html__( 'ET Support User role has been activated.', 'et-core' );
 		}
 		if ( 'elevate' === $support_update ) {
 			$this->support_user_set_role( 'et_support_elevated' );
-			$response['message'] = esc_html__( 'ET Support User role has been elevated.', 'et-core' );
+			$response['message'] = esc_html__(
+				'ET Support User role has been elevated.',
+				'et-core'
+			);
 		}
 		if ( 'deactivate' === $support_update ) {
 			$this->support_user_set_role( '' );
 			$this->support_user_delete_account();
 			$this->support_user_clear_delete_cron();
-			$response['message'] = esc_html__( 'ET Support User role has been deactivated.', 'et-core' );
+			$response['message'] = esc_html__(
+				'ET Support User role has been deactivated.',
+				'et-core'
+			);
 		}
 
 		// `echo` data to return
@@ -2309,6 +2395,7 @@ class ET_Support_Center {
 													  . '<span class="et-support-user-expiry" data-expiry="%5$s">%6$s'
 													  . '<span class="support-user-time-to-expiry"></span>'
 													  . '</span>'
+													  . '<span class="et-remote-access-error"></span>'
 													  . '</div>'
 													  . '</div>',
 								esc_html__( 'Remote Access', 'et-core' ),
@@ -2431,9 +2518,9 @@ class ET_Support_Center {
 					// Build Card :: Safe Mode
 					if ( et_pb_is_allowed( 'et_support_center_safe_mode' ) ) {
 
-						$card_title   = esc_html__( 'Safe Mode', 'et-core' );
-						$card_content = __( '<p>Enabling <strong>Safe Mode</strong> will temporarily disable features and plugins that may be causing problems with your Elegant Themes product. This includes all Plugins, Child Themes, and Custom Code added to your integration areas. These items are only disabled for your current user session so your visitors will not be disrupted. Enabling Safe Mode makes it easy to figure out what is causing problems on your website by identifying or eliminating third party plugins and code as potential causes.</p>', 'et-core' );
-
+						$card_title       = esc_html__( 'Safe Mode', 'et-core' );
+						$card_content     = __( '<p>Enabling <strong>Safe Mode</strong> will temporarily disable features and plugins that may be causing problems with your Elegant Themes product. This includes all Plugins, Child Themes, and Custom Code added to your integration areas. These items are only disabled for your current user session so your visitors will not be disrupted. Enabling Safe Mode makes it easy to figure out what is causing problems on your website by identifying or eliminating third party plugins and code as potential causes.</p>', 'et-core' );
+						$error_message    = '';
 						$safe_mode_active = ( et_core_is_safe_mode_active() ) ? ' et_pb_on_state' : ' et_pb_off_state';
 						$plugins_list     = array();
 						$plugins_output   = '';
@@ -2459,8 +2546,7 @@ class ET_Support_Center {
 							}
 
 						} else {
-							$error_message  = et_get_safe_localization( sprintf( __( 'Plugins cannot be disabled because your <code>wp-content</code> directory has inconsistent file permissions. <a href="%1$s">Click here</a> for more information.', 'et-core'), 'https://wordpress.org/support/article/changing-file-permissions/' ) );
-							$plugins_list[] = '<li class="et-safe-mode-error">' . $error_message . '</li>';
+							$error_message = et_get_safe_localization( sprintf( __( '<p class="et-safe-mode-error">Plugins cannot be disabled because your <code>wp-content</code> directory has inconsistent file permissions. <a href="%1$s" target="_blank">Click here</a> for more information.</p>', 'et-core' ), 'https://wordpress.org/support/article/changing-file-permissions/' ) );
 						}
 
 						if ( count( $plugins_list ) > 0 ) {
@@ -2472,21 +2558,23 @@ class ET_Support_Center {
 
 						// Toggle Safe Mode activation
 						$card_content .= sprintf( '<div id="et_card_safe_mode" class="et-safe-mode">'
-						                          . '<div class="et_safe_mode_toggle">'
-						                          . '<div class="%5$s_wrapper"><div class="%5$s %1$s">'
-						                          . '<span class="%6$s et_pb_on_value">%2$s</span>'
-						                          . '<span class="et_pb_button_slider"></span>'
-						                          . '<span class="%6$s et_pb_off_value">%3$s</span>'
-						                          . '</div></div>'
-						                          . '%4$s'
-						                          . '</div>'
-						                          . '</div>',
+												  . '<div class="et_safe_mode_toggle">'
+												  . '<div class="%5$s_wrapper"><div class="%5$s %1$s">'
+												  . '<span class="%6$s et_pb_on_value">%2$s</span>'
+												  . '<span class="et_pb_button_slider"></span>'
+												  . '<span class="%6$s et_pb_off_value">%3$s</span>'
+												  . '</div></div>'
+												  . '%4$s'
+												  . '%7$s'
+												  . '</div>'
+												  . '</div>',
 							esc_attr( $safe_mode_active ),
 							esc_html__( 'Enabled', 'et-core' ),
 							esc_html__( 'Disabled', 'et-core' ),
 							$plugins_output,
 							'et_pb_yes_no_button',
-							'et_pb_value_text'
+							'et_pb_value_text',
+							$error_message
 						);
 
 						print $this->add_support_center_card( array(

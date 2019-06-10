@@ -113,6 +113,8 @@ class ET_Builder_Element {
 
 	protected static $_fields_unprocessed = array();
 
+	private static $_cache           = false;
+
 	private static $_current_section_index = -1;
 	private static $_current_row_index     = -1;
 	private static $_current_row_inner_index = -1;
@@ -279,13 +281,56 @@ class ET_Builder_Element {
 		$this->set_factory_objects();
 
 		$this->_additional_fields_options = array();
-		$this->_add_additional_fields();
+		$slug                             = $this->slug;
 
-		$this->_add_custom_css_fields();
+		if ( ! empty( self::$_cache[ $slug ] ) ) {
+			// We got sum cache, let's use it.
+			$cache              = self::$_cache[ $slug ];
+			$fields_unprocessed = array();
 
-		$this->_maybe_add_global_defaults();
+			// Since arrays in PHP 5.x require more memory, we have to rely (again)
+			// on COW (copy on write) to limit RAM usage....
+			foreach( $cache['fields_unprocessed'] as $field => $key ) {
+				$fields_unprocessed[ $field ] = self::$_fields_unprocessed[ $key ];
+			}
 
-		$this->_finalize_all_fields();
+			$this->has_advanced_fields    = ! empty( $cache['advanced_fields'] );
+			$this->advanced_fields        = $cache['advanced_fields'];
+			$this->fields_unprocessed     = $fields_unprocessed;
+			$this->settings_modal_toggles = $cache['settings_modal_toggles'];
+			$this->custom_css_fields      = $cache['custom_css_fields'];
+
+			// Claim some RAM not needed anymore.
+			unset( self::$_cache[ $slug ] );
+		} else {
+
+			// Compute expensive stuff.
+			$this->_add_additional_fields();
+			$this->_add_custom_css_fields();
+			$this->_maybe_add_global_defaults();
+			$this->_finalize_all_fields();
+
+			// Consider caching only official modules.
+			if ( $this->_is_official_module && false !== self::$_cache ) {
+				// We got no cache, let's create it.
+				$fields_unprocessed = array();
+
+				// Since arrays in PHP 5.x require more memory, we can't store
+				// fields_unprocessed as is but have to replace values with hashes
+				// when saving the cache and reverse the process when loading it.
+				foreach( $this->fields_unprocessed as $field => $definition ) {
+					$key                          = md5( serialize( $definition ) );
+					$fields_unprocessed[ $field ] = $key;
+				}
+
+				self::$_cache[ $slug ] = array(
+					'advanced_fields'        => $this->advanced_fields,
+					'fields_unprocessed'     => $fields_unprocessed,
+					'settings_modal_toggles' => $this->settings_modal_toggles,
+					'custom_css_fields'      => $this->custom_css_fields,
+				);
+			}
+		}
 
 		if ( ! isset( $this->main_css_element ) ) {
 			$this->main_css_element = '%%order_class%%';
@@ -307,16 +352,15 @@ class ET_Builder_Element {
 				),
 			);
 
-			$default_advanced_toggles = array(
-				'visibility' => array(
-					'title'    => esc_html__( 'Visibility', 'et_builder' ),
-					'priority' => 99,
-				),
-			);
-
 			$this->_add_settings_modal_toggles( 'general', $default_general_toggles );
-			$this->_add_settings_modal_toggles( 'custom_css', $default_advanced_toggles );
 		}
+
+		$this->_add_settings_modal_toggles( 'custom_css', array(
+			'visibility' => array(
+				'title'    => esc_html__( 'Visibility', 'et_builder' ),
+				'priority' => 99,
+			),
+		) );
 
 		$this->main_tabs = $this->get_main_tabs();
 
@@ -801,9 +845,8 @@ class ET_Builder_Element {
 		$unprocessed = &self::$_fields_unprocessed;
 
 		foreach ( $fields as $field => $definition ) {
-			// We could save more memory here by using md5 at the cost of more cpu usage
-			// and risk of collisions.
-			$key = ( serialize( $definition ) );
+			// Have to use md5 now because needed by modules cache.
+			$key = md5( serialize( $definition ) );
 			if ( ! isset( $unprocessed[ $key ] ) ) {
 				$unprocessed[ $key ] = $definition;
 			}
@@ -1045,9 +1088,13 @@ class ET_Builder_Element {
 		 */
 		$fields_unprocessed = apply_filters( "et_pb_all_fields_unprocessed_{$this->slug}", $fields_unprocessed );
 
+		$is_saving_modules_cache = et_core_is_saving_builder_modules_cache();
+		$need_dynamic_assets     = et_core_is_fb_enabled() && ! et_fb_dynamic_asset_exists( 'definitions' );
+
 		// Check if this is an AJAX request since this is how VB and BB loads the initial module data et_core_is_fb_enabled() always returns `false` here
-		// Make exception for VB page which has no dynamic definitions asset so it can cache the definitions correctly
-		if ( ! wp_doing_ajax() && ! ( et_core_is_fb_enabled() && ! et_fb_dynamic_asset_exists( 'definitions' ) ) ) {
+		// Make exception for requests that are regenerating modules cache and
+		// VB page which has no dynamic definitions asset so it can cache the definitions correctly.
+		if ( ! wp_doing_ajax() && ! $is_saving_modules_cache && ! $need_dynamic_assets ) {
 			$this->_set_fields_unprocessed( $fields_unprocessed );
 			return;
 		}
@@ -1174,7 +1221,7 @@ class ET_Builder_Element {
 			}
 
 			// Set empty TinyMCE content '&lt;br /&gt;<br />' as empty string.
-			$field_type = self::$_->array_get( $this->fields_unprocessed, "{$attribute_key}.type" );
+			$field_type = empty( $this->fields_unprocessed[ $attribute_key ]['type'] ) ? '' : $this->fields_unprocessed[ $attribute_key ]['type'];
 			if ( 'tiny_mce' === $field_type && 'ltbrgtbr' === preg_replace( '/[^a-z]/', '', $processed_attr_value ) ) {
 				$processed_attr_value = '';
 			}
@@ -1863,26 +1910,25 @@ class ET_Builder_Element {
 		if ( $animation_style && 'none' !== $animation_style && ! wp_doing_ajax() ) {
 			// Fade doesn't have direction
 			if ( 'fade' === $animation_style ) {
-				$animation_direction = '';
 				$animation_direction_tablet = '';
 				$animation_direction_phone  = '';
-			}
-
-			$directions_list = array( 'top', 'right', 'bottom', 'left' );
-			if ( in_array( $animation_direction, $directions_list ) ) {
-				$animation_style .= ucfirst( $animation_direction );
-			}
-
-			foreach ( preg_grep( '/(transform_)/', array_keys( $this->props ) ) as $index => $key ) {
-				if ( strpos( 'link', $key ) !== false ) {
-					continue;
+			} else {
+				$directions_list = array( 'top', 'right', 'bottom', 'left' );
+				if ( in_array( $animation_direction, $directions_list ) ) {
+					$animation_style .= ucfirst( $animation_direction );
 				}
-				if ( ! empty( $this->props[ $key ] ) ) {
-					$animation_style = 'transformAnim';
-					break;
+
+				foreach ( preg_grep( '/(transform_)/', array_keys( $this->props ) ) as $index => $key ) {
+					if ( strpos( $key, 'link' ) !== false || strpos( $key, 'hover' ) !== false ) {
+						continue;
+					}
+
+					if ( ! empty( $this->props[ $key ] ) ) {
+						$animation_style = 'transformAnim';
+						break;
+					}
 				}
 			}
-
 
 			$module_class = ET_Builder_Element::get_module_order_class( $render_slug );
 
@@ -2122,10 +2168,11 @@ class ET_Builder_Element {
 		 * @param array $must_print_fields Array of attribute names.
 		 */
 		$must_print_fields = apply_filters( $this->slug . '_must_print_attributes', $must_print_fields );
+		$slug              = isset( $this->global_settings_slug ) ? $this->global_settings_slug : $this->slug;
 
 		foreach ( $fields as $field_key => $field_settings ) {
-			$global_setting_name   = $this->get_global_setting_name( $field_key );
-			$global_setting_value  = ET_Global_Settings::get_value( $global_setting_name );
+			$global_setting_name  = "$slug-$field_key";
+			$global_setting_value = ET_Global_Settings::get_value( $global_setting_name );
 
 			if ( ! $global_setting_value || in_array( $field_key, $must_print_fields ) ) {
 				continue;
@@ -5151,6 +5198,11 @@ class ET_Builder_Element {
 
 	private function _add_additional_z_index_fields() {
 
+		if ( 'child' === $this->type ) {
+			// Disable z-index support for child modules
+			return;
+		}
+
 		$this->advanced_fields['z_index'] = self::$_->array_get( $this->advanced_fields, 'z_index', array() );
 
 		$additional_options = array();
@@ -6407,26 +6459,15 @@ class ET_Builder_Element {
 
 		$selectors   = array();
 		$transitions = array();
-		$hover = et_pb_hover_options();
+		$hover       = et_pb_hover_options();
+		$suffix      = $hover->get_enabled_suffix();
 
 		// We need to loop transitions array so cases of prefixed prop names can also be caught
 		foreach ( $transitions_map as $prop_name => $css_props ) {
-			// To build a proper regex "{prefix}" is replaced with ".*?" as it might not always be present
-			$prop_name_regexed = str_replace( '{slug}', '.*?', $prop_name );
-			$match_regex       = "~^{$prop_name_regexed}{$hover->get_enabled_suffix()}$~";
+			$key = "{$prop_name}{$suffix}";
 
-			// Get a list of props matching the pattern above (should never be more than one match actually)
-			$prop_matches = preg_grep( $match_regex, array_keys( $this->props ) );
-
-			if ( empty( $prop_matches ) ) {
-				continue;
-			}
-
-			// Reset the array keys to make sure the first (and only) match is $prop_matches[0]
-			$prop_matches = array_values( $prop_matches );
-
-			// Continue if somehow {property_name}__hover_enabled is not "on"
-			if ( 'on' !== $this->props[ $prop_matches[0] ] ) {
+			// Continue if {property_name}__hover_enabled is not defined/"on"
+			if ( empty( $this->props[$key]) || 'on' !== $this->props[ $key ] ) {
 				continue;
 			}
 
@@ -7751,7 +7792,7 @@ class ET_Builder_Element {
 				'upload_button_text' => esc_attr__( 'Upload a video', 'et_builder' ),
 				'choose_text'        => esc_attr__( 'Choose a Background Video MP4 File', 'et_builder' ),
 				'update_text'        => esc_attr__( 'Set As Background Video', 'et_builder' ),
-				'description'        => et_get_safe_localization( __( 'All videos should be uploaded in both .MP4 .WEBM formats to ensure maximum compatibility in all browsers. Upload the .MP4 version here. <b>Important Note: Video backgrounds are disabled from mobile devices. Instead, your background image will be used. For this reason, you should define both a background image and a background video to ensure best results.</b>', 'et_builder' ) ),
+				'description'        => et_get_safe_localization( __( 'All videos should be uploaded in both .MP4 .WEBM formats to ensure maximum compatibility in all browsers. Upload the .MP4 version here.', 'et_builder' ) ),
 				'tab_slug'           => $tab_slug,
 				'toggle_slug'        => $toggle_slug,
 				'computed_affects'   => array(
@@ -7771,7 +7812,7 @@ class ET_Builder_Element {
 				'upload_button_text' => esc_attr__( 'Upload a video', 'et_builder' ),
 				'choose_text'        => esc_attr__( 'Choose a Background Video WEBM File', 'et_builder' ),
 				'update_text'        => esc_attr__( 'Set As Background Video', 'et_builder' ),
-				'description'        => et_get_safe_localization( __( 'All videos should be uploaded in both .MP4 .WEBM formats to ensure maximum compatibility in all browsers. Upload the .WEBM version here. <b>Important Note: Video backgrounds are disabled from mobile devices. Instead, your background image will be used. For this reason, you should define both a background image and a background video to ensure best results.</b>', 'et_builder' ) ),
+				'description'        => et_get_safe_localization( __( 'All videos should be uploaded in both .MP4 .WEBM formats to ensure maximum compatibility in all browsers. Upload the .WEBM version here.', 'et_builder' ) ),
 				'tab_slug'           => $tab_slug,
 				'toggle_slug'        => $toggle_slug,
 				'computed_affects'   => array(
@@ -8808,9 +8849,10 @@ class ET_Builder_Element {
 				$field['class'] .= 'range' === $field['type'] ? ' et-pb-range-input' : ' et-pb-main-setting';
 
 				$type = in_array( $field['type'], array( 'text', 'number' ) ) ? $field['type'] : 'text';
+				$unit = isset($field['default_unit']) ? 'data-unit="' . esc_attr( $field['default_unit'] ) . '"' : '';
 
 				$field_el .= sprintf(
-					'<input id="%1$s" type="%11$s" class="%2$s%5$s%9$s"%6$s%3$s%8$s%10$s %4$s/>%7$s',
+					'<input id="%1$s" type="%11$s" class="%2$s%5$s%9$s"%6$s%3$s%8$s%10$s %4$s %12$s/>%7$s',
 					esc_attr( $field['id'] ),
 					esc_attr( $field['class'] ),
 					$value,
@@ -8824,7 +8866,8 @@ class ET_Builder_Element {
 					),
 					$need_mobile_options ? ' et_pb_setting_mobile et_pb_setting_mobile_active et_pb_setting_mobile_desktop' : '',
 					$need_mobile_options ? ' data-device="desktop"' : '',
-					$type
+					$type,
+					$unit
 				);
 
 				// generate additional fields for mobile settings switcher if needed
@@ -8923,14 +8966,15 @@ class ET_Builder_Element {
 					}
 
 					$range_el = sprintf(
-						'<input type="range" data-name="%7$s" class="et-pb-main-setting et-pb-range%4$s%6$s" data-default="%2$s"%1$s%3$s%5$s />',
+						'<input type="range" data-name="%7$s" class="et-pb-main-setting et-pb-range%4$s%6$s" data-default="%2$s"%1$s%3$s%5$s %8$s />',
 						$value,
 						esc_attr( $default ),
 						$range_settings_html,
 						$need_mobile_options ? ' et_pb_setting_mobile et_pb_setting_mobile_desktop et_pb_setting_mobile_active' : '',
 						$need_mobile_options ? ' data-device="desktop"' : '',
 						$fixed_range ? ' et-pb-fixed-range' : '',
-						esc_attr( $field['name'] )
+						esc_attr( $field['name'] ),
+						$unit
 					);
 
 					if ( $need_mobile_options ) {
@@ -8946,13 +8990,14 @@ class ET_Builder_Element {
 								$default_value
 							);
 							$range_el .= sprintf(
-								'<input type="range" class="et-pb-main-setting et-pb-range et_pb_setting_mobile et_pb_setting_mobile_%3$s%6$s" data-default="%1$s"%4$s%2$s data-device="%3$s"%5$s/>',
+								'<input type="range" class="et-pb-main-setting et-pb-range et_pb_setting_mobile et_pb_setting_mobile_%3$s%6$s" data-default="%1$s"%4$s%2$s data-device="%3$s"%5$s %7$s/>',
 								esc_attr( $default ),
 								$range_settings_html,
 								esc_attr( $device_type ),
 								$value_mobile_range,
 								$has_saved_value,
-								$fixed_range ? ' et-pb-fixed-range' : ''
+								$fixed_range ? ' et-pb-fixed-range' : '',
+								$unit
 							);
 						}
 					}
@@ -11180,7 +11225,7 @@ class ET_Builder_Element {
 
 			if ( ! empty( $elements['transform'] ) || ! empty( $elements['origin'] ) ) {
 
-				if ( ! empty( $animationType ) && 'none' !== $animationType && 'fade' !== $animationType ) {
+				if ( 'hover' !== $view && ! empty( $animationType ) && 'none' !== $animationType && 'fade' !== $animationType ) {
 
 					$transformedAnimation = $class->transformedAnimation( $animationType, $elements, $function_name, $device );
 
@@ -11322,6 +11367,15 @@ class ET_Builder_Element {
 		foreach ( $fields as $prefix => $field ) {
 			$is_customized = ! self::$_->array_get( $field, 'use_max_width', true ) && ! self::$_->array_get( $field, 'use_width', true );
 			$hover = et_pb_hover_options();
+
+			if ( 'et_pb_section' === $this->slug && 'inner' === $prefix && 'on' !== $this->prop( 'specialty' ) ) {
+				// https://github.com/elegantthemes/Divi/issues/14445
+				// This is a hot fix due to the fact that in near future
+				// modules will be processed and rendered in VB
+				// The real solution requires handling modules fields dependencies in FE
+				// As section inner sizing depends on section `speciality`
+				continue;
+			}
 
 			// Max width
 			foreach ( array( 'width', 'max_width' ) as $key ) {
@@ -15797,6 +15851,81 @@ class ET_Builder_Element {
 	protected function field_to_css_prop( $field ) {
 		return str_replace( '_', '-', $field );
 	}
+
+	/**
+	 * Initialize Modules Cache
+	 *
+	 * @since 3.24
+	 */
+	public static function init_cache() {
+		$cache = self::get_cache_filename();
+
+		if ( $cache && file_exists( $cache ) ) {
+			// Load cache
+			list ( self::$_cache, self::$_fields_unprocessed ) = unserialize( file_get_contents( $cache ) );
+			// Box Shadow sets WP hooks internally so we gotta load it anyway -> #blame_george.
+			ET_Builder_Module_Fields_Factory::get( 'BoxShadow' );
+		} else if ( $cache ) {
+			// Only save cache when a builder page is being rendered, needed because some data
+			// (e.g. mail provider defaults) is only generated in this case, hence saving while rendering
+			// a FE page or during AJAX call would result in cache missing data.
+			self::$_cache = array();
+			add_filter( 'et_builder_modules_is_saving_cache', '__return_true' );
+			add_action( 'et_builder_modules_loaded', array( 'ET_Builder_Element', 'save_cache' ) );
+		}
+	}
+
+	/**
+	 * Get Modules cache file name.
+	 *
+	 * @param mixed $post_type When set to `false`, autodetect.
+	 *
+	 * @since 3.24
+	 */
+	public static function get_cache_filename( $post_type = false ) {
+
+		global $post, $et_builder_post_type;
+
+		if ( false === $post_type ) {
+			if ( is_a( $post, 'WP_POST' ) ) {
+				$post_type = $post->post_type;
+			} else if ( is_admin() && ! wp_doing_ajax() ) {
+				$et_builder_post_type = $post_type = 'page';
+			}
+
+			if ( false === $post_type ) {
+				return false;
+			}
+		}
+
+		// Per language Cache due to fields data being localized.
+		$lang   = sanitize_file_name( get_user_locale() );
+		$prefix = 'modules';
+		$cache  = sprintf( '%s/%s', ET_Core_PageResource::get_cache_directory(), $lang );
+		$files  = glob( sprintf( '%s/%s-%s-*.data', $cache, $prefix, $post_type ) );
+		$exists = is_array( $files ) && $files;
+
+		if ( $exists ) {
+			return $files[0];
+		}
+
+		wp_mkdir_p( $cache );
+
+		// Create uniq filename
+		$uniq      = str_replace( '.', '', (string) microtime( true ) );
+		$post_type = sanitize_file_name( $post_type );
+		$file      = sprintf( '%s/%s-%s-%s.data', $cache, $prefix, $post_type, $uniq );
+
+		return is_writable( dirname( $file ) ) ? $file : false;
+	}
+
+	public static function save_cache() {
+		remove_filter( 'et_builder_modules_is_saving_cache', '__return_true' );
+		file_put_contents(
+			self::get_cache_filename(),
+			serialize( array( self::$_cache, self::$_fields_unprocessed ) )
+		);
+	}
 }
 
 do_action( 'et_pagebuilder_module_init' );
@@ -15826,7 +15955,7 @@ class ET_Builder_Structure_Element extends ET_Builder_Element {
 			default:
 				$depends = false;
 				$new_depends  = isset( $field['show_if'] ) || isset( $field['show_if_not'] );
-				if ( ! $new_depends && isset( $field['depends_show_if'] ) || isset( $field['depends_show_if_not'] ) ) {
+				if ( ! $new_depends && ( isset( $field['depends_show_if'] ) || isset( $field['depends_show_if_not'] ) ) ) {
 					$depends = true;
 					if ( isset( $field['depends_show_if_not'] ) ) {
 						$depends_show_if_not = is_array( $field['depends_show_if_not'] ) ? implode( ',', $field['depends_show_if_not'] ) : $field['depends_show_if_not'];

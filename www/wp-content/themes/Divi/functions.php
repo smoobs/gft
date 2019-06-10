@@ -9811,3 +9811,23 @@ if ( ! function_exists( 'et_divi_footer_active_sidebars' ) ):
 		return $et_active_sidebar;
 	}
 endif;
+
+/**
+ * Check if the theme has boxed layout enabled
+ *
+ * @return bool
+ */
+function et_divi_is_boxed_layout() {
+    return true === et_get_option( 'boxed_layout', false );
+}
+
+/**
+ * Get current theme content container width
+ *
+ * @return int
+ */
+function et_divi_get_content_width() {
+	$value = absint( et_get_option( 'content_width', 1080 ) );
+
+	return ( 1080 === $value && et_divi_is_boxed_layout() ) ? 1200 : $value;
+}

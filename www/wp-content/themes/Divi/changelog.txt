@@ -1,3 +1,101 @@
+version 3.24 ( updated 06-06-2019 )
+- Prevented possibility to edit draggable sizing of modules inside locked section.
+- Fixed Map and FullWidth Map height.
+- Fixed ability to use valid CSS string values, like auto, inherit, etc. as the value for Custom Margin field.
+- Prevent transition animation on VB when the mouse leaves any module.
+- Added several PHP Optimizations.
+- Fixed draggable spacing indicator hiding too early.
+- Fixed issue where units were defaulting to the wrong value in some cases.
+- Fixed legacy builder issue where Width / Max-Width values didn't have any unit set and will save as px instead of %.
+- Fixed Blurb Image getting responsive width even when it is disabled.
+- Fixed issue where section rows get full width even when the row width is not updated.
+- Updated contact form field validation so that spaces and dashes are now allowed.
+- Fixed draggable spacing controls size when window is resized.
+- Added Z-Index and Overflow support for Accordion Items.
+- Prevent adding Height values without unit.
+- Adjusted Background Video MP4/WebM help text.
+- Fixed hover styles were not being extended into other modules.
+- Fixed fade animation with transforms on FE.
+- Removed unused lang directory on builder repo.
+- Improved Divi Error Reporting.
+- Fixed the formatting of a Support Center plugin error message.
+- Modified Support Center to recommend a minimum of 1000 (down from 3000) for PHP's max_input_vars setting.
+- Improved the method used by the Support Center's Safe Mode toggle to verify that the "mu-plugins" directory exists.
+- Improved error handling for Support Center's Remote Access activation.
+- Fixed row default Max Width being different from customizer content width.
+	* core/admin/css/support-center.css
+	* core/admin/js/core.js
+	* core/admin/js/support-center.js
+	* core/components/SupportCenter.php
+	* core/components/api/email/Providers.php
+	* core/functions.php
+	* et-pagebuilder/et-pagebuilder.php
+	* functions.php
+	* includes/builder/class-et-builder-element.php
+	* includes/builder/core.php
+	* includes/builder/feature/ErrorReport.php
+	* includes/builder/framework.php
+	* includes/builder/frontend-builder/assets.php
+	* includes/builder/frontend-builder/bundle.js
+	* includes/builder/frontend-builder/helpers.php
+	* includes/builder/functions.php
+	* includes/builder/lang/ar.po
+	* includes/builder/lang/bg_BG.po
+	* includes/builder/lang/cs_CZ.po
+	* includes/builder/lang/da_DK.po
+	* includes/builder/lang/de_DE.po
+	* includes/builder/lang/el.po
+	* includes/builder/lang/en_US.po
+	* includes/builder/lang/es_ES.po
+	* includes/builder/lang/fi.po
+	* includes/builder/lang/fr_FR.po
+	* includes/builder/lang/he_IL.po
+	* includes/builder/lang/hu_HU.po
+	* includes/builder/lang/id_ID.po
+	* includes/builder/lang/it_IT.po
+	* includes/builder/lang/ja.po
+	* includes/builder/lang/ko_KR.po
+	* includes/builder/lang/ms_MY.po
+	* includes/builder/lang/nb_NO.po
+	* includes/builder/lang/nl_NL.po
+	* includes/builder/lang/pl_PL.po
+	* includes/builder/lang/pt_BR.po
+	* includes/builder/lang/ro_RO.po
+	* includes/builder/lang/ru_RU.po
+	* includes/builder/lang/sk_SK.po
+	* includes/builder/lang/sr_RS.po
+	* includes/builder/lang/sv_SE.po
+	* includes/builder/lang/th.po
+	* includes/builder/lang/tl.po
+	* includes/builder/lang/tr_TR.po
+	* includes/builder/lang/uk.po
+	* includes/builder/lang/vi.po
+	* includes/builder/lang/zh_CN.po
+	* includes/builder/module/ContactFormItem.php
+	* includes/builder/module/FullwidthMap.php
+	* includes/builder/module/Map.php
+	* includes/builder/module/Signup.php
+	* includes/builder/module/field/Height.php
+	* includes/builder/module/settings/Migration.php
+	* includes/builder/module/settings/migration/DividerHeight.php
+	* includes/builder/plugin-compat/sitepress-multilingual-cms.php
+	* includes/builder/scripts/builder.js
+	* includes/builder/styles/frontend-builder-style.less
+	* js/custom.js
+
+version 3.23.3 ( updated 05-24-2019 )
+- Fixed issue where you couldn't hex color on background gradient color start and end.
+- Fixed PHP warning on Library due to incorrect translation on closed anchor tag.
+- Fixed WooCommerce PhotoSwipe gallery z-index position.
+	* css/main-styles.css
+	* includes/builder/frontend-builder/bundle.js
+	* includes/builder/languages/ja.po
+
+version 3.23.2 ( updated 05-23-2019 )
+- Fixed animations on modules that had transforms options on hover.
+	* includes/builder/class-et-builder-element.php
+	* includes/builder/frontend-builder/bundle.js
+
 version 3.23.1 ( updated 05-22-2019 )
 - Fix issue where animations would be triggered immediately on page load instead of when scrolled into view.
 	* includes/builder/scripts/frontend-builder-scripts.js

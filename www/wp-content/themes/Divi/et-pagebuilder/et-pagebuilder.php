@@ -34,7 +34,9 @@ function et_divi_maybe_adjust_row_advanced_options_config( $advanced_options ) {
 		et_()->array_set( $advanced_options, 'max_width.css.max_width', $selector );
 	}
 
-	if ( true !== et_get_option( 'boxed_layout', false ) ) {
+	et_()->array_set( $advanced_options, 'max_width.options.max_width.default', et_divi_get_content_width() . 'px' );
+
+	if ( ! et_divi_is_boxed_layout() ) {
 		return $advanced_options;
 	}
 
@@ -49,7 +51,6 @@ function et_divi_maybe_adjust_row_advanced_options_config( $advanced_options ) {
 	et_()->array_set( $advanced_options, 'max_width.css.width', $selector );
 	et_()->array_set( $advanced_options, 'max_width.css.max_width', $selector );
 	et_()->array_set( $advanced_options, 'max_width.options.width.default', '90%' );
-	et_()->array_set( $advanced_options, 'max_width.options.max_width.default', '1200px' );
 
 	return $advanced_options;
 }
@@ -60,7 +61,9 @@ if ( ! function_exists( 'et_divi_maybe_adjust_section_advanced_options_config' )
 function et_divi_maybe_adjust_section_advanced_options_config( $advanced_options ) {
 	$is_post_type = is_singular( 'post' ) || ( 'et_fb_update_builder_assets' === et_()->array_get( $_POST, 'action' ) && 'post' === et_()->array_get( $_POST, 'et_post_type' ) );
 
-	if ( et_get_option( 'boxed_layout', false ) ) {
+	et_()->array_set( $advanced_options, 'max_width.extra.inner.options.max_width.default', et_divi_get_content_width() . 'px' );
+
+	if ( et_divi_is_boxed_layout() ) {
 		$selector = implode( ', ', array(
 			'%%order_class%% > .et_pb_row',
 			'body.et_boxed_layout #page-container %%order_class%% > .et_pb_row',
@@ -70,7 +73,6 @@ function et_divi_maybe_adjust_section_advanced_options_config( $advanced_options
 		) );
 
 		et_()->array_set( $advanced_options, 'max_width.extra.inner.options.width.default', '90%' );
-		et_()->array_set( $advanced_options, 'max_width.extra.inner.options.max_width.default', '1200px' );
 		et_()->array_set( $advanced_options, 'max_width.extra.inner.css.main', $selector );
 	} else if ( $is_post_type ) {
 		$selector = implode( ', ', array(

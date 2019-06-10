@@ -4,7 +4,7 @@ require_once 'module/helpers/Overflow.php';
 
 if ( ! defined( 'ET_BUILDER_PRODUCT_VERSION' ) ) {
 	// Note, this will be updated automatically during grunt release task.
-	define( 'ET_BUILDER_PRODUCT_VERSION', '3.23.1' );
+	define( 'ET_BUILDER_PRODUCT_VERSION', '3.24' );
 }
 
 if ( ! defined( 'ET_BUILDER_VERSION' ) ) {
@@ -22,6 +22,10 @@ if ( ! defined( 'ET_BUILDER_DIR_RESOLVED_PATH' ) ) {
 // When set to true, the builder will use the new loading method
 if ( ! defined( 'ET_BUILDER_CACHE_ASSETS' ) ) {
 	define( 'ET_BUILDER_CACHE_ASSETS', ! isset( $_REQUEST['nocache'] ) );
+}
+
+if ( ! defined( 'ET_BUILDER_CACHE_MODULES' ) ) {
+	define( 'ET_BUILDER_CACHE_MODULES', apply_filters( 'et_builder_cache_modules', true ) );
 }
 
 if ( ! defined( 'ET_BUILDER_JSON_ENCODE_OPTIONS' ) ) {
@@ -1036,6 +1040,7 @@ function et_fb_current_page_params() {
 		'paged'                    => is_front_page() ? $et_paged : $paged,
 		'post_modified'            => isset( $post->ID ) ? esc_attr( $post->post_modified ) : '',
 		'lang'                     => get_locale(),
+		'langCode'                 => get_locale(),
 	);
 
 	return apply_filters( 'et_fb_current_page_params', $current_page );
@@ -1957,6 +1962,8 @@ endif;
 
 if ( ! function_exists( 'et_builder_set_element_font' ) ) :
 function et_builder_set_element_font( $font, $use_important = false, $default = false ) {
+	static $cache = array();
+
 	$style = '';
 
 	if ( '' === $font ) {
@@ -1995,9 +2002,19 @@ function et_builder_set_element_font( $font, $use_important = false, $default = 
 		$font_line_style_default      = isset( $font_values_default[8] ) ? $font_values_default[8] : '';
 
 		if ( '' !== $font_name && $font_name_default !== $font_name ) {
-			et_builder_enqueue_font( $font_name );
+			if ( empty( $cache[ $font_name ] ) ) {
+				et_builder_enqueue_font( $font_name );
+				$font_family         = et_builder_get_font_family( $font_name );
+				$cache[ $font_name ] = $font_family;
+			} else {
+				$font_family = $cache[ $font_name ];
+			}
 
-			$style .= et_builder_get_font_family( $font_name, $use_important ) . ' ';
+			if ( $use_important ) {
+				$font_family = rtrim( $font_family, ';' ) . ' !important;';
+			}
+
+			$style .= "$font_family ";
 		}
 
 		$style .= et_builder_set_element_font_style( 'font-weight', ( '' !== $font_weight_default ), ( '' !== $font_weight ), 'normal', $font_weight, $use_important );
@@ -8661,14 +8678,21 @@ function et_fb_update_builder_assets() {
 
 	$post_type = ! empty( $_POST['et_post_type'] ) ? sanitize_text_field( $_POST['et_post_type'] ) : 'post';
 
-	$data = array(
-		// Update helpers cached js file
-		'helpers' => et_fb_get_dynamic_asset( 'helpers', $post_type, true ),
-		// Update definitions cached js file
-		'definitions' => et_fb_get_dynamic_asset( 'definitions', $post_type, true ),
-	);
+	// Update helpers cached js file
+	$helpers = et_fb_get_dynamic_asset( 'helpers', $post_type, true );
+	// Update definitions cached js file
+	$definitions = et_fb_get_dynamic_asset( 'definitions', $post_type, true );
 
-	die( json_encode( $data ) );
+	// When either definitions or helpers needs an update, also clear modules cache.
+	if ( $definitions['updated'] || $helpers['updated'] ) {
+		$modules_cache = ET_Builder_Element::get_cache_filename( $post_type );
+
+		if ( file_exists( $modules_cache ) ) {
+			@unlink( $modules_cache );
+		}
+	}
+
+	die( json_encode( array( 'helpers' => $helpers, 'definitions' => $definitions ) ) );
 }
 add_action( 'wp_ajax_et_fb_update_builder_assets', 'et_fb_update_builder_assets' );
 

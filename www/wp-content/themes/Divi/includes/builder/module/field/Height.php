@@ -119,6 +119,7 @@ class ET_Builder_Module_Field_Height extends ET_Builder_Module_Field_Base {
 			'default_on_child' => true,
 			'mobile_options'   => true,
 			'validate_unit'    => true,
+			'unitless'         => false,
 			'default_unit'     => 'px',
 			'allow_empty'      => true,
 			'tab_slug'         => 'advanced',

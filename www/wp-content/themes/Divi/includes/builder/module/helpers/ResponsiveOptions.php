@@ -929,7 +929,262 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 			);
 		}
 
+		// Set default on tablet and phone if needed.
+		if ( ! empty( $field['default_on_mobile'] ) ) {
+			$default        = ! empty( $field['default'] ) ? $field['default'] : '';
+			$default_mobile = ! empty( $field['default_on_mobile'] ) ? $field['default_on_mobile'] : $default;
+			$default_tablet = ! empty( $field['default_on_tablet'] ) ? $field['default_on_tablet'] : $default_mobile;
+			$default_phone  = ! empty( $field['default_on_phone'] ) ? $field['default_on_phone'] : $default_mobile;
+			
+			$responsive_options["{$field_name}_tablet"]['default'] = $default_tablet;
+			$responsive_options["{$field_name}_phone"]['default']  = $default_phone;
+		}
+
+		// Set default on hover if needed.
+		if ( ! empty( $field['default_on_hover'] ) ) {
+			$default        = ! empty( $field['default'] ) ? $field['default'] : '';
+			$default_hover  = ! empty( $field['default_on_hover'] ) ? $field['default_on_hover'] : $default_mobile;
+			
+			$responsive_options["{$field_name}__hover"]['default'] = $default_hover;
+		}
+
 		return $responsive_options;
+	}
+
+	/**
+	 * Get main background value based on enabled status of current field. It's used to selectively
+	 * get the correct color, gradient status, image, and video. It's introduced along with new
+	 * enable fields to decide should we remove or inherit the value from larger device.
+	 * 
+	 * @since ??
+	 *
+	 * @param array  $attrs           All module attributes.
+	 * @param string $base_setting    Setting need to be checked.
+	 * @param string $preview_mode    Current preview mode.
+	 * @param string $background_base Background base name (background, button_bg, etc.)
+	 * @param array  $fields          All module fields definition.
+	 * @param string $value           Active value.
+	 * @param string $default_value   Active default value.
+	 *
+	 * @return string New value.
+	 */
+	public function get_inheritance_background_value( $attrs, $base_setting, $preview_mode, $background_base = 'background', $fields = array(), $value = '', $default_value = '') {
+		// Default new value is same with the generated or active one.
+		$new_value = $value;
+
+		$enable_fields = array(
+			"{$background_base}_color"              => "{$background_base}_enable_color",
+			"use_background_color_gradient"         => "use_background_color_gradient",
+			"{$background_base}_use_color_gradient" => "{$background_base}_enable_use_color_gradient",
+			"{$background_base}_image"              => "{$background_base}_enable_image",
+			"video_{$background_base}_values"       => "video_{$background_base}_values",
+		);
+
+		// Empty string is slug for desktop.
+		$map_slugs = array(
+			'desktop' => array( '' ),
+			'hover'   => array( '__hover', '' ),
+			'tablet'  => array( '_tablet', '' ),
+			'phone'   => array( '_phone', '_tablet', '' ),
+		);
+
+		// Start checking if current field is enabled or disabled.
+		$base_enable_field_name = et_()->array_get( $enable_fields, $base_setting, '' );
+
+		// Bail early if setting name is different.
+		if ( '' === $base_enable_field_name || ! isset( $map_slugs[ $preview_mode ] ) ) {
+			return $new_value;
+		}
+
+		$new_value = '';
+
+		$origin_mp4_enabled  = '';
+		$origin_mp4_data     = array();
+		$origin_webm_enabled = '';
+		$origin_webm_data    = array();
+		
+		foreach( $map_slugs[ $preview_mode ] as $slug ) {
+
+			// BG Color.
+			if ( in_array( $base_setting, array( "{$background_base}_color", "{$background_base}_image" ) ) ) {
+
+				$base_type      = str_replace( "{$background_base}_", '', $base_setting );
+				$enable_default = et_()->array_get( $fields, "{$background_base}_enable_{$base_type}{$slug}.default", '' );
+				$enable_value   = et_()->array_get( $attrs, "{$background_base}_enable_{$base_type}{$slug}", $enable_default );
+				$bg_value       = et_()->array_get( $attrs, "{$background_base}_{$base_type}{$slug}", '' );
+				$is_bg_enabled  = 'off' !== $enable_value;
+
+				if ( '' !== $bg_value && $is_bg_enabled ) {
+					$new_value = $bg_value;
+					break;
+				} else if ( ! $is_bg_enabled ) {
+					$new_value = '';
+					break;
+				}
+
+			// BG Gradient.
+			} else if ( in_array( $base_setting, array( 'use_background_color_gradient', "{$background_base}_use_color_gradient" ) ) ) {
+
+				$new_value = 'off';
+
+				$field_map = array(
+					'use_background_color_gradient' => array(
+						'value' => "use_background_color_gradient{$slug}",
+						'start' => "{$background_base}_color_gradient_start{$slug}",
+						'end'   => "{$background_base}_color_gradient_end{$slug}",
+					),
+					"{$background_base}_use_color_gradient" => array(
+						'value' => "{$background_base}_use_color_gradient{$slug}",
+						'start' => "{$background_base}_color_gradient_start{$slug}",
+						'end'   => "{$background_base}_color_gradient_end{$slug}",
+					),
+				);
+
+				$field_value = et_()->array_get( $field_map, "{$base_setting}.value", '' );
+				$field_start = et_()->array_get( $field_map, "{$base_setting}.start", '' );
+				$field_end   = et_()->array_get( $field_map, "{$base_setting}.end", '' );
+
+				$use_gradient_default = et_()->array_get( $fields, $field_value, '' );
+				$use_gradient_value   = et_()->array_get( $attrs, $field_value, $use_gradient_default );
+				$gradient_start_value = et_()->array_get( $attrs, $field_start, '' );
+				$gradient_end_value   = et_()->array_get( $attrs, $field_end, '' );
+				$is_gradient_enabled  = 'off' !== $use_gradient_value;
+
+				if ( ( '' !==  $gradient_start_value || '' !== $gradient_end_value ) && $is_gradient_enabled ) {
+					$new_value = 'on';
+					break;
+				} else if ( ! $is_gradient_enabled ) {
+					$new_value = 'off';
+					break;
+				}
+			
+			// BG Video.
+			} else if ( "video_{$background_base}_values" === $base_setting ) {
+				$base_slug    = preg_replace('/[_]+/', '', $slug);
+				$current_mode = '' !== $base_slug ? $base_slug : 'desktop';
+
+				// Video markup.
+				$video_background = et_()->array_get( $attrs, "{$base_setting}.{$current_mode}", '' );
+
+				// MP4.
+				$enable_mp4_default = et_()->array_get( $fields, "{$background_base}_enable_video_mp4{$slug}", '' );
+				$enable_mp4_value   = $this->get_any_value( $attrs, "{$background_base}_enable_video_mp4{$slug}", $enable_mp4_default, true );
+				$is_mp4_enabled     = 'off' !== $enable_mp4_value;
+
+				$video_mp4_value = et_pb_responsive_options()->get_any_value( $attrs, "{$background_base}_video_mp4" );
+				if ( 'hover' === $current_mode ) {
+					$video_mp4_hover_value = et_()->array_get( $attrs, "{$background_base}_video_mp4__hover", '' );
+					$video_mp4_value       = '' !== $video_mp4_hover_value ? $video_mp4_hover_value : $video_mp4_value;
+				} else {
+					$video_mp4_value = et_pb_responsive_options()->get_any_value( $attrs, "{$background_base}_video_mp4{$slug}", '', true );
+				}
+
+				// Check MP4 enabled and data status.
+				if ( '' === $origin_mp4_enabled ) {
+					if ( '' !== $video_mp4_value && $is_mp4_enabled ) {
+						$origin_mp4_enabled = 'enabled';
+						$origin_mp4_data    = array(
+							'mode'             => $current_mode,
+							'video_value'      => $video_mp4_value,
+							'video_background' => $video_background,
+							'display'          => ! empty( $video_background ) ? 'self' : 'inherit',
+						);
+					} else if ( false === $is_mp4_enabled ) {
+						$origin_mp4_enabled = 'disabled';
+						$origin_mp4_data    = array();
+					}
+				} else if ( 'enabled' === $origin_mp4_enabled ) {
+					if ( isset( $origin_mp4_data['video_background'] ) && empty( $origin_mp4_data['video_background'] ) ) {
+						$origin_mp4_data['video_background'] = $video_background;
+					}
+				}
+
+				// Webm.
+				$enable_webm_default = et_()->array_get( $fields, "{$background_base}_enable_video_webm{$slug}", '' );
+				$enable_webm_value   = $this->get_any_value( $attrs, "{$background_base}_enable_video_webm{$slug}", $enable_webm_default, true );
+				$is_webm_enabled     = 'off' !== $enable_webm_value;
+
+				$video_webm_value = et_pb_responsive_options()->get_any_value( $attrs, "{$background_base}_video_webm" );
+				if ( 'hover' === $current_mode ) {
+					$video_webm_hover_value = et_()->array_get( $attrs, "{$background_base}_video_webm__hover", '' );
+					$video_webm_value       = '' !== $video_webm_hover_value ? $video_webm_hover_value : $enable_webm_value;
+				} else {
+					$video_webm_value = et_pb_responsive_options()->get_any_value( $attrs, "{$background_base}_video_webm{$slug}", '', true );
+				}
+
+				// Check Webm enabled and data status.
+				if ( '' === $origin_webm_enabled ) {
+					if ( '' !== $video_webm_value && $is_webm_enabled ) {
+						$origin_webm_enabled = 'enabled';
+						$origin_webm_data    = array(
+							'mode'             => $current_mode,
+							'video_value'      => $video_webm_value,
+							'video_background' => $video_background,
+							'display'          => ! empty( $video_background ) ? 'self' : 'inherit',
+						);
+					} else if ( ! $is_webm_enabled ) {
+						$origin_webm_enabled = 'disabled';
+						$origin_webm_data    = array();
+					}
+				} else if ( 'enabled' === $origin_webm_enabled ) {
+					if ( isset( $origin_webm_data['video_background'] ) && empty( $origin_webm_data['video_background'] ) ) {
+						$origin_webm_data['video_background'] = $video_background;
+					}
+				}
+
+				// Continue if current mode is not desktop.
+				if ( '' !== $slug ) {
+					continue;
+				}
+
+				// Decide to display the video or not.
+				if ( 'disabled' === $origin_mp4_enabled && 'disabled' === $origin_webm_enabled ) {
+					$new_value = array(
+						'display' => 'hide',
+						'video'   => '',
+					);
+				} else {
+					// MP4 display and video status.
+					$mp4_enabled_display  = et_()->array_get( $origin_mp4_data, 'display', '' );
+					$mp4_enabled_mode     = et_()->array_get( $origin_mp4_data, 'mode', '' );
+					$mp4_video_background = '';
+					if ( $preview_mode === $mp4_enabled_mode ) {
+						$mp4_video_background = et_()->array_get( $origin_mp4_data, 'video_background', '' );
+					}
+
+					// Webm display and video status.
+					$webm_enabled_display  = et_()->array_get( $origin_webm_data, 'display', '' );
+					$webm_enabled_mode     = et_()->array_get( $origin_webm_data, 'mode', '' );
+					$webm_video_background = '';
+					if ( $preview_mode === $webm_enabled_mode ) {
+						$webm_video_background = et_()->array_get( $origin_webm_data, 'video_background', '' );
+					}
+
+					// Set display current video or not.
+					$new_video_display = 'hide';
+					if ( '' !== $mp4_enabled_display ) {
+						$new_video_display = $mp4_enabled_display;
+					} else if ( '' !== $webm_enabled_display ) {
+						$new_video_display = $webm_enabled_display;
+					}
+
+					// Set video markup.
+					$new_video_background = '';
+					if ( '' !== $mp4_video_background ) {
+						$new_video_background = $mp4_video_background;
+					} else if ( '' !== $webm_video_background ) {
+						$new_video_background = $webm_video_background;
+					}
+
+					$new_value = array(
+						'display' => $new_video_display,
+						'video'   => $new_video_background,
+					);
+				}
+			}
+		}
+
+		return $new_value;
 	}
 }
 

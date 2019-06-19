@@ -7,7 +7,7 @@
 /*!
 Theme Name: Divi
 Theme URI: http://www.elegantthemes.com/gallery/divi/
-Version: 3.24
+Version: 3.24.1
 Description: Smart. Flexible. Beautiful. Divi is the most powerful theme in our collection.
 Author: Elegant Themes
 Author URI: http://www.elegantthemes.com
@@ -19506,6 +19506,7 @@ span.comment_date {
 
 .et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_hover,
 .et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_tablet,
+.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_tablet_only,
 .et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_phone {
 	display: none;
 }
@@ -19536,13 +19537,12 @@ span.comment_date {
 	overflow: visible;
 }
 
-.et-db #et-boc .et_pb_section_video_on_hover:hover .et_pb_section_video_bg,
-.et-db #et-boc .et_pb_section_video_on_hover:hover .et_pb_section_video_bg_tablet,
-.et-db #et-boc .et_pb_section_video_on_hover:hover .et_pb_section_video_bg_phone {
+.et-db #et-boc .et_pb_section_video_on_hover:hover > .et_pb_section_video_bg {
 	display: none;
 }
 
-.et-db #et-boc .et_pb_section_video_on_hover:hover .et_pb_section_video_bg_hover {
+.et-db #et-boc .et_pb_section_video_on_hover:hover > .et_pb_section_video_bg_hover_inherit,
+.et-db #et-boc .et_pb_section_video_on_hover:hover > .et_pb_section_video_bg_hover {
 	display: block;
 }
 
@@ -21997,6 +21997,7 @@ span.comment_date {
 		/* Slider Module */
 		/* Comments Module */
 		/* Testimonials Module */
+		/* Background Video - Desktop only */
 	}
 
 	.et-db #et-boc .et_pb_section {
@@ -22328,6 +22329,10 @@ span.comment_date {
 		height: 0;
 		padding-bottom: 100%;
 	}
+
+	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_desktop_only {
+		display: block;
+	}
 }
 
 @media all and (min-width: 981px) and (max-width: 1100px) {
@@ -22499,6 +22504,7 @@ span.comment_date {
 		/* Blog Module */
 		/* Post Slider Module */
 		/* Video Background */
+		/* Background Video - Desktop only, hide on mobile */
 		/* Text Color - Layout Light */
 		/* Text Color - Layout Dark - Tablet */
 		/* Text Color - Text Color Dark - Tablet */
@@ -22949,9 +22955,8 @@ span.comment_date {
 		list-style: none !important;
 	}
 
-	.et-db #et-boc .et_pb_section .et_pb_row,
-	.et-db #et-boc .et_pb_section.et_section_specialty .et_pb_row {
-		max-width: 1080px !important;
+	.et-db #et-boc .et_pb_row {
+		max-width: 1080px;
 	}
 
 	.et-db #et-boc .et_pb_column_1_3 .et_audio_container .mejs-container .mejs-controls .mejs-time span,
@@ -22971,6 +22976,10 @@ span.comment_date {
 
 	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_tablet {
 		display: block;
+	}
+
+	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_desktop_only {
+		display: none;
 	}
 
 	.et-db #et-boc .et_pb_bg_layout_light_tablet:not(:hover) {
@@ -23462,8 +23471,16 @@ span.comment_date {
 }
 
 @media all and (min-width: 768px) {
+	.et-db #et-boc {
+		/* Background Video - Desktop and Tablet only */
+	}
+
 	.et-db #et-boc .et_pb_in_customizer.et_pb_login .et_pb_newsletter_description {
 		width: 50%;
+	}
+
+	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_desktop_tablet {
+		display: block;
 	}
 }
 
@@ -23480,6 +23497,7 @@ span.comment_date {
 		/* Audio */
 		/* Salvattore Styles */
 		/* Email Opt-in Module */
+		/* Background Video - Tablet only */
 	}
 
 	.et-db #et-boc .et_pb_column_3_8 .et_pb_video_play,
@@ -23653,6 +23671,10 @@ span.comment_date {
 	.et-db #et-boc .et_pb_row_3-4_1-4 .et_pb_column.et_pb_column_1_4 .et_pb_newsletter_layout_right_left {
 		flex-direction: row;
 	}
+
+	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_tablet_only {
+		display: block;
+	}
 }
 
 @media all and (min-width: 768px) and (max-width: 800px) {
@@ -23698,6 +23720,7 @@ span.comment_date {
 		/* Fullwidth Header Module */
 		/* Post Slider */
 		/* Video Background */
+		/* Background Video - Desktop and Tablet only, hide on phone */
 		/* Text Color - Layout Light - Phone */
 		/* Text Color - Layout Dark - Phone */
 		/* Text Color - Text Color Dark - Phone */
@@ -24130,6 +24153,10 @@ span.comment_date {
 
 	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_phone {
 		display: block;
+	}
+
+	.et-db #et-boc .et_pb_section_video_bg.et_pb_section_video_bg_desktop_tablet {
+		display: none;
 	}
 
 	.et-db #et-boc .et_pb_bg_layout_light_phone:not(:hover) {

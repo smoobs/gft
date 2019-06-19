@@ -4,7 +4,7 @@ require_once 'module/helpers/Overflow.php';
 
 if ( ! defined( 'ET_BUILDER_PRODUCT_VERSION' ) ) {
 	// Note, this will be updated automatically during grunt release task.
-	define( 'ET_BUILDER_PRODUCT_VERSION', '3.24' );
+	define( 'ET_BUILDER_PRODUCT_VERSION', '3.24.1' );
 }
 
 if ( ! defined( 'ET_BUILDER_VERSION' ) ) {

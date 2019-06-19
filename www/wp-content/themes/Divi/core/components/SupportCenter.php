@@ -44,11 +44,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class ET_Support_Center Provides admin tools to assist with troubleshooting and fixing issues in our products.
+ * Class ET_Core_Support_Center Provides admin tools to assist with troubleshooting and fixing issues in our products.
  *
+ * @since ?? Renamed from `ET_Support_Center` to `ET_Core_Support_Center`.
  * @since 3.20
  */
-class ET_Support_Center {
+class ET_Core_Support_Center {
 	/**
 	 * Catch whether the ET_DEBUG flag is set.
 	 *
@@ -1745,7 +1746,7 @@ class ET_Support_Center {
 
 		$salt = '';
 
-		/** @see ET_Support_Center::maybe_set_site_id() */
+		/** @see ET_Core_Support_Center::maybe_set_site_id() */
 		$site_id = get_option( 'et_support_site_id' );
 
 		if ( empty( $site_id ) ) {

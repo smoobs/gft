@@ -1947,6 +1947,7 @@ function et_fb_get_static_backend_helpers($post_type) {
 				'enable' => esc_html__( 'Use Dynamic Content', 'et_builder' ),
 				'disable' => esc_html__( 'Remove Dynamic Content', 'et_builder' ),
 				'settings' => esc_html__( 'Edit Dynamic Content', 'et_builder' ),
+				'reset'    => esc_html__( 'Reset Dynamic Content', 'et_builder' ),
 			),
 		),
 	);

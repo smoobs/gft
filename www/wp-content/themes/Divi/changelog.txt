@@ -1,3 +1,31 @@
+version 3.24.1 ( updated 06-12-2019 )
+- Fixed row mobile max width overwriting max width provided by user.
+- Fixed Draggble Spacing controls size when margin/padding value is a non numeric value.
+- Fixed module styles affecting module popover styles.
+- Prevented draggable padding controls rendering when editing in inline editor.
+- Removed unnecessary Google Maps reinit process and use Google Maps set options method to update grayscale filters on mobile.
+- Fixed Quick Access not rendering options under heading sub toggle.
+- Introduced background preview delete and reset functionalities to enable or disable background entirely on specific preview mode.
+- Added smooth scroll support for link modules.
+- Improved loading method for Support Center.
+- Fixed scrolling to comment reply form.
+	* core/components/PageResource.php
+	* core/components/SupportCenter.php
+	* core/components/SupportCenterMUAutoloader.php
+	* core/components/init.php
+	* core/functions.php
+	* epanel/custom_functions.php
+	* functions.php
+	* includes/builder/class-et-builder-element.php
+	* includes/builder/feature/ErrorReport.php
+	* includes/builder/frontend-builder/bundle.js
+	* includes/builder/frontend-builder/helpers.php
+	* includes/builder/main-structure-elements.php
+	* includes/builder/module/helpers/ResponsiveOptions.php
+	* includes/builder/scripts/frontend-builder-scripts.js
+	* includes/builder/styles/frontend-builder-style.less
+	* js/custom.js
+
 version 3.24 ( updated 06-06-2019 )
 - Prevented possibility to edit draggable sizing of modules inside locked section.
 - Fixed Map and FullWidth Map height.

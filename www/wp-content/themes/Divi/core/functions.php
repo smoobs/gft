@@ -880,7 +880,7 @@ if ( ! function_exists( 'et_core_is_safe_mode_active' ) ):
  *
  * @since ?.?
  *
- * @see ET_Support_Center::toggle_safe_mode
+ * @see ET_Core_Support_Center::toggle_safe_mode
  *
  * @return bool
  */

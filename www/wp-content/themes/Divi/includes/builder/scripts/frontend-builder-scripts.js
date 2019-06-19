@@ -4003,15 +4003,50 @@ var isBuilder = 'object' === typeof window.ET_Builder;
 			}
 
 			/**
-			 * Reinitialize all map modules.
+			 * Update map filters.
 			 *
 			 * @since 3.23
+			 * @since ?? Prevent reinit maps to update map filters.
 			 *
 			 * @param {jQuery} $et_pb_map
 			 */
-			function et_pb_reinit_maps( $et_pb_map ) {
+			function et_pb_update_maps_filters($et_pb_map) {
+				// Ensure to update map filters only on preview mode changes.
+				if (et_pb_get_current_window_mode() === et_animation_breakpoint)  {
+					return false;
+				}
+
 				$et_pb_map.each(function(){
-					et_pb_map_init( $(this) );
+					var $this_map = $(this);
+					var this_map  = $this_map.data('map');
+
+					// Ensure the map exist.
+					if ('undefined' === typeof this_map) {
+						return;
+					}
+
+					var current_mode        = et_pb_get_current_window_mode();
+					et_animation_breakpoint = current_mode;
+					var suffix              = current_mode !== 'desktop' ? '-' + current_mode : '';
+					var prev_suffix         = current_mode === 'phone' ? '-tablet' : '';
+					var grayscale_value     = $this_map.attr('data-grayscale' + suffix) || 0;
+					if (!grayscale_value) {
+						grayscale_value = $this_map.attr('data-grayscale' + prev_suffix) || $this_map.attr('data-grayscale') || 0;
+					}
+
+					// Convert it to negative value as string.
+					if (grayscale_value !== 0) {
+						grayscale_value = '-' + grayscale_value.toString();
+					}
+
+					// Apply grayscale value on the saturation.
+					this_map.setOptions({
+						styles: [{
+							stylers: [
+								{ saturation: parseInt(grayscale_value) }
+							]
+						}]
+					});
 				});
 			}
 
@@ -4687,7 +4722,14 @@ var isBuilder = 'object' === typeof window.ET_Builder;
 									return;
 								}
 
-								window.location = link_option_entry.url;
+								var url = link_option_entry.url;
+
+								if (url && '#' === url[0] && $(url).length) {
+									et_pb_smooth_scroll($(url), undefined, 800);
+									history.pushState(null, "", url);
+								} else {
+									window.location = url;
+								}
 							}
 						});
 
@@ -5290,9 +5332,9 @@ var isBuilder = 'object' === typeof window.ET_Builder;
 				// Reinit animation.
 				isBuilder && et_pb_reinit_animation();
 
-				// Reinit maps.
-				if ( $et_pb_map.length || is_frontend_builder ) {
-					et_pb_reinit_maps( $et_pb_map );
+				// Reupdate maps filters.
+				if ($et_pb_map.length || is_frontend_builder) {
+					et_pb_update_maps_filters($et_pb_map);
 				}
 
 				if (grid_containers.length || is_frontend_builder) {

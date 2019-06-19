@@ -75,6 +75,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 				'use_background_image'          => true,
 				'use_background_color_gradient' => true,
 				'use_background_video'          => true,
+				'use_background_color_reset'    => 'fields_only',
 				'css'                           => array(
 					'important' => 'all',
 					'main'      => 'div.et_pb_section%%order_class%%',
@@ -393,9 +394,158 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 		return $fields;
 	}
 
+	/**
+	 * Check if current background is transparent background or not.
+	 * 
+	 * @since ??
+	 *
+	 * @return boolean Transparent color status.
+	 */
+	public function is_transparent_background( $background_color = '' ) {
+		$page_setting_section_background = et_builder_settings_get( 'et_pb_section_background_color', get_the_ID() );
+		return 'rgba(255,255,255,0)' === $background_color || ( et_is_builder_plugin_active() && '' === $background_color && '' === $page_setting_section_background );
+	}
+
+	public function is_initial_background_color( $mode = 'desktop' ) {
+		// Ensure $mode parameter not empty.
+		$mode          = '' === $mode ? 'desktop' : $mode;
+		$device_suffix = 'desktop' !== $mode && 'hover' !== $mode ? "_{$mode}" : '';
+
+		$parallax           = 'hover' === $mode ? et_pb_hover_options()->get_raw_value( 'parallax', $this->props ) : et_pb_responsive_options()->get_any_value( $this->props, "parallax{$device_suffix}", '', true );
+		$background_blend   = 'hover' === $mode ? et_pb_hover_options()->get_raw_value( 'background_blend', $this->props ) : et_pb_responsive_options()->get_any_value( $this->props, "background_blend{$device_suffix}", '', true );
+		$use_gradient_value = et_pb_responsive_options()->get_inheritance_background_value( $this->props, 'use_background_color_gradient', $mode );
+		$background_image   = et_pb_responsive_options()->get_inheritance_background_value( $this->props, 'background_image', $mode );
+
+		$is_gradient_active = 'on' === $use_gradient_value;
+		$is_image_active    = '' !== $background_image && 'on' !== $parallax;
+		$is_image_blend     = '' !== $background_blend;
+
+		return $is_gradient_active && $is_image_active && $is_image_blend;
+	}
+
+	/**
+	 * Get parallax image background.
+	 * 
+	 * @since ??
+	 *
+	 * @return HTML Parallax backgrounds markup.
+	 */
+	public function get_parallax_image_background( $base_name = 'background' ) {
+		$attr_prefix = "{$base_name}_";
+
+		$parallax_processed  = array();
+		$parallax_background = '';
+		$hover_suffix        = et_pb_hover_options()->get_suffix();
+		$preview_modes       = array( $hover_suffix, '_phone', '_tablet', '' );
+
+		// Featured Image as Background.
+		$featured_image     = '';
+		$featured_placement = '';
+		$featured_image_src = '';
+		if ( $this->featured_image_background ) {
+			$featured_image         = self::$_->array_get( $this->props, 'featured_image', '' );
+			$featured_placement     = self::$_->array_get( $this->props, 'featured_placement', '' );
+			$featured_image_src_obj = wp_get_attachment_image_src( get_post_thumbnail_id( get_the_ID() ), 'full' );
+			$featured_image_src     = isset( $featured_image_src_obj[0] ) ? $featured_image_src_obj[0] : '';
+		}
+
+		foreach( $preview_modes as $suffix ) {
+			$is_hover = $hover_suffix === $suffix;
+
+			// A. Bail early if hover or responsive settings disabled on mobile/hover.
+			if ( '' !== $suffix ) {
+				// Ensure responsive settings is enabled on mobile.
+				if ( ! $is_hover && ! et_pb_responsive_options()->is_responsive_enabled( $this->props, $base_name ) ) {
+					continue;
+				}
+
+				// Ensure hover settings is enabled.
+				if ( $is_hover && ! et_pb_hover_options()->is_enabled( $base_name, $this->props ) ) {
+					continue;
+				}
+			}
+
+			// Prepare preview mode.
+			$mode = '' !== $suffix ? str_replace( '_', '', $suffix ) : 'desktop';
+			$mode = $is_hover ? 'hover' : $mode;
+
+			// B.1. Get inherited background value.
+			$background_image = et_pb_responsive_options()->get_inheritance_background_value( $this->props, "{$attr_prefix}image", $mode, $base_name, $this->fields_unprocessed );
+			$parallax         = $is_hover ? et_pb_hover_options()->get_raw_value( "parallax", $this->props ) : et_pb_responsive_options()->get_any_value( $this->props, "parallax{$suffix}", '', true );
+			$parallax_method  = $is_hover ? et_pb_hover_options()->get_raw_value( "parallax_method", $this->props ) : et_pb_responsive_options()->get_any_value( $this->props, "parallax_method{$suffix}", '', true );
+
+			// B.2. Set default value for parallax and parallax method on hover when they are empty.
+			if ( $is_hover ) {
+				$parallax        = empty( $parallax ) ? et_pb_responsive_options()->get_any_value( $this->props, "parallax", '', true ) : $parallax;
+				$parallax_method = empty( $parallax_method ) ? et_pb_responsive_options()->get_any_value( $this->props, "parallax_method", '', true ) : $parallax_method;
+			}
+
+			// B.3. Override background image with featured image if needed.
+			if ( 'on' === $featured_image && 'background' === $featured_placement && '' !== $featured_image_src ) {
+				$background_image = $featured_image_src;
+			}
+
+			// C.1. Parallax BG Class to inform if other modes exist.
+			$parallax_classname = array();
+			if ( ( '_tablet' === $suffix || '' === $suffix ) && in_array( '_phone', $parallax_processed ) ) {
+				$parallax_classname[] = 'et_parallax_bg_phone_exist';
+			}
+			
+			if ( '' === $suffix && in_array( '_tablet', $parallax_processed ) ) {
+				$parallax_classname[] = 'et_parallax_bg_tablet_exist';
+			}
+
+			if ( in_array( $hover_suffix, $parallax_processed ) ) {
+				$parallax_classname[] = 'et_parallax_bg_hover_exist';
+			}
+
+			// C.2. Set up parallax class and wrapper.
+			if ( '' !== $background_image && 'on' === $parallax ) {
+				$parallax_classname[] = 'et_parallax_bg';
+
+				if ( 'off' === $parallax_method ) {
+					$parallax_classname[] = 'et_pb_parallax_css';
+
+					$inner_shadow = $this->props['inner_shadow'];
+					if ( 'off' !== $inner_shadow ) {
+						$parallax_classname[] = 'et_pb_inner_shadow';
+					}
+				}
+
+				// Parallax BG Class with suffix.
+				if ( '' !== $suffix ) {
+					$parallax_classname[] = "et_parallax_bg{$suffix}";
+				}
+
+				$parallax_background .= sprintf(
+					'%3$s<div
+						class="%1$s"
+						style="background-image: url(%2$s);"
+					></div>%4$s',
+					esc_attr( implode( ' ', $parallax_classname ) ),
+					esc_url( $background_image ),
+					!et_core_is_fb_enabled() ? '' : '<div class="et_parallax_bg_wrap">',
+					!et_core_is_fb_enabled() ? '' : '</div>'
+				);
+			}
+
+			// C.3. Hover parallax class.
+			if ( '' !== $background_image && $is_hover ) {
+				$this->add_classname( 'et_pb_section_parallax_hover' );
+			}
+
+			array_push( $parallax_processed, $suffix );
+		}
+
+		// Added classname for module wrapper
+		if ( '' !== $parallax_background ) {
+			$this->add_classname( 'et_pb_section_parallax' );
+		}
+
+		return $parallax_background;
+	}
+
 	function render( $atts, $content = null, $function_name ) {
-		$background_image                             = $this->props['background_image'];
-		$background_color                             = $this->props['background_color'];
 		$background_video_mp4                         = $this->props['background_video_mp4'];
 		$background_video_webm                        = $this->props['background_video_webm'];
 		$inner_shadow                                 = $this->props['inner_shadow'];
@@ -525,10 +675,32 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 		$prev_background_color                        = $this->props['prev_background_color'];
 		$next_background_color                        = $this->props['next_background_color'];
 
+		$is_background_responsive = et_pb_responsive_options()->is_responsive_enabled( $this->props, 'background' );
+
+		// Check Background Image.
+		$background_image = $this->props['background_image'];
+		if ( '' === $background_image && $is_background_responsive ) {
+			$background_image_tablet = et_pb_responsive_options()->get_inheritance_background_value( $this->props, 'background_image', 'tablet' );
+			$background_image_phone  = et_pb_responsive_options()->get_inheritance_background_value( $this->props, 'background_image', 'phone' );
+			$background_image        = '' !== $background_image_tablet ? $background_image_tablet : $background_image_phone;
+		}
+
 		// Background Color.
-		$is_background_color_responsive = et_pb_responsive_options()->is_responsive_enabled( $this->props, 'background' );
-		$background_color_tablet        = $is_background_color_responsive ? et_pb_responsive_options()->get_any_value( $this->props, 'background_color_tablet' ) : '';
-		$background_color_phone         = $is_background_color_responsive ? et_pb_responsive_options()->get_any_value( $this->props, 'background_color_phone' ) : '';
+		$background_color        = $this->props['background_color'];
+		$background_color_tablet = '';
+		$background_color_phone  = '';
+
+		$processed_background_color        = $this->is_initial_background_color() ? 'inherit' : $background_color;
+		$processed_background_color_tablet = '';
+		$processed_background_color_phone  = '';
+
+		if ( $is_background_responsive ) {
+			$background_color_tablet = et_pb_responsive_options()->get_inheritance_background_value( $this->props, 'background_color', 'tablet' );
+			$background_color_phone  = et_pb_responsive_options()->get_inheritance_background_value( $this->props, 'background_color', 'phone' );
+
+			$processed_background_color_tablet = $this->is_initial_background_color( 'tablet' ) ? 'inherit' : $background_color_tablet;
+			$processed_background_color_phone  = $this->is_initial_background_color( 'phone' ) ? 'inherit' : $background_color_phone;
+		}
 
 		$hover = et_pb_hover_options();
 
@@ -781,23 +953,21 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 			}
 		}
 
-		$background_video = '';
-
-		if ( '' !== $background_video_mp4 || '' !== $background_video_webm ) {
-			$background_video = $this->video_background();
-		}
+		$background_video = $this->video_background();
+		$parallax_image   = $this->get_parallax_image_background();
 
 		// Background Color.
 		$background_color_values = array(
-			'desktop' => 'rgba(255,255,255,0)' !== $background_color ? esc_html( $background_color ) : '',
-			'tablet'  => 'rgba(255,255,255,0)' !== $background_color_tablet ? esc_html( $background_color_tablet ) : '',
-			'phone'   => 'rgba(255,255,255,0)' !== $background_color_phone ? esc_html( $background_color_phone ) : '',
+			'desktop' => 'rgba(255,255,255,0)' !== $processed_background_color ? esc_html( $processed_background_color ) : '',
+			'tablet'  => 'rgba(255,255,255,0)' !== $processed_background_color_tablet ? esc_html( $processed_background_color_tablet ) : '',
+			'phone'   => 'rgba(255,255,255,0)' !== $processed_background_color_phone ? esc_html( $processed_background_color_phone ) : '',
 		);
 		et_pb_responsive_options()->generate_responsive_css( $background_color_values, '%%order_class%%.et_pb_section', 'background-color', $function_name, ' !important;', 'color' );
 
 		// Background hover styles
 		$bg_color = $hover->get_value( 'background_color', $this->props );
-		if ( $hover->is_enabled( 'background', $this->props ) && !empty( $bg_color ) ) {
+		$bg_color = empty( $bg_color ) ? $background_color : $bg_color;
+		if ( $hover->is_enabled( 'background', $this->props ) && ! empty( $bg_color ) ) {
 			ET_Builder_Element::set_style( $function_name, array(
 				'selector'    => '%%order_class%%.et_pb_section:hover',
 				'declaration' => sprintf(
@@ -808,10 +978,12 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 		}
 
 		// Transparent is default for Builder Plugin, but not for theme
-		$page_setting_section_background = et_builder_settings_get( 'et_pb_section_background_color', get_the_ID() );
-		$is_transparent_background = 'rgba(255,255,255,0)' === $background_color || ( et_is_builder_plugin_active() && '' === $background_color && '' === $page_setting_section_background );
+		$is_transparent_background        = $this->is_transparent_background( $background_color );
+		$is_transparent_background_tablet = $this->is_transparent_background( $background_color_tablet );
+		$is_transparent_background_phone  = $this->is_transparent_background( $background_color_phone );
+		$is_background_color              = ( '' !== $background_color && ! $is_transparent_background ) || ( '' !== $background_color_tablet && ! $is_transparent_background_tablet ) || ( '' !== $background_color_phone && ! $is_transparent_background_phone );
 
-		if ( '' !== $background_video_mp4 || '' !== $background_video_webm || ( '' !== $background_color && ! $is_transparent_background ) || '' !== $background_image ) {
+		if ( ! empty( $background_video ) || $is_background_color || '' !== $background_image ) {
 			$this->add_classname( 'et_pb_with_background' );
 		}
 
@@ -837,7 +1009,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 			$this->add_classname( 'et_section_regular' );
 		}
 
-		if ( $is_transparent_background ) {
+		if ( $is_transparent_background || $is_transparent_background_tablet || $is_transparent_background_phone ) {
 			$this->add_classname( 'et_section_transparent' );
 		}
 
@@ -918,17 +1090,7 @@ class ET_Builder_Section extends ET_Builder_Structure_Element {
 				sprintf( '<div class="et_pb_row%1$s"%2$s>', $gutter_class, et_core_esc_previously( $gutter_hover_data ) )
 				: '' ), // 5
 			( 'on' === $specialty ? '</div> <!-- .et_pb_row -->' : '' ), // 6
-			( '' !== $background_image && 'on' === $parallax
-				? sprintf(
-					'%4$s<div class="et_parallax_bg%2$s%3$s" style="background-image: url(%1$s);"></div>%5$s',
-					esc_attr( $background_image ),
-					( 'off' === $parallax_method ? ' et_pb_parallax_css' : '' ),
-					( ( 'off' !== $inner_shadow && 'off' === $parallax_method ) ? ' et_pb_inner_shadow' : '' ),
-					!et_core_is_fb_enabled() ? '' : '<div class="et_parallax_bg_wrap">',
-					!et_core_is_fb_enabled() ? '' : '</div>'
-				)
-				: ''
-			), // 7
+			$parallax_image, // 7
 			$this->get_module_data_attributes(), // 8
 			et_core_esc_previously( $top ), // 9
 			et_core_esc_previously( $bottom ) // 10

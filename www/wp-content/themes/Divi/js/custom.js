@@ -1135,7 +1135,9 @@ var isBuilder = 'object' === typeof window.ET_Builder;
 						et_pb_toggle_fullscreen_menu();
 					}
 
-					et_pb_smooth_scroll( target, false, 800 );
+					setTimeout(function() {
+						et_pb_smooth_scroll( target, false, 800 );
+					}, 0);
 
 					if ( ! $( '#main-header' ).hasClass( 'et-fixed-header' ) && $( 'body' ).hasClass( 'et_fixed_nav' ) && $( window ).width() > 980 ) {
 						setTimeout(function(){

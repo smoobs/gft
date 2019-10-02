@@ -224,6 +224,28 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 	}
 
 	/**
+	 * Returns the field responsive name by adding the `_tablet` or `_phone` suffix if it exists.
+	 *
+	 * @since 3.27.4
+	 *
+	 * @param  string $name   Setting name.
+	 * @param  string $device Device name.
+	 * @return string         Field setting name.
+	 */
+	public function get_field_name( $name, $device = 'desktop' ) {
+		// Field name should not be empty.
+		if ( empty( $name ) ) {
+			return $name;
+		}
+
+		// Ensure device is not empty.
+		$device = '' === $device ? 'desktop' : $device;
+
+		// Get device name.
+		return 'desktop' !== $device ? "{$name}_{$device}" : $name;
+	}
+
+	/**
 	 * Returns the device name by removing the `name` prefix. If the result is one of tablet or phone,
 	 * return it. But, if it's empty, return desktop.
 	 *
@@ -350,18 +372,18 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 
 	/**
 	 * Get property's values for requested device.
-	 * 
+	 *
 	 * This function is added to summarize how we fetch desktop/hover/tablet/phone value. This
 	 * function still uses get_any_value to get current device values.
-	 * 
+	 *
 	 * @since 3.23
-	 * 
+	 *
 	 * @param array   $attrs         List of all attributes and values.
 	 * @param string  $name          Property name.
 	 * @param mixed   $default_value Default value.
 	 * @param string  $device        Device name.
 	 * @param boolean $force_return  Force to return any values found.
-	 * 
+	 *
 	 * @return array Pair of devices and the values.
 	 */
 	public function get_property_value( $attrs, $name, $default_value = '', $device = 'desktop', $force_return = false ) {
@@ -370,32 +392,32 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 
 		// Ensure $device is not empty.
 		$device = '' === $device ? 'desktop' : $device;
-	
+
 		// Ensure attrs (values list) and name (property name) are not empty.
 		if ( empty( $attrs ) || '' === $name ) {
 			return $default_value;
 		}
-	
+
 		$is_enabled = 'desktop' !== $device ? $this->is_responsive_enabled( $attrs, $name ) : true;
 		$suffix     = 'desktop' !== $device ? "_{$device}" : '';
 		$value      = $is_enabled ? $this->get_any_value( $attrs, "{$name}{$suffix}", $default_value, $force_return ) : $default_value;
-	
+
 		return esc_attr( $value );
 	}
 
 	/**
 	 * Get all properties values for all devices.
-	 * 
+	 *
 	 * This function is added to summarize how we fetch desktop/hover, tablet, and phone values. This
 	 * function still use get_any_value to get current device values.
-	 * 
+	 *
 	 * @since 3.23
-	 * 
+	 *
 	 * @param array   $attrs         List of all attributes and values.
 	 * @param string  $name          Property name.
 	 * @param mixed   $default_value Default value.
 	 * @param boolean $force_return  Force to return any values found.
-	 * 
+	 *
 	 * @return array Pair of devices and the values.
 	 */
 	public function get_property_values( $attrs, $name, $default_value = '', $force_return = false ) {
@@ -406,21 +428,99 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 			'tablet'  => $default_value,
 			'phone'   => $default_value,
 		);
-	
+
 		// Ensure attrs (values list) and name (property name) are not empty.
 		if ( empty( $attrs ) || '' === $name ) {
 			return $values;
 		}
-	
+
 		$is_responsive = $this->is_responsive_enabled( $attrs, $name );
-	
+
 		// Get values for each devices.
 		$values['desktop'] = esc_html( $this->get_any_value( $attrs, $name, $default_value, $force_return ) );
 		if ( $is_responsive ) {
 			$values['tablet'] = esc_html( $this->get_any_value( $attrs, "{$name}_tablet", $default_value, $force_return ) );
 			$values['phone']  = esc_html( $this->get_any_value( $attrs, "{$name}_phone", $default_value, $force_return ) );
 		}
-	
+
+		return $values;
+	}
+
+	/**
+	 * Get composite property's value for requested device.
+	 *
+	 * This function is added to summarize how we fetch desktop/hover/tablet/phone value. This
+	 * function still uses get_any_value to get current device values.
+	 *
+	 * @since 3.27.4
+	 *
+	 * @param array   $attrs          List of all attributes and values.
+	 * @param string  $composite_name Composite property name.
+	 * @param string  $name           Property name.
+	 * @param mixed   $default_value  Default value.
+	 * @param string  $device         Device name.
+	 * @param boolean $force_return   Force to return any values found.
+	 *
+	 * @return array Pair of devices and the values.
+	 */
+	public function get_composite_property_value( $attrs, $composite_name, $name, $default_value = '', $device = 'desktop', $force_return = false ) {
+		// Default values.
+		$default_value = esc_attr( $default_value );
+
+		// Ensure $device is not empty.
+		$device = '' === $device ? 'desktop' : $device;
+
+		// Ensure attrs, composite name (parent property name), name (property name) are not empty.
+		if ( empty( $attrs ) || '' === $composite_name || '' === $name ) {
+			return $default_value;
+		}
+
+		$is_enabled = 'desktop' !== $device ? $this->is_responsive_enabled( $attrs, $composite_name ) : true;
+		$suffix     = 'desktop' !== $device ? "_{$device}" : '';
+		$value      = $is_enabled ? $this->get_any_value( $attrs, "{$name}{$suffix}", $default_value, $force_return ) : $default_value;
+
+		return esc_attr( $value );
+	}
+
+	/**
+	 * Get all composite properties values for all devices.
+	 *
+	 * This function is added to summarize how we fetch desktop/hover, tablet, and phone values. This
+	 * function still use get_any_value to get current device values.
+	 *
+	 * @since 3.27.4
+	 *
+	 * @param array   $attrs          List of all attributes and values.
+	 * @param string  $composite_name Composite property name.
+	 * @param string  $name           Property name.
+	 * @param mixed   $default_value  Default value.
+	 * @param boolean $force_return   Force to return any values found.
+	 *
+	 * @return array Pair of devices and the values.
+	 */
+	public function get_composite_property_values( $attrs, $composite_name, $name, $default_value = '', $force_return = false ) {
+		// Default values.
+		$default_value = esc_attr( $default_value );
+		$values        = array(
+			'desktop' => $default_value,
+			'tablet'  => $default_value,
+			'phone'   => $default_value,
+		);
+
+		// Ensure attrs, composite name (parent property name), name (property name) are not empty.
+		if ( empty( $attrs ) || '' === $composite_name || '' === $name ) {
+			return $values;
+		}
+
+		$is_responsive = $this->is_responsive_enabled( $attrs, $composite_name );
+
+		// Get values for each devices.
+		$values['desktop'] = esc_attr( $this->get_any_value( $attrs, $name, $default_value, $force_return ) );
+		if ( $is_responsive ) {
+			$values['tablet'] = esc_attr( $this->get_any_value( $attrs, "{$name}_tablet", $default_value, $force_return ) );
+			$values['phone']  = esc_attr( $this->get_any_value( $attrs, "{$name}_phone", $default_value, $force_return ) );
+		}
+
 		return $values;
 	}
 
@@ -935,7 +1035,7 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 			$default_mobile = ! empty( $field['default_on_mobile'] ) ? $field['default_on_mobile'] : $default;
 			$default_tablet = ! empty( $field['default_on_tablet'] ) ? $field['default_on_tablet'] : $default_mobile;
 			$default_phone  = ! empty( $field['default_on_phone'] ) ? $field['default_on_phone'] : $default_mobile;
-			
+
 			$responsive_options["{$field_name}_tablet"]['default'] = $default_tablet;
 			$responsive_options["{$field_name}_phone"]['default']  = $default_phone;
 		}
@@ -944,7 +1044,7 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 		if ( ! empty( $field['default_on_hover'] ) ) {
 			$default        = ! empty( $field['default'] ) ? $field['default'] : '';
 			$default_hover  = ! empty( $field['default_on_hover'] ) ? $field['default_on_hover'] : $default_mobile;
-			
+
 			$responsive_options["{$field_name}__hover"]['default'] = $default_hover;
 		}
 
@@ -955,8 +1055,8 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 	 * Get main background value based on enabled status of current field. It's used to selectively
 	 * get the correct color, gradient status, image, and video. It's introduced along with new
 	 * enable fields to decide should we remove or inherit the value from larger device.
-	 * 
-	 * @since ??
+	 *
+	 * @since 3.24.1
 	 *
 	 * @param array  $attrs           All module attributes.
 	 * @param string $base_setting    Setting need to be checked.
@@ -1002,7 +1102,7 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 		$origin_mp4_data     = array();
 		$origin_webm_enabled = '';
 		$origin_webm_data    = array();
-		
+
 		foreach( $map_slugs[ $preview_mode ] as $slug ) {
 
 			// BG Color.
@@ -1057,7 +1157,7 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 					$new_value = 'off';
 					break;
 				}
-			
+
 			// BG Video.
 			} else if ( "video_{$background_base}_values" === $base_setting ) {
 				$base_slug    = preg_replace('/[_]+/', '', $slug);
@@ -1186,6 +1286,144 @@ class ET_Builder_Module_Helper_ResponsiveOptions {
 
 		return $new_value;
 	}
+
+	public function create( $additional_options ) {
+		// Add hover field indication
+		$additional_options['hover_enabled'] = array(
+			'type'    => 'skip',
+			'default' => 0,
+		);
+
+		// Generate responsive fields for additional options (Design).
+		// There are 4 types where the mobile_options exist on the options.
+		// 1. Exist on the option definition.
+		// 2. Exist on the computed field type, just like point 1 but we threat it differently
+		//    because there are some properties need to be updated and added.
+		// 3. Exist on the background-field.
+		// 4. Exist on the composite field.
+		foreach ( $additional_options as $field_name => $field ) {
+			$is_mobile_options = isset( $field['mobile_options'] ) && $field['mobile_options'];
+			$is_hover          = isset( $field['hover'] ) && 'tabs' === $field['hover'];
+			$field_type        = isset( $field['type'] ) ? $field['type'] : '';
+			$field_context     = isset( $field['context'] ) ? $field['context'] : '';
+			$field_last_edited = isset( $field['last_edited'] ) ? $field['last_edited'] : '';
+
+			// Mobile options property maybe exist on the field.
+			if ( $is_mobile_options ) {
+				// Get tab and toggle slugs value.
+				$tab_slug    = isset( $field['tab_slug'] ) ? $field['tab_slug'] : '';
+				$toggle_slug = isset( $field['toggle_slug'] ) ? $field['toggle_slug'] : '';
+
+				// 2. Mobile options property for computed fields.
+				if ( 'computed' === $field_type ) {
+					// Computed depends on. Add suffix after depends on info.
+					if ( ! empty( $field['computed_depends_on'] ) ) {
+						$computed_depends_on = $field['computed_depends_on'];
+						foreach ( $computed_depends_on as $depends_value ) {
+							if ( $is_hover ) {
+								array_push( $field['computed_depends_on'], "{$depends_value}_tablet", "{$depends_value}_phone", "{$depends_value}__hover" );
+							} else {
+								array_push( $field['computed_depends_on'], "{$depends_value}_tablet", "{$depends_value}_phone" );
+							}
+						}
+					}
+
+					// Computed minimum. Add suffix after minimum info.
+					if ( ! empty( $field['computed_minimum'] ) ) {
+						$computed_minimum = $field['computed_minimum'];
+						foreach ( $computed_minimum as $minimum_value ) {
+							if ( $is_hover ) {
+								array_push( $field['computed_minimum'], "{$minimum_value}_tablet", "{$minimum_value}_phone", "{$minimum_value}__hover" );
+							} else {
+								array_push( $field['computed_minimum'], "{$minimum_value}_tablet", "{$minimum_value}_phone" );
+							}
+						}
+					}
+
+					$additional_options["{$field_name}"] = $field;
+
+					continue;
+				}
+
+				// 3. Mobile options property maybe exist under background field.
+				if ( 'background-field' === $field_type ) {
+					// Just in case current field is background-field and the mobile_options
+					// attributes are located in the fields. Ensure background fields is exist.
+					if ( ! empty( $field['background_fields'] ) ) {
+						// Fetch the fields and check for mobile_options.
+						foreach ( $field['background_fields'] as $background_name => $background_field ) {
+							if ( isset( $background_field['mobile_options'] ) && $background_field['mobile_options'] ) {
+								// Get tab and toggle slugs value.
+								$tab_slug    = isset( $background_field['tab_slug'] ) ? $background_field['tab_slug'] : '';
+								$toggle_slug = isset( $background_field['toggle_slug'] ) ? $background_field['toggle_slug'] : '';
+
+								// Add fields with responsive suffix for each devices.
+								$additional_options = array_merge(
+									$additional_options,
+									et_pb_responsive_options()->generate_responsive_fields( $background_name, $toggle_slug, $tab_slug )
+								);
+							}
+						}
+					}
+
+					continue;
+				}
+
+				// 1. Mobile options property added directly on options definition. Add fields
+				//    with responsive suffix for each devices.
+				$additional_options = array_merge(
+					$additional_options,
+					et_pb_responsive_options()->generate_responsive_fields( $field_name, $toggle_slug, $tab_slug, $field )
+				);
+
+				// Additional last edited field just in case we need more last edited field.
+				if ( ! empty( $field_last_edited ) ) {
+					$additional_options["{$field_last_edited}_last_edited"] = array(
+						'type'        => 'skip',
+						'tab_slug'    => $tab_slug,
+						'toggle_slug' => $toggle_slug,
+					);
+				}
+
+				continue;
+			}
+
+			// 4. Mobile options property maybe exist under composite field.
+			if ( 'composite' === $field_type ) {
+				// Just in case current field is composite and the mobile_options attributes
+				// are located in the controls. Ensure composite structure is exist.
+				$composite_structure = isset( $field['composite_structure'] ) ? $field['composite_structure'] : array();
+				if ( empty( $composite_structure ) ) {
+					continue;
+				}
+
+				foreach ( $composite_structure as $composite_field ) {
+					// Ensure composite field controls is exist and not empty.
+					$composite_field_controls = isset( $composite_field['controls'] ) ? $composite_field['controls'] : array();
+					if ( empty( $composite_field_controls ) ) {
+						continue;
+					}
+
+					// Fetch the controls and check for mobile_options.
+					foreach ( $composite_field_controls as $control_name => $control ) {
+						if ( isset( $control['mobile_options'] ) && $control['mobile_options'] ) {
+							// Get tab and toggle slugs value.
+							$tab_slug    = isset( $control['tab_slug'] ) ? $control['tab_slug'] : '';
+							$toggle_slug = isset( $control['toggle_slug'] ) ? $control['toggle_slug'] : '';
+
+							// Add fields with responsive suffix for each devices.
+							$additional_options = array_merge(
+								$additional_options,
+								et_pb_responsive_options()->generate_responsive_fields( $control_name, $toggle_slug, $tab_slug )
+							);
+						}
+					}
+				}
+			}
+		}
+		return $additional_options;
+	}
+
 }
 
 /**

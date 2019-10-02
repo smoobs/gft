@@ -16,8 +16,7 @@ class ET_Builder_Module_Settings_Migration_RowZeroGutter extends ET_Builder_Modu
 				$field            = $module === 'et_pb_section' ? "inner_$key" : $key;
 				$fields[ $field ] = array(
 					'affected_fields' => array(
-						'gutter_width' => array( $module ),
-						'module_class' => array( $module ),
+						$field => array( $module ),
 					),
 				);
 			}
@@ -33,7 +32,8 @@ class ET_Builder_Module_Settings_Migration_RowZeroGutter extends ET_Builder_Modu
 		$saved_value,
 		$saved_field_name,
 		$attrs,
-		$content
+		$content,
+		$module_address
 	) {
 		$raw_field = str_replace( 'inner_', '', $field_name );
 		$gutter    = et_builder_module_prop( 'gutter_width', $attrs, '' );

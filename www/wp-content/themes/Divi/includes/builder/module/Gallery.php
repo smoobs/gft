@@ -320,6 +320,8 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 				'description'        => esc_html__( 'Whether or not to show the title and caption for images (if available).', 'et_builder' ),
 				'depends_show_if'    => 'off',
 				'toggle_slug'        => 'elements',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'show_pagination' => array(
 				'label'             => esc_html__( 'Show Pagination', 'et_builder' ),
@@ -336,6 +338,8 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 				'computed_affects'  => array(
 					'__gallery',
 				),
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'zoom_icon_color' => array(
 				'label'             => esc_html__( 'Overlay Icon Color', 'et_builder' ),
@@ -448,6 +452,27 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 		return $attachments;
 	}
 
+	/**
+	 * Wrapper for ET_Builder_Module_Gallery::get_gallery() which is intended to be extended by
+	 * module which uses gallery module renderer so relevant argument for other module can be added
+	 *
+	 * @since 3.29
+	 * @see ET_Builder_Module_Gallery::get_gallery()
+	 * @param array $args {
+	 *     Gallery Options
+	 *
+	 *     @type array  $gallery_ids     Attachment Ids of images to be included in gallery.
+	 *     @type string $gallery_orderby `orderby` arg for query. Optional.
+	 *     @type string $fullwidth       on|off to determine grid / slider layout
+	 *     @type string $orientation     Orientation of thumbnails (landscape|portrait).
+	 * }
+	 *
+	 * @return array
+	 */
+	public function get_attachments( $args = array() ) {
+		return self::get_gallery( $args );
+	}
+
 	public function get_pagination_alignment() {
 		$text_orientation = isset( $this->props['pagination_text_align'] ) ? $this->props['pagination_text_align'] : '';
 
@@ -455,6 +480,7 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                      = et_pb_multi_view_options( $this );
 		$gallery_ids                     = $this->props['gallery_ids'];
 		$fullwidth                       = $this->props['fullwidth'];
 		$show_title_and_caption          = $this->props['show_title_and_caption'];
@@ -489,7 +515,7 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 		et_pb_responsive_options()->generate_responsive_css( $hover_overlay_color_values, '%%order_class%% .et_overlay', 'border-color', $render_slug, '', 'color' );
 
 		// Get gallery item data
-		$attachments = self::get_gallery( array(
+		$attachments = $this->get_attachments( array(
 			'gallery_ids'     => $gallery_ids,
 			'gallery_orderby' => $gallery_orderby,
 			'fullwidth'       => $fullwidth,
@@ -595,14 +621,23 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 				)
 				: '';
 
+			$image_attrs = array(
+				'alt' => $attachment->post_title,
+			);
+
+			if ( 'on' !== $fullwidth ) {
+				$image_attrs['srcset'] = $attachment->image_src_full[0] . ' 479w, ' . $attachment->image_src_thumb[0] . ' 480w';
+				$image_attrs['sizes']  = '(max-width:479px) 479w, 100vw';
+			}
+
 			$image_output = sprintf(
 				'<a href="%1$s" title="%2$s">
-					<img src="%3$s" alt="%2$s" />
+					%3$s
 					<span class="et_overlay%4$s%6$s%8$s"%5$s%7$s%9$s></span>
 				</a>',
 				esc_url( $attachment->image_src_full[0] ),
 				esc_attr( $attachment->post_title ),
-				esc_url( $attachment->image_src_thumb[0] ),
+				$this->render_image( $attachment->image_src_thumb[0], $image_attrs, false ),
 				( '' !== $hover_icon ? ' et_pb_inline_icon' : '' ),
 				$data_icon,
 				( '' !== $hover_icon_tablet ? ' et_pb_inline_icon_tablet' : '' ),
@@ -622,15 +657,30 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 					$image_output
 				</div>";
 
-			if ( 'on' !== $fullwidth && 'on' === $show_title_and_caption ) {
+			if ( 'on' !== $fullwidth && $multi_view->has_value( 'show_title_and_caption', 'on' ) ) {
 				if ( trim( $attachment->post_title ) ) {
-					$output .= sprintf( '<%2$s class="et_pb_gallery_title">%1$s</%2$s>', wptexturize( $attachment->post_title ), et_pb_process_header_level( $header_level, 'h3' ) );
+					$output .= $multi_view->render_element( array(
+						'tag'     => et_pb_process_header_level( $header_level, 'h3' ),
+						'content' => wptexturize( $attachment->post_title ),
+						'attrs'   => array(
+							'class' => 'et_pb_gallery_title',
+						),
+						'visibility' => array(
+							'show_title_and_caption' => 'on',
+						),
+					) );
 				}
 				if ( trim( $attachment->post_excerpt ) ) {
-					$output .= "
-						<p class='et_pb_gallery_caption'>
-						" . wptexturize( $attachment->post_excerpt ) . "
-						</p>";
+					$output .= $multi_view->render_element( array(
+						'tag'     => 'p',
+						'content' => wptexturize( $attachment->post_excerpt ),
+						'attrs'   => array(
+							'class' => 'et_pb_gallery_caption',
+						),
+						'visibility' => array(
+							'show_title_and_caption' => 'on',
+						),
+					) );
 				}
 			}
 			$output .= "</div>";
@@ -638,11 +688,21 @@ class ET_Builder_Module_Gallery extends ET_Builder_Module {
 
 		$output .= "</div><!-- .et_pb_gallery_items -->";
 
-		if ( 'on' !== $fullwidth && 'on' === $show_pagination ) {
-			$output .= sprintf(
-				'<div class="et_pb_gallery_pagination%1$s"></div>',
-				$pagination_text_align === 'justify' ? ' et_pb_gallery_pagination_justify' : ''
-			);
+		if ( 'on' !== $fullwidth && $multi_view->has_value( 'show_pagination', 'on' ) ) {
+			$pagination_classes = array( 'et_pb_gallery_pagination' );
+			if ( 'justify' === $pagination_text_align ) {
+				$pagination_classes[] = 'et_pb_gallery_pagination_justify';
+			}
+
+			$output .= $multi_view->render_element( array(
+				'tag'        => 'div',
+				'attrs'      => array(
+					'class' => implode( ' ', $pagination_classes ),
+				),
+				'visibility' => array(
+					'show_pagination' => 'on',
+				),
+			) );
 		}
 
 		$output .= "</div><!-- .et_pb_gallery -->";

@@ -113,6 +113,8 @@ class ET_Builder_Module_Button extends ET_Builder_Module {
 				'description'      => esc_html__( 'Input your desired button text.', 'et_builder' ),
 				'toggle_slug'      => 'main_content',
 				'dynamic_content'  => 'text',
+				'mobile_options'   => true,
+				'hover'            => 'tabs',
 			),
 			'button_alignment' => array(
 				'label'            => esc_html__( 'Button Alignment', 'et_builder' ),
@@ -150,6 +152,7 @@ class ET_Builder_Module_Button extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                      = et_pb_multi_view_options( $this );
 		$button_url                      = $this->props['button_url'];
 		$button_rel                      = $this->props['button_rel'];
 		$button_text                     = $this->_esc_attr( 'button_text', 'limited' );
@@ -234,6 +237,10 @@ class ET_Builder_Module_Button extends ET_Builder_Module {
 			'custom_icon_phone'   => $custom_icon_phone,
 			'has_wrapper'         => false,
 			'url_new_window'      => $url_new_window,
+			'multi_view_data'     => $multi_view->render_attrs( array(
+				'content'        => '{{button_text}}',
+				'hover_selector' => '%%order_class%%.et_pb_button',
+			) ),
 		) );
 
 		// Render module output
@@ -248,12 +255,69 @@ class ET_Builder_Module_Button extends ET_Builder_Module {
 			et_core_esc_previously( $data_background_layout_hover )
 		);
 
+		$transition_style = $this->get_transition_style( array( 'all' ) );
 		self::set_style( $render_slug, array(
 			'selector'    => '%%order_class%%, %%order_class%%:after',
-			'declaration' => esc_html( $this->get_transition_style( array( 'all' ) ) )
+			'declaration' => esc_html( $transition_style ),
 		) );
 
+		// Tablet.
+		$transition_style_tablet = $this->get_transition_style( array( 'all' ), 'tablet' );
+		if ( $transition_style_tablet !== $transition_style ) {
+			self::set_style( $function_name, array(
+				'selector'    => '%%order_class%%, %%order_class%%:after',
+				'declaration' => esc_html( $transition_style_tablet ),
+				'media_query' => ET_Builder_Element::get_media_query( 'max_width_980' ),
+			) );
+		}
+
+		// Phone.
+		$transition_style_phone = $this->get_transition_style( array( 'all' ), 'phone' );
+		if ( $transition_style_phone !== $transition_style || $transition_style_phone !== $transition_style_tablet ) {
+			self::set_style( $function_name, array(
+				'selector'    => '%%order_class%%, %%order_class%%:after',
+				'declaration' => esc_html( $transition_style_phone ),
+				'media_query' => ET_Builder_Element::get_media_query( 'max_width_767' ),
+			) );
+		}
+
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+
+		$fields_need_escape = array(
+			'title',
+		);
+
+		if ( $raw_value && in_array( $name, $fields_need_escape, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ) );
+		}
+
+		return $raw_value;
 	}
 }
 

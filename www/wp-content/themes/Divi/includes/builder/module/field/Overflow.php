@@ -44,7 +44,6 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 		$settings = array(
 			'label'          => $label,
 			'type'           => 'select',
-			'id'             => $field,
 			'hover'          => $args['hover'],
 			'mobile_options' => $args['mobile_options'],
 			'default'        => $args['default'],

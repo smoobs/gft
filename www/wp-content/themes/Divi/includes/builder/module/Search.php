@@ -51,9 +51,12 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 				),
 			),
 			'margin_padding' => array(
-				'css' => array(
+				'css'            => array(
 					'main'      => "{$this->main_css_element} input.et_pb_s",
 					'important' => 'all',
+				),
+				'custom_padding' => array(
+					'default' => '0.715em|0.715em|0.715em|0.715em|false|false',
 				),
 			),
 			'background'            => array(
@@ -179,6 +182,7 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 					'off' => esc_html__( 'No', 'et_builder' ),
 					'on'  => esc_html__( 'Yes', 'et_builder' ),
 				),
+				'default'         => 'off',
 				'affects'         => array(
 					'include_categories',
 				),
@@ -207,6 +211,8 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 				'default'         => 'on',
 				'toggle_slug'     => 'elements',
 				'description'     => esc_html__( 'Turn this on to show the Search button', 'et_builder' ),
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'placeholder' => array(
 				'label'           => esc_html__( 'Input Placeholder', 'et_builder' ),
@@ -214,6 +220,8 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 				'description'     => esc_html__( 'Type the text you want to use as placeholder for the search field.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'button_color' => array(
 				'label'          => esc_html__( 'Button and Border Color', 'et_builder' ),
@@ -253,11 +261,20 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                      = et_pb_multi_view_options( $this );
 		$exclude_categories              = $this->props['include_categories'];
 		$exclude_posts                   = $this->props['exclude_posts'];
 		$exclude_pages                   = $this->props['exclude_pages'];
 		$show_button                     = $this->props['show_button'];
-		$placeholder                     = $this->props['placeholder'];
+		$placeholder                     = $multi_view->render_element( array(
+			'tag'   => 'input',
+			'attrs' => array(
+				'type'        => 'text',
+				'name'        => 's',
+				'class'       => 'et_pb_s',
+				'placeholder' => '{{placeholder}}',
+			),
+		) );
 		$input_line_height               = $this->props['form_field_line_height'];
 		$button_color_hover              = $this->get_hover_value( 'button_color' );
 		$button_color_values             = et_pb_responsive_options()->get_property_values( $this->props, 'button_color' );
@@ -395,14 +412,22 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 			);
 		}
 
+		$multi_view_show_button_data_attr = $multi_view->render_attrs( array(
+			'classes' => array(
+				'et_pb_hide_search_button' => array(
+					'show_button' => 'off',
+				),
+			),
+		) );
+
 		$output = sprintf(
-			'<div%3$s class="%2$s"%12$s%13$s>
+			'<div%3$s class="%2$s"%12$s%13$s%14$s>
 				%11$s
 				%10$s
 				<form role="search" method="get" class="et_pb_searchform" action="%1$s">
 					<div>
 						<label class="screen-reader-text" for="s">%8$s</label>
-						<input type="text" value="" name="s" class="et_pb_s"%7$s>
+						%7$s
 						<input type="hidden" name="et_pb_searchform_submit" value="et_search_proccess" />
 						%4$s
 						%5$s
@@ -417,13 +442,14 @@ class ET_Builder_Module_Search extends ET_Builder_Module {
 			'' !== $exclude_categories ? sprintf( '<input type="hidden" name="et_pb_search_cat" value="%1$s" />', esc_attr( $exclude_categories ) ) : '',
 			'on' !== $exclude_posts ? '<input type="hidden" name="et_pb_include_posts" value="yes" />' : '', // #5
 			'on' !== $exclude_pages ? '<input type="hidden" name="et_pb_include_pages" value="yes" />' : '',
-			'' !== $placeholder ? sprintf( ' placeholder="%1$s"', esc_attr( $placeholder ) ) : '',
+			$placeholder,
 			esc_html__( 'Search for:', 'et_builder' ),
 			esc_attr__( 'Search', 'et_builder' ),
 			$video_background, // #10
 			$parallax_image_background,
 			et_core_esc_previously( $data_background_layout ),
-			et_core_esc_previously( $data_background_layout_hover )
+			et_core_esc_previously( $data_background_layout_hover ),
+			$multi_view_show_button_data_attr
 		);
 
 		return $output;

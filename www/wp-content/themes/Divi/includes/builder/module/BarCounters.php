@@ -145,6 +145,8 @@ class ET_Builder_Module_Bar_Counters extends ET_Builder_Module {
 				),
 				'toggle_slug'       => 'elements',
 				'default_on_front'  => 'on',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 		);
 
@@ -163,7 +165,7 @@ class ET_Builder_Module_Bar_Counters extends ET_Builder_Module {
 	function before_render() {
 		global $et_pb_counters_settings;
 
-		$background_color          = $this->props['background_color'];
+		$multi_view                = et_pb_multi_view_options( $this );
 		$background_image          = $this->props['background_image'];
 		$parallax                  = $this->props['parallax'];
 		$parallax_method           = $this->props['parallax_method'];
@@ -173,24 +175,41 @@ class ET_Builder_Module_Bar_Counters extends ET_Builder_Module {
 		$background_video_height   = $this->props['background_video_height'];
 		$allow_player_pause        = $this->props['allow_player_pause'];
 		$bar_bg_color_values       = et_pb_responsive_options()->get_property_values( $this->props, 'bar_bg_color' );
-		$use_percentages           = $this->props['use_percentages'];
 		$background_video_pause_outside_viewport = $this->props['background_video_pause_outside_viewport'];
 
+		// Background Color.
+		$background_last_edited        = self::$_->array_get( $this->props, 'background_last_edited', '' );
+		$background_hover_enabled      = self::$_->array_get( $this->props, 'background__hover_enabled', '' );
+		$background_colors             = et_pb_responsive_options()->get_composite_property_values( $this->props, 'background', 'background_color' );
+		$background_enable_colors      = et_pb_responsive_options()->get_composite_property_values( $this->props, 'background', 'background_enable_color' );
+		$background_color_hover        = et_pb_hover_options()->get_compose_value( 'background_color', 'background', $this->props, '' );
+		$background_enable_color_hover = et_pb_hover_options()->get_compose_value( 'background_enable_color', 'background', $this->props, '' );
+
 		$et_pb_counters_settings = array(
-			'background_color'          => $background_color,
-			'background_color_hover'    => self::get_hover_value( 'background_color' ),
-			'background_image'          => $background_image,
-			'parallax'                  => $parallax,
-			'parallax_method'           => $parallax_method,
-			'background_video_mp4'      => $background_video_mp4,
-			'background_video_webm'     => $background_video_webm,
-			'background_video_width'    => $background_video_width,
-			'background_video_height'   => $background_video_height,
-			'allow_player_pause'        => $allow_player_pause,
-			'bar_bg_color'              => isset( $bar_bg_color_values['desktop'] ) ? $bar_bg_color_values['desktop'] : '',
-			'bar_bg_color_tablet'       => isset( $bar_bg_color_values['tablet'] ) ? $bar_bg_color_values['tablet'] : '',
-			'bar_bg_color_phone'        => isset( $bar_bg_color_values['phone'] ) ? $bar_bg_color_values['phone'] : '',
-			'use_percentages'           => $use_percentages,
+			// Background Color.
+			'background_last_edited'         => $background_last_edited,
+			'background__hover_enabled'      => $background_hover_enabled,
+			'background_color'               => $background_colors['desktop'],
+			'background_color_tablet'        => $background_colors['tablet'],
+			'background_color_phone'         => $background_colors['phone'],
+			'background_enable_color'        => $background_enable_colors['desktop'],
+			'background_enable_color_tablet' => $background_enable_colors['tablet'],
+			'background_enable_color_phone'  => $background_enable_colors['phone'],
+			'background_color_hover'         => $background_color_hover,
+			'background_color__hover'        => $background_color_hover,
+			'background_enable_color__hover' => $background_enable_color_hover,
+			'background_image'               => $background_image,
+			'parallax'                       => $parallax,
+			'parallax_method'                => $parallax_method,
+			'background_video_mp4'           => $background_video_mp4,
+			'background_video_webm'          => $background_video_webm,
+			'background_video_width'         => $background_video_width,
+			'background_video_height'        => $background_video_height,
+			'allow_player_pause'             => $allow_player_pause,
+			'bar_bg_color'                   => isset( $bar_bg_color_values['desktop'] ) ? $bar_bg_color_values['desktop'] : '',
+			'bar_bg_color_tablet'            => isset( $bar_bg_color_values['tablet'] ) ? $bar_bg_color_values['tablet'] : '',
+			'bar_bg_color_phone'             => isset( $bar_bg_color_values['phone'] ) ? $bar_bg_color_values['phone'] : '',
+			'use_percentages'                => $multi_view->get_values( 'use_percentages' ),
 			'background_video_pause_outside_viewport' => $background_video_pause_outside_viewport,
 		);
 	}
@@ -207,7 +226,7 @@ class ET_Builder_Module_Bar_Counters extends ET_Builder_Module {
 			'et-waypoint',
 			"et_pb_bg_layout_{$background_layout}",
 		) );
-		
+
 		$background_layout_tablet = isset( $background_layout_values['tablet'] ) ? $background_layout_values['tablet'] : '';
 		if ( ! empty( $background_layout_tablet ) ) {
 			$this->add_classname( "et_pb_bg_layout_{$background_layout_tablet}_tablet" );

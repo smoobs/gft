@@ -333,6 +333,9 @@ class ET_Builder_Module_Social_Media_Follow_Item extends ET_Builder_Module {
 	function render( $attrs, $content = null, $render_slug ) {
 		global $et_pb_social_media_follow_link;
 
+		$multi_view = et_pb_multi_view_options( $this );
+		$multi_view->set_custom_prop( 'follow_button', $et_pb_social_media_follow_link['follow_button'] );
+
 		$social_network        = $this->props['social_network'];
 		$url                   = $this->props['url'];
 		$skype_url             = $this->props['skype_url'];
@@ -358,13 +361,20 @@ class ET_Builder_Module_Social_Media_Follow_Item extends ET_Builder_Module {
 			$is_skype = true;
 		}
 
-		if ( 'on' === $et_pb_social_media_follow_link['follow_button'] ) {
+		if ( $multi_view->has_value( 'follow_button', 'on' ) ) {
+			$follow_button_multi_view_attr = $multi_view->render_attrs( array(
+				'visibility' => array(
+					'follow_button' => 'on',
+				),
+			) );
+
 			$follow_button = sprintf(
-				'<a href="%1$s" class="follow_button" title="%2$s"%3$s>%4$s</a>',
+				'<a href="%1$s" class="follow_button" title="%2$s"%3$s%5$s>%4$s</a>',
 				! $is_skype ? esc_url( $url ) : $skype_url,
 				$network_name,
 				( 'on' === $et_pb_social_media_follow_link['url_new_window'] ? ' target="_blank"' : '' ),
-				esc_html__( 'Follow', 'et_builder' )
+				esc_html__( 'Follow', 'et_builder' ),
+				$follow_button_multi_view_attr
 			);
 		}
 
@@ -376,11 +386,11 @@ class ET_Builder_Module_Social_Media_Follow_Item extends ET_Builder_Module {
 		}
 
 		// Icon Color.
-		et_pb_responsive_options()->generate_responsive_css( $icon_color_values, '.et_pb_social_media_follow %%order_class%% .icon:before', 'color', $render_slug, '', 'color' );
+		et_pb_responsive_options()->generate_responsive_css( $icon_color_values, '.et_pb_social_media_follow %%order_class%%.et_pb_social_icon .icon:before', 'color', $render_slug, '', 'color' );
 
 		if ( et_builder_is_hover_enabled( 'icon_color', $this->props ) ) {
 			ET_Builder_Element::set_style( $render_slug, array(
-				'selector'    => '.et_pb_social_media_follow %%order_class%%:hover .icon:before',
+				'selector'    => '.et_pb_social_media_follow %%order_class%%.et_pb_social_icon:hover .icon:before',
 				'declaration' => sprintf(
 					'color: %1$s;',
 					esc_html( $icon_color_hover )
@@ -431,7 +441,7 @@ class ET_Builder_Module_Social_Media_Follow_Item extends ET_Builder_Module {
 			}
 
 			// Icon hover styles.
-			if ( et_builder_is_hover_enabled( 'icon_font_size', $this->props ) && '' !== $icon_font_size_hover ) {
+			if ( et_builder_is_hover_enabled( 'icon_font_size', $this->props ) && ! empty( $icon_font_size_hover ) ) {
 				$icon_font_size_hover_int    = (int) $icon_font_size_hover;
 				$icon_font_size_hover_unit   = str_replace( $icon_font_size_hover_int, '', $icon_font_size_hover );
 				$icon_font_size_hover_double = 0 < $icon_font_size_hover_int ? $icon_font_size_hover_int * 2 : 0;

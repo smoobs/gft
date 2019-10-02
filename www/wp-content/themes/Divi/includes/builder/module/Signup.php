@@ -82,6 +82,7 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 						'css'               => array(
 							'link'  => "{$this->main_css_element} .et_pb_newsletter_description a, {$this->main_css_element} .et_pb_newsletter_form a",
 							'ul'    => "{$this->main_css_element} .et_pb_newsletter_description ul, {$this->main_css_element} .et_pb_newsletter_form ul",
@@ -689,6 +690,8 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 					'description'     => esc_html__( 'Choose a title of your signup box.', 'et_builder' ),
 					'toggle_slug'     => 'main_content',
 					'dynamic_content' => 'text',
+					'mobile_options'  => true,
+					'hover'           => 'tabs',
 				),
 				'button_text'                 => array(
 					'label'            => esc_html__( 'Button', 'et_builder' ),
@@ -698,6 +701,9 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 					'toggle_slug'      => 'main_content',
 					'default_on_front' => esc_html__( 'Subscribe', 'et_builder' ),
 					'dynamic_content' => 'text',
+					'dynamic_content'  => 'text',
+					'mobile_options'   => true,
+					'hover'            => 'tabs',
 				),
 				'description'                 => array(
 					'label'           => esc_html__( 'Body', 'et_builder' ),
@@ -706,6 +712,8 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 					'description'     => esc_html__( 'This content will appear below the title.', 'et_builder' ),
 					'toggle_slug'     => 'main_content',
 					'dynamic_content' => 'text',
+					'mobile_options'  => true,
+					'hover'           => 'tabs',
 				),
 				'footer_content'              => array(
 					'label'           => esc_html__( 'Footer', 'et_builder' ),
@@ -714,6 +722,8 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 					'description'     => esc_html__( 'This content will appear below the subscribe button.', 'et_builder' ),
 					'toggle_slug'     => 'main_content',
 					'dynamic_content' => 'text',
+					'mobile_options'  => true,
+					'hover'           => 'tabs',
 				),
 			)
 		);
@@ -800,7 +810,7 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 	}
 
 	public function get_form_field_html( $field, $single_name_field = false ) {
-		$html = '';
+		$html       = '';
 
 		switch ( $field ) {
 			case 'name':
@@ -891,13 +901,18 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 					<p class="et_pb_newsletter_button_wrap">
 						<a class="et_pb_newsletter_button et_pb_button%1$s" href="#"%2$s data-icon="%3$s"%5$s%6$s>
 							<span class="et_subscribe_loader"></span>
-							<span class="et_pb_newsletter_button_text">%4$s</span>
+							%4$s
 						</a>
 					</p>',
 					esc_attr( $icon_class ),
 					$this->get_rel_attributes( $button_rel ),
 					esc_attr( $icon_attr ),
-					esc_html( $this->props['button_text'] ),
+					et_pb_multi_view_options( $this )->render_element( array(
+						'content' => '{{button_text}}',
+						'attrs'   => array(
+							'class' => 'et_pb_newsletter_button_text',
+						),
+					) ),
 					'' !== $icon_attr_tablet ? sprintf( ' data-icon-tablet="%1$s"', esc_attr( $icon_attr_tablet ) ) : '', // #5
 					'' !== $icon_attr_phone ? sprintf( ' data-icon-phone="%1$s"', esc_attr( $icon_attr_phone ) ) : ''
 				);
@@ -963,7 +978,15 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 
 		$et_pb_half_width_counter    = 0;
 
-		$title                           = $this->_esc_attr( 'title' );
+		$multi_view                      = et_pb_multi_view_options( $this );
+		$title                           = $multi_view->render_element( array(
+			'tag'     => et_pb_process_header_level( $this->props['header_level'], 'h2' ),
+			'content' => '{{title}}',
+			'attrs'   => array(
+				'class' => 'et_pb_module_header',
+			),
+			'required' => 'title',
+		) );
 		$use_background_color            = $this->props['use_background_color'];
 		$provider                        = $this->props['provider'];
 		$list                            = ( 'feedburner' !== $provider ) ? $this->props[ $provider . '_list' ] : array();
@@ -972,7 +995,6 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 		$success_message                 = $this->props['success_message'];
 		$success_redirect_url            = $this->props['success_redirect_url'];
 		$success_redirect_query          = $this->props['success_redirect_query'];
-		$header_level                    = $this->props['header_level'];
 		$use_focus_border_color          = $this->props['use_focus_border_color'];
 		$use_custom_fields               = $this->props['use_custom_fields'];
 
@@ -1059,14 +1081,13 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 				$last_name_field_html = $this->get_form_field_html( 'last_name' );
 			}
 
-			$footer_content = $this->props['footer_content'];
-
-			$footer_content = preg_replace( '/^[\w]?<\/p>/smi', '', $footer_content );
-			$footer_content = preg_replace( '/<p>$/smi', '', $footer_content );
-
-			if ( $footer_content ) {
-				$footer_content = sprintf('<div class="et_pb_newsletter_footer">%1$s</div>', et_core_esc_previously( $footer_content ) );
-			}
+			$footer_content = $multi_view->render_element( array(
+				'tag'     => 'div',
+				'content' => '{{footer_content}}',
+				'attrs'   => array(
+					'class' => 'et_pb_newsletter_footer',
+				),
+			) );
 
 			$form = sprintf( '
 				<div class="et_pb_newsletter_form">
@@ -1142,10 +1163,10 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 			$render_slug,
 		) );
 
-		$description = $this->props['description'];
-
-		$description = preg_replace( '/^[\w]?<\/p>/smi', '', $description );
-		$description = preg_replace( '/<p>$/smi', '', $description );
+		$description = $multi_view->render_element( array(
+			'tag'     => 'div',
+			'content' => '{{description}}',
+		) );
 
 		$output = sprintf(
 			'<div%6$s class="%4$s"%5$s%9$s%10$s%11$s%12$s>
@@ -1157,7 +1178,7 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 				</div>
 				%3$s
 			</div>',
-			( '' !== $title ? sprintf( '<%1$s class="et_pb_module_header">%2$s</%1$s>', et_pb_process_header_level( $header_level, 'h2' ), et_core_esc_previously( $title ) ) : '' ),
+			et_core_esc_previously( $title ),
 			$description,
 			$form,
 			$this->module_classname( $render_slug ),
@@ -1172,6 +1193,47 @@ class ET_Builder_Module_Signup extends ET_Builder_Module {
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+
+		$fields_need_escape = array(
+			'title',
+		);
+
+		if ( $raw_value && in_array( $name, $fields_need_escape, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ) );
+		}
+
+		if ( $raw_value && in_array( $name, array( 'description', 'footer_content' ), true ) ) {
+			$raw_value = preg_replace( '/^[\w]?<\/p>/smi', '', $raw_value );
+			$raw_value = preg_replace( '/<p>$/smi', '', $raw_value );
+		}
+
+		return $raw_value;
 	}
 }
 new ET_Builder_Module_Signup;

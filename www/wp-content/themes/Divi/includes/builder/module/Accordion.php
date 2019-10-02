@@ -89,6 +89,7 @@ class ET_Builder_Module_Accordion extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 					),
 				),
 			),
@@ -243,10 +244,10 @@ class ET_Builder_Module_Accordion extends ET_Builder_Module {
 		$fields['toggle_line_height']       = array( 'line-height' => $title );
 		$fields['toggle_text_shadow_style'] = array( 'text-shadow' => $title );
 
-		$fields['closed_toggle_text_color']       = array( 'color' => '%%order_class%% .et_pb_toggle_close .et_pb_toggle_title' );
+		$fields['closed_toggle_text_color']       = array( 'color' => '%%order_class%%.et_pb_accordion .et_pb_toggle_close .et_pb_toggle_title' );
 		$fields['closed_toggle_background_color'] = array( 'background-color' => '%%order_class%% .et_pb_toggle_close' );
 
-		$fields['open_toggle_text_color']       = array( 'color' => '%%order_class%% .et_pb_toggle_open .et_pb_toggle_title' );
+		$fields['open_toggle_text_color']       = array( 'color' => '%%order_class%%.et_pb_accordion .et_pb_toggle_open .et_pb_toggle_title' );
 		$fields['open_toggle_background_color'] = array( 'background-color' => '%%order_class%% .et_pb_toggle_open' );
 
 		return $fields;
@@ -307,7 +308,7 @@ class ET_Builder_Module_Accordion extends ET_Builder_Module {
 		}
 
 		// Open Toggle Text Color.
-		et_pb_responsive_options()->generate_responsive_css( $open_toggle_text_color_values, '%%order_class%% .et_pb_toggle_open h5.et_pb_toggle_title, %%order_class%% .et_pb_toggle_open h1.et_pb_toggle_title, %%order_class%% .et_pb_toggle_open h2.et_pb_toggle_title, %%order_class%% .et_pb_toggle_open h3.et_pb_toggle_title, %%order_class%% .et_pb_toggle_open h4.et_pb_toggle_title, %%order_class%% .et_pb_toggle_open h6.et_pb_toggle_title',
+		et_pb_responsive_options()->generate_responsive_css( $open_toggle_text_color_values, '%%order_class%%.et_pb_accordion .et_pb_toggle_open h5.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_open h1.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_open h2.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_open h3.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_open h4.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_open h6.et_pb_toggle_title',
 		'color', $render_slug, ' !important;', 'color' );
 
 		if ( et_builder_is_hover_enabled( 'open_toggle_text_color', $this->props ) ) {
@@ -321,7 +322,7 @@ class ET_Builder_Module_Accordion extends ET_Builder_Module {
 		}
 
 		// Closed Toggle Text Color.
-		et_pb_responsive_options()->generate_responsive_css( $closed_toggle_text_color_values, '%%order_class%% .et_pb_toggle_close h5.et_pb_toggle_title, %%order_class%% .et_pb_toggle_close h1.et_pb_toggle_title, %%order_class%% .et_pb_toggle_close h2.et_pb_toggle_title, %%order_class%% .et_pb_toggle_close h3.et_pb_toggle_title, %%order_class%% .et_pb_toggle_close h4.et_pb_toggle_title, %%order_class%% .et_pb_toggle_close h6.et_pb_toggle_title',
+		et_pb_responsive_options()->generate_responsive_css( $closed_toggle_text_color_values, '%%order_class%%.et_pb_accordion .et_pb_toggle_close h5.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_close h1.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_close h2.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_close h3.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_close h4.et_pb_toggle_title, %%order_class%%.et_pb_accordion .et_pb_toggle_close h6.et_pb_toggle_title',
 		'color', $render_slug, ' !important;', 'color' );
 
 		if ( et_builder_is_hover_enabled( 'closed_toggle_text_color', $this->props ) ) {

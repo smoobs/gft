@@ -117,9 +117,11 @@ class ET_Builder_Module_Field_MarginPadding extends ET_Builder_Module_Field_Base
 	 * @see ET_Builder_Element::process_advanced_button_options
 	 */
 	public function get_prefixed_selector( $css_element, $type = '', $is_divi_builder_plugin = false ) {
-		// Button.
+		// See ET_Builder_Element->process_advanced_button_options() on generating $css_element_processed
+		// for non Divi Builder Plugin. Explicitly add '.et_pb_section' to the selector so selector
+		// splitting during prefixing does not incorrectly add third party classes before #et-boc.
 		if ( 'button' === $type && ! $is_divi_builder_plugin ) {
-			$css_element = "body #page-container {$css_element}";
+			$css_element = "body #page-container .et_pb_section {$css_element}";
 		}
 
 		return $css_element;

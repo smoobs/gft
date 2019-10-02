@@ -235,7 +235,19 @@ if ( ! function_exists( 'et_build_epanel' ) ) {
 								<div id="epanel-header">
 									<h1 id="epanel-title"><?php printf( esc_html__( '%s Theme Options', $themename ), esc_html( $themename ) ); ?></h1>
 									<a href="#" class="et-defaults-button epanel-reset" title="<?php esc_attr_e( 'Reset to Defaults', $themename ); ?>"><span class="label"><?php esc_html_e( 'Reset to Defaults', $themename ); ?></span></a>
-									<?php echo et_core_esc_previously( et_core_portability_link( 'epanel', array( 'class' => 'et-defaults-button epanel-portability' ) ) ); ?>
+									<?php
+									$portability_link = function_exists( 'et_builder_portability_link' )
+										? 'et_builder_portability_link'
+										: 'et_core_portability_link';
+
+									echo et_core_esc_previously(
+										call_user_func(
+											$portability_link,
+											'epanel',
+											array( 'class' => 'et-defaults-button epanel-portability' )
+										)
+									);
+									?>
 								</div>
 								<ul id="epanel-mainmenu">
 									<?php

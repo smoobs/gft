@@ -93,6 +93,8 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 				'computed_affects' => array(
 					'__video',
 				),
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'src_webm' => array(
 				'label'              => esc_html__( 'Video WEBM File', 'et_builder' ),
@@ -107,6 +109,8 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 				'computed_affects' => array(
 					'__video',
 				),
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'image_src' => array(
 				'label'              => esc_html__( 'Overlay Image', 'et_builder' ),
@@ -130,6 +134,8 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 					'__video_cover_src',
 				),
 				'dynamic_content'   => 'image',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'play_icon_color' => array(
 				'label'             => esc_html__( 'Play Icon Color', 'et_builder' ),
@@ -237,6 +243,10 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 
 		$args = wp_parse_args( $args, $defaults );
 
+		if ( empty( $args['src'] ) && empty( $args['src_webm'] ) ) {
+			return '';
+		}
+
 		$video_src = '';
 
 		if ( false !== et_pb_check_oembed_provider( esc_url( $args['src'] ) ) ) {
@@ -283,6 +293,7 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view               = et_pb_multi_view_options( $this );
 		$src                      = $this->props['src'];
 		$src_webm                 = $this->props['src_webm'];
 		$image_src                = $this->props['image_src'];
@@ -293,13 +304,20 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 		$icon_font_size_hover     = $this->get_hover_value( 'icon_font_size' );
 		$thumbnail_overlay_colors = et_pb_responsive_options()->get_property_values( $this->props, 'thumbnail_overlay_color' );
 
-		$video_src       = self::get_video( array(
-			'src'      => $src,
-			'src_webm' => $src_webm,
-		) );
+		foreach ( $multi_view->get_modes() as $mode ) {
+			$video_srcs[ $mode ] = self::get_video( array(
+				'src'      => $multi_view->get_value( 'src', $mode ),
+				'src_webm' => $multi_view->get_value( 'src_webm', $mode ),
+			) );
+		}
 
-		$image_output = self::get_video_cover_src( array(
-			'image_src' => $image_src,
+		$multi_view->set_custom_prop( 'video_srcs', $video_srcs );
+		$video_src = $multi_view->render_element( array(
+			'tag'     => 'div',
+			'content' => '{{video_srcs}}',
+			'attrs' => array(
+				'class' => 'et_pb_video_box',
+			),
 		) );
 
 		$video_background          = $this->video_background();
@@ -369,34 +387,66 @@ class ET_Builder_Module_Video extends ET_Builder_Module {
 		// Thumbnail Overlay Color.
 		et_pb_responsive_options()->generate_responsive_css( $thumbnail_overlay_colors, '%%order_class%% .et_pb_video_overlay_hover:hover', 'background-color', $render_slug, '', 'color' );
 
+		$muti_view_video_overlay = $multi_view->render_element( array(
+			'tag'     => 'div',
+			'content' => '<div class="et_pb_video_overlay_hover"><a href="#" class="et_pb_video_play"></a></div>',
+			'attrs'   => array(
+				'class' =>  'et_pb_video_overlay',
+			),
+			'styles' => array(
+				'background-image' => 'url({{image_src}})',
+			),
+			'required' => 'image_src',
+		) );
+
 		$output = sprintf(
 			'<div%2$s class="%3$s">
 				%6$s
 				%5$s
-				<div class="et_pb_video_box">
-					%1$s
-				</div>
+				%1$s
 				%4$s
 			</div>',
 			( '' !== $video_src ? $video_src : '' ),
 			$this->module_id(),
 			$this->module_classname( $render_slug ),
-			( '' !== $image_output
-				? sprintf(
-					'<div class="et_pb_video_overlay" style="background-image: url(%1$s);">
-						<div class="et_pb_video_overlay_hover">
-							<a href="#" class="et_pb_video_play"></a>
-						</div>
-					</div>',
-					esc_attr( $image_output )
-				)
-				: ''
-			),
+			$muti_view_video_overlay,
 			$video_background,
 			$parallax_image_background
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+
+		if ( $raw_value && 'image_src' === $name ) {
+			$raw_value = self::get_video_cover_src( array(
+				'image_src' => $raw_value,
+			) );
+		}
+
+		return $raw_value;
 	}
 }
 

@@ -97,7 +97,7 @@ class ET_Builder_Module_Field_MaxWidth extends ET_Builder_Module_Field_Base {
 		$field              = array(
 			'label'           => esc_html__( 'Module Alignment', 'et_builder' ),
 			'description'     => esc_html__( 'Align the module to the left, right or center.', 'et_builder' ),
-			'type'            => 'text_align',
+			'type'            => 'align',
 			'option_category' => 'layout',
 			'options'         => et_builder_get_text_orientation_options( array( 'justified' ) ),
 			'tab_slug'        => 'advanced',

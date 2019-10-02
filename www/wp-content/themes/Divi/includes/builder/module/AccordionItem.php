@@ -70,6 +70,7 @@ class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 					),
 				),
 			),
@@ -164,6 +165,8 @@ class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
 				'description'     => esc_html__( 'The title will appear above the content and when the toggle is closed.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'hover'           => 'tabs',
+				'mobile_options'  => true,
 			),
 			'content' => array(
 				'label'           => esc_html__( 'Body', 'et_builder' ),
@@ -172,6 +175,8 @@ class ET_Builder_Module_Accordion_Item extends ET_Builder_Module {
 				'description'     => esc_html__( 'Here you can define the content that will be placed within the current tab.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'hover'           => 'tabs',
+				'mobile_options'  => true,
 			),
 			'open_toggle_text_color' => array(
 				'label'             => esc_html__( 'Open Title Text Color', 'et_builder' ),

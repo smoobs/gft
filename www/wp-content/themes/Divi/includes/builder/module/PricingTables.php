@@ -163,6 +163,7 @@ class ET_Builder_Module_Pricing_Tables extends ET_Builder_Module {
 					),
 					'block_elements'   => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 					),
 					'options_priority' => array(
 						'body_text_color' => 9,
@@ -366,6 +367,8 @@ class ET_Builder_Module_Pricing_Tables extends ET_Builder_Module {
 				'affects'          => array(
 					'bullet_color',
 				),
+				'mobile_options' => true,
+				'hover'          => 'tabs',
 			),
 			'featured_table_bullet_color' => array(
 				'label'          => esc_html__( 'Featured Bullet Color', 'et_builder' ),
@@ -505,7 +508,7 @@ class ET_Builder_Module_Pricing_Tables extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
-		$show_bullet                                   = $this->props['show_bullet'];
+		$multi_view                                    = et_pb_multi_view_options( $this );
 		$featured_table                                = $this->get_featured_table( $content );
 		$featured_table_background_color_hover         = $this->get_hover_value( 'featured_table_background_color' );
 		$featured_table_background_color_values        = et_pb_responsive_options()->get_property_values( $this->props, 'featured_table_background_color' );
@@ -583,14 +586,8 @@ class ET_Builder_Module_Pricing_Tables extends ET_Builder_Module {
 			'tablet'  => esc_html( $featured_shadow_tablet ),
 			'phone'   => esc_html( $featured_shadow_phone ),
 		);
-		et_pb_responsive_options()->generate_responsive_css( $featured_shadow_values, '%%order_class%% .et_pb_featured_table', array( '-moz-box-shadow', '-webkit-box-shadow', 'box-shadow' ), $render_slug, '', 'shadow' );
 
-		if ( 'off' === $show_bullet ) {
-			ET_Builder_Element::set_style( $render_slug, array(
-				'selector'    => '%%order_class%% .et_pb_pricing li span:before',
-				'declaration' => 'display: none;',
-			) );
-		}
+		et_pb_responsive_options()->generate_responsive_css( $featured_shadow_values, '%%order_class%% .et_pb_featured_table', array( '-moz-box-shadow', '-webkit-box-shadow', 'box-shadow' ), $render_slug, '', 'shadow' );
 
 		// Featured Table Background Color.
 		et_pb_responsive_options()->generate_responsive_css( $featured_table_background_color_values, '%%order_class%% .et_pb_featured_table', 'background-color', $render_slug, '', 'color' );
@@ -797,13 +794,25 @@ class ET_Builder_Module_Pricing_Tables extends ET_Builder_Module {
 			$featured_table,
 		) );
 
+		if ( 'off' === $multi_view->get_value( 'show_bullet' ) ) {
+			$this->add_classname( 'et_pb_pricing_no_bullet' );
+		}
+
 		// Remove automatically added classnames
 		$this->remove_classname( array(
 			$render_slug
 		) );
 
+		$multi_view_data_attr = $multi_view->render_attrs( array(
+			'classes' => array(
+				'et_pb_pricing_no_bullet' => array(
+					'show_bullet' => 'off',
+				),
+			),
+		) );
+
 		$output = sprintf(
-			'<div%3$s class="%2$s">
+			'<div%3$s class="%2$s"%6$s>
 				%5$s
 				%4$s
 				<div class="et_pb_pricing_table_wrap">
@@ -814,7 +823,8 @@ class ET_Builder_Module_Pricing_Tables extends ET_Builder_Module {
 			$this->module_classname( $render_slug ),
 			$this->module_id(),
 			$video_background,
-			$parallax_image_background
+			$parallax_image_background,
+			$multi_view_data_attr
 		);
 
 		$output .= $this->keep_box_shadow_compatibility( $attrs, $content, $render_slug );

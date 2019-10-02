@@ -238,6 +238,8 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 				'default_on_front' => 'on',
 				'toggle_slug'     => 'elements',
 				'description'     => esc_html__( 'Turn project titles on or off.', 'et_builder' ),
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'show_categories' => array(
 				'label'           => esc_html__( 'Show Categories', 'et_builder' ),
@@ -250,6 +252,8 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 				'default_on_front' => 'on',
 				'toggle_slug'     => 'elements',
 				'description'     => esc_html__( 'Turn the category links on or off.', 'et_builder' ),
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'show_pagination' => array(
 				'label'           => esc_html__( 'Show Pagination', 'et_builder' ),
@@ -262,6 +266,8 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 				'default_on_front' => 'on',
 				'toggle_slug'     => 'elements',
 				'description'     => esc_html__( 'Enable or disable pagination for this feed.', 'et_builder' ),
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'zoom_icon_color' => array(
 				'label'             => esc_html__( 'Zoom Icon Color', 'et_builder' ),
@@ -432,10 +438,11 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 				$et_fb_processing_shortcode_object = $global_processing_original_value;
 
 				// Append value to query post
-				$query->posts[ $post_index ]->post_permalink 	= get_permalink();
-				$query->posts[ $post_index ]->post_thumbnail 	= print_thumbnail( $thumbnail['thumb'], $thumbnail['use_timthumb'], $titletext, $width, $height, '', false, true );
-				$query->posts[ $post_index ]->post_categories 	= $categories;
-				$query->posts[ $post_index ]->post_class_name 	= get_post_class( '', get_the_ID() );
+				$query->posts[ $post_index ]->post_permalink  = get_permalink();
+				$query->posts[ $post_index ]->featured_image  = isset( $thumbnail['fullpath'] ) ? $thumbnail['fullpath'] : null;
+				$query->posts[ $post_index ]->post_thumbnail  = print_thumbnail( $thumbnail['thumb'], $thumbnail['use_timthumb'], $titletext, $width, $height, '', false, true );
+				$query->posts[ $post_index ]->post_categories = $categories;
+				$query->posts[ $post_index ]->post_class_name = get_post_class( '', get_the_ID() );
 
 				$post_index++;
 			}
@@ -455,7 +462,7 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 				'query' => $query,
 				'echo' => false
 			) ) : false;
-		} else if ( wp_doing_ajax() || et_core_is_fb_enabled() ) {
+		} else if ( self::is_processing_computed_prop() ) {
 			// This is for the VB
 			$query = array( 'posts' => self::get_no_results_template() );
 		}
@@ -466,6 +473,7 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                      = et_pb_multi_view_options( $this );
 		$fullwidth                       = $this->props['fullwidth'];
 		$posts_number                    = $this->props['posts_number'];
 		$include_categories              = $this->props['include_categories'];
@@ -546,46 +554,93 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 					<a href="<?php echo esc_url( $post->post_permalink ); ?>" title="<?php echo esc_attr( get_the_title() ); ?>">
 						<?php if ( 'on' === $fullwidth ) { ?>
 							<span class="et_portfolio_image">
-								<img src="<?php echo esc_url( $post->post_thumbnail ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>" width="1080" height="9999" />
+							<?php
+								$this->render_image( $post->post_thumbnail, array(
+									'alt' => get_the_title(),
+									'width' => '1080',
+									'height' => '9999',
+								) );
+								?>
 							</span>
 						<?php } else { ?>
 							<span class="et_portfolio_image">
-								<img src="<?php echo esc_url( $post->post_thumbnail ); ?>" alt="<?php echo esc_attr( get_the_title() ); ?>" width="400" height="284" />
+								<?php
+								$image_attrs = array(
+									'alt'    => get_the_title(),
+									'width'  => '400',
+									'height' => '284',
+								);
+
+								if ( ! empty( $post->featured_image ) ) {
+									$image_attrs['srcset'] = $post->featured_image . ' 479w, ' . $post->post_thumbnail . ' 480w';
+									$image_attrs['sizes']  = '(max-width:479px) 479w, 100vw';
+								}
+
+								$this->render_image( $post->post_thumbnail, $image_attrs );
+								?>
 								<?php echo et_core_esc_previously( $overlay ); ?>
 							</span>
 						<?php } ?>
 					</a>
 					<?php } ?>
 
-					<?php if ( 'on' === $show_title ) { ?>
-						<<?php echo et_core_esc_previously( $processed_header_level ); ?> class="et_pb_module_header">
-							<a href="<?php echo esc_url( $post->post_permalink ); ?>" title="<?php echo esc_attr( get_the_title() ); ?>">
-								<?php echo esc_html( get_the_title() ); ?>
-							</a>
-						</<?php echo et_core_esc_previously( $processed_header_level ); ?>>
-					<?php } ?>
+					<?php
+					$multi_view->render_element( array(
+						'tag'     => $processed_header_level,
+						'content' => sprintf( '<a href="%1$s" title="%2$s">%3$s</a>', esc_url( $post->post_permalink ), esc_attr( get_the_title() ) , esc_html( get_the_title() )),
+						'attrs'   => array(
+							'class'             => 'et_pb_module_header',
+						),
+						'visibility' => array(
+							'show_title' => 'on',
+						),
+						'required' => array(
+							'show_title' => 'on',
+						),
+					), true );
 
+					if ( $multi_view->has_value( 'show_categories', 'on' ) && ! empty( $post->post_categories ) ) :
+						$categories_links = '';
+						$category_index   = 0;
 
-					<?php if ( 'on' === $show_categories && ! empty( $post->post_categories ) ) : ?>
-						<p class="post-meta">
-							<?php
-								$category_index = 0;
-								foreach( $post->post_categories as $category ) {
-									$category_index++;
-									$separator =  $category_index < count(  $post->post_categories ) ? ', ' : '';
-									echo '<a href="'. esc_url( $category['permalink'] ) .'" title="' . esc_attr( $category['label'] ) . '">' . esc_html( $category['label'] ) . '</a>' . et_core_intentionally_unescaped( $separator, 'fixed_string' );
-								}
-							?>
-						</p>
-					<?php endif; ?>
+						foreach( $post->post_categories as $category ) {
+							$category_index++;
+							$separator =  $category_index < count(  $post->post_categories ) ? ', ' : '';
+							$categories_links .= '<a href="'. esc_url( $category['permalink'] ) .'" title="' . esc_attr( $category['label'] ) . '">' . esc_html( $category['label'] ) . '</a>' . et_core_intentionally_unescaped( $separator, 'fixed_string' );
+						}
+
+						$multi_view->render_element( array(
+							'tag'     => 'p',
+							'content' => $categories_links,
+							'attrs'   => array(
+								'class'             => 'post-meta',
+							),
+							'visibility' => array(
+								'show_categories' => 'on',
+							),
+							'required' => array(
+								'show_categories' => 'on',
+							),
+						), true );
+					endif;
+					?>
 
 				</div><!-- .et_pb_portfolio_item -->
 				<?php
 			}
 
-			if ( 'on' === $show_pagination && ! is_search() ) {
+			if ( $multi_view->has_value( 'show_pagination', 'on' ) && ! is_search() ) {
 				if ( function_exists( 'wp_pagenavi' ) ) {
-					$pagination = wp_pagenavi( array( 'query' => $portfolio, 'echo' => false ) );
+					$pagination = $multi_view->render_element( array(
+						'tag'     => 'div',
+						'content' => wp_pagenavi( array( 'query' => $portfolio, 'echo' => false ) ),
+						'visibility' => array(
+							'show_pagination' => 'on',
+						),
+						'required' => array(
+							'show_pagination' => 'on',
+						),
+					) );
 				} else {
 					$next_posts_link_html = $prev_posts_link_html = '';
 
@@ -610,12 +665,20 @@ class ET_Builder_Module_Portfolio extends ET_Builder_Module_Type_PostBased {
 					}
 
 					$pagination = sprintf(
-						'<div class="pagination clearfix">
+						'<div class="pagination clearfix"%3$s>
 							%1$s
 							%2$s
 						</div>',
 						$next_posts_link_html,
-						$prev_posts_link_html
+						$prev_posts_link_html,
+						$multi_view->render_attrs( array(
+							'visibility' => array(
+								'show_pagination' => 'on',
+							),
+							'required' => array(
+								'show_pagination' => 'on',
+							),
+						) )
 					);
 				}
 			}

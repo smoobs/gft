@@ -161,6 +161,8 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 				'default_on_front' => 'off',
 				'toggle_slug'     => 'icon',
 				'description'     => esc_html__( 'Here you can choose whether or not to include the follow button next to the icon.', 'et_builder' ),
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'icon_color'            => array(
 				'label'          => esc_html__( 'Icon Color', 'et_builder' ),
@@ -234,7 +236,7 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 		global $et_pb_social_media_follow_link;
 
 		$url_new_window    = $this->props['url_new_window'];
-		$follow_button     = $this->props['follow_button'];
+		$follow_button     = et_pb_multi_view_options( $this )->get_values( 'follow_button' );
 
 		$et_pb_social_media_follow_link = array(
 			'url_new_window' => $url_new_window,
@@ -245,6 +247,7 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 	function render( $attrs, $content = null, $render_slug ) {
 		global $et_pb_social_media_follow_link;
 
+		$multi_view                = et_pb_multi_view_options( $this );
 		$video_background          = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
 		$use_icon_font_size        = $this->props['use_icon_font_size'];
@@ -262,11 +265,11 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 
 
 		// Icon Color.
-		et_pb_responsive_options()->generate_responsive_css( $icon_color_values, '%%order_class%% li a.icon:before', 'color', $render_slug, '', 'color' );
+		et_pb_responsive_options()->generate_responsive_css( $icon_color_values, '%%order_class%% li.et_pb_social_icon a.icon:before', 'color', $render_slug, '', 'color' );
 
-		if ( et_builder_is_hover_enabled( 'icon_color', $this->props ) ) {
+		if ( ! empty( $icon_color_hover ) && et_builder_is_hover_enabled( 'icon_color', $this->props ) ) {
 			ET_Builder_Element::set_style( $render_slug, array(
-				'selector'    => '%%order_class%% li a.icon:hover:before',
+				'selector'    => '%%order_class%% li.et_pb_social_icon a.icon:hover:before',
 				'declaration' => sprintf(
 					'color: %1$s;',
 					esc_html( $icon_color_hover )
@@ -317,7 +320,7 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 			}
 
 			// Icon hover styles.
-			if ( et_builder_is_hover_enabled( 'icon_font_size', $this->props ) && '' !== $icon_font_size_hover ) {
+			if ( et_builder_is_hover_enabled( 'icon_font_size', $this->props ) && ! empty( $icon_font_size_hover ) ) {
 				$icon_font_size_hover_int    = (int) $icon_font_size_hover;
 				$icon_font_size_hover_unit   = str_replace( $icon_font_size_hover_int, '', $icon_font_size_hover );
 				$icon_font_size_hover_double = 0 < $icon_font_size_hover_int ? $icon_font_size_hover_int * 2 : 0;
@@ -362,7 +365,7 @@ class ET_Builder_Module_Social_Media_Follow extends ET_Builder_Module {
 			$this->add_classname( "et_pb_bg_layout_{$background_layout_phone}_phone" );
 		}
 
-		if ( 'on' === $et_pb_social_media_follow_link['follow_button'] ) {
+		if ( $multi_view->has_value( 'follow_button', 'on' ) ) {
 			$this->add_classname( 'has_follow_button' );
 		}
 

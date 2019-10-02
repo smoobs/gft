@@ -80,6 +80,7 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 					),
 				),
 				'subhead' => array(
@@ -191,8 +192,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'image'   => array(
 					'css'          => array(
 						'main' => array(
-							'border_radii'  => '%%order_class%% .header-logo, %%order_class%% .header-image-container img',
-							'border_styles' => '%%order_class%% .header-logo, %%order_class%% .header-image-container img',
+							'border_radii'  => '%%order_class%%.et_pb_fullwidth_header .header-logo, %%order_class%%.et_pb_fullwidth_header .header-image-container img',
+							'border_styles' => '%%order_class%%.et_pb_fullwidth_header .header-logo, %%order_class%%.et_pb_fullwidth_header .header-image-container img',
 						)
 					),
 					'label_prefix' => esc_html__( 'Image', 'et_builder' ),
@@ -274,6 +275,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'description'     => esc_html__( 'Enter your page title here.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'subhead' => array(
 				'label'           => esc_html__( 'Subtitle', 'et_builder' ),
@@ -282,6 +285,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'description'     => esc_html__( 'If you would like to use a subhead, add it here. Your subhead will appear below your title in a small font.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'text_orientation' => array(
 				'label'             => esc_html__( 'Text & Logo Alignment', 'et_builder' ),
@@ -375,6 +380,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'description'     => esc_html__( 'Enter the text for the Button.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'button_one_url' => array(
 				'label'           => sprintf( esc_html__( 'Button %1$s Link URL', 'et_builder' ), '#1' ),
@@ -391,6 +398,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'description'     => esc_html__( 'Enter the text for the Button.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'button_two_url' => array(
 				'label'           => sprintf( esc_html__( 'Button %1$s Link URL', 'et_builder' ), '#2' ),
@@ -423,6 +432,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'description'        => esc_html__( 'Upload your desired image, or type in the URL to the image you would like to display.', 'et_builder' ),
 				'toggle_slug'        => 'images',
 				'dynamic_content'    => 'image',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'logo_alt_text' => array(
 				'label'           => esc_html__( 'Logo Image Alternative Text', 'et_builder' ),
@@ -479,6 +490,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 					'image_title',
 				),
 				'dynamic_content'    => 'image',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'image_alt_text' => array(
 				'label'           => esc_html__( 'Header Image Alternative Text', 'et_builder' ),
@@ -526,6 +539,8 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 				'description'     => esc_html__( 'Content entered here will appear below the subheading text.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'content_max_width' => array(
 				'label'           => esc_html__( 'Content Width', 'et_builder' ),
@@ -573,6 +588,7 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                        = et_pb_multi_view_options( $this );
 		// Allowing full html for backwards compatibility.
 		$title                             = $this->_esc_attr( 'title', 'full' );
 		// Allowing full html for backwards compatibility.
@@ -709,6 +725,9 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 			'custom_icon_tablet'  => $custom_icon_1_tablet,
 			'custom_icon_phone'   => $custom_icon_1_phone,
 			'has_wrapper'         => false,
+			'multi_view_data'  => $multi_view->render_attrs( array(
+				'content' => '{{button_one_text}}',
+			) ),
 		) );
 
 		$button_output .= $this->render_button( array(
@@ -722,6 +741,9 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 			'custom_icon_tablet'  => $custom_icon_2_tablet,
 			'custom_icon_phone'   => $custom_icon_2_phone,
 			'has_wrapper'         => false,
+			'multi_view_data'  => $multi_view->render_attrs( array(
+				'content' => '{{button_two_text}}',
+			) ),
 		) );
 
 		$video_background = $this->video_background();
@@ -737,16 +759,41 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 		}
 
 		$header_content = '';
-		if ( '' !== $title || '' !== $subhead || '' !== $content || '' !== $button_output || '' !== $logo_image_url ) {
-			$logo_image = '';
-			if ( '' !== $logo_image_url ) {
-				$logo_image = sprintf(
-					'<img src="%1$s" alt="%2$s"%3$s class="header-logo" />',
-					esc_url( $logo_image_url ),
-					esc_attr( $logo_alt_text ),
-					( '' !== $logo_title ? sprintf( ' title="%1$s"', esc_attr( $logo_title ) ) : '' )
-				);
-			}
+		if ( $multi_view->has_value( 'title' ) || $multi_view->has_value( 'subhead' ) || $multi_view->has_value( 'content' ) || '' !== $button_output || $multi_view->has_value( 'logo_image_url' ) ) {
+			$title = $multi_view->render_element( array(
+				'tag'     => et_pb_process_header_level( $header_level, 'h1' ),
+				'content' => '{{title}}',
+				'attrs'   => array(
+					'class' => 'et_pb_module_header',
+				),
+			) );
+
+			$subhead = $multi_view->render_element( array(
+				'content' => '{{subhead}}',
+				'attrs'   => array(
+					'class' => 'et_pb_fullwidth_header_subhead',
+				),
+			) );
+
+			$logo_image_url = $multi_view->render_element( array(
+				'tag'     => 'img',
+				'attrs'   => array(
+					'src'   => '{{logo_image_url}}',
+					'class' => 'header-logo',
+					'title' => esc_attr( $logo_title ),
+					'alt'   => esc_attr( $logo_title ),
+				),
+				'required' => 'logo_image_url',
+			) );
+
+			$content = $multi_view->render_element( array(
+				'tag'     => 'div',
+				'content' => '{{content}}',
+				'attrs'   => array(
+					'class' => 'et_pb_header_content_wrapper',
+				),
+			) );
+
 			$header_content = sprintf(
 				'<div class="header-content-container%6$s">
 					<div class="header-content">
@@ -757,10 +804,10 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 						%5$s
 					</div>
 				</div>',
-				( $title ? sprintf( '<%1$s class="et_pb_module_header">%2$s</%1$s>', et_pb_process_header_level( $header_level, 'h1' ), et_core_esc_previously( $title ) ) : '' ),
-				( $subhead ? sprintf( '<span class="et_pb_fullwidth_header_subhead">%1$s</span>', et_core_esc_previously( $subhead ) ) : '' ),
-				$logo_image,
-				sprintf( '<div class="et_pb_header_content_wrapper">%1$s</div>', $this->content ),
+				$title,
+				$subhead,
+				$logo_image_url,
+				$content,
 				( '' !== $button_output ? $button_output : '' ),
 				( '' !== $content_orientation ? sprintf( ' %1$s', esc_attr( $content_orientation ) ) : '' )
 			);
@@ -768,17 +815,22 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 
 		$header_image = '';
 
-		if ( '' !== $header_image_url ) {
+		if ( $multi_view->has_value( 'header_image_url' ) ) {
 			$header_image = sprintf(
 				'<div class="header-image-container%2$s">
 					<div class="header-image">
-						<img src="%1$s" alt="%3$s" title="%4$s" />
+					%1$s
 					</div>
 				</div>',
-				( '' !== $header_image_url ? esc_url( $header_image_url ) : '' ),
-				( '' !== $image_orientation ? sprintf( ' %1$s', esc_attr( $image_orientation ) ) : '' ),
-				esc_attr( $image_alt_text ),
-				esc_attr( $image_title )
+				$multi_view->render_element( array(
+					'tag'     => 'img',
+					'attrs'   => array(
+						'src'   => '{{header_image_url}}',
+						'alt' => esc_attr( $image_alt_text ),
+						'title' => esc_attr( $image_title ),
+					),
+				) ),
+				( '' !== $image_orientation ? sprintf( ' %1$s', esc_attr( $image_orientation ) ) : '' )
 			);
 
 			$this->add_classname( 'et_pb_header_with_image' );
@@ -876,6 +928,50 @@ class ET_Builder_Module_Fullwidth_Header extends ET_Builder_Module {
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+		$fields_need_escape_full = array(
+			'title',
+			'subhead',
+		);
+		$fields_need_escape_limited = array(
+			'button_one_text',
+			'button_two_text',
+		);
+
+		if ( $raw_value && in_array( $name, $fields_need_escape_full, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ), 'full');
+		}
+
+		if ( $raw_value && in_array( $name, $fields_need_escape_limited, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ), 'limited');
+		}
+
+		return $raw_value;
 	}
 }
 

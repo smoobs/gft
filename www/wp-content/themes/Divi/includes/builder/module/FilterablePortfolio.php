@@ -261,6 +261,8 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 				'toggle_slug'       => 'elements',
 				'description'       => esc_html__( 'Turn project titles on or off.', 'et_builder' ),
 				'default_on_front'  => 'on',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'show_categories' => array(
 				'label'             => esc_html__( 'Show Categories', 'et_builder' ),
@@ -273,6 +275,8 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 				'toggle_slug'       => 'elements',
 				'description'       => esc_html__( 'Turn the category links on or off.', 'et_builder' ),
 				'default_on_front'  => 'on',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'show_pagination' => array(
 				'label'             => esc_html__( 'Show Pagination', 'et_builder' ),
@@ -285,6 +289,8 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 				'toggle_slug'       => 'elements',
 				'description'       => esc_html__( 'Enable or disable pagination for this feed.', 'et_builder' ),
 				'default_on_front'  => 'on',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'zoom_icon_color' => array(
 				'label'             => esc_html__( 'Zoom Icon Color', 'et_builder' ),
@@ -431,7 +437,7 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 
 				$post_index++;
 			}
-		} else if ( wp_doing_ajax() || et_core_is_fb_enabled() ) {
+		} else if ( self::is_processing_computed_prop() ) {
 			// This is for the VB
 			$query = array( 'posts' => self::get_no_results_template() );
 		}
@@ -460,6 +466,7 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                      = et_pb_multi_view_options( $this );
 		$fullwidth                       = $this->props['fullwidth'];
 		$posts_number                    = $this->props['posts_number'];
 		$include_categories              = $this->props['include_categories'];
@@ -574,18 +581,35 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 						</a>
 				<?php
 					endif;
+
+					$multi_view->render_element( array(
+						'tag'     => et_pb_process_header_level( $header_level, 'h2' ),
+						'content' => sprintf( '<a href="%1$s">%2$s</a>', esc_url( $permalink ), et_core_intentionally_unescaped( $titletext, 'html' ) ),
+						'attrs'   => array(
+							'class' => 'et_pb_module_header',
+						),
+						'visibility' =>  array(
+							'show_title' => 'on',
+						),
+						'required' => array(
+							'show_title' => 'on',
+						),
+					), true );
+
+					$multi_view->render_element( array(
+						'tag'     => 'p',
+						'content' => et_core_esc_wp( $post_meta ),
+						'attrs'   => array(
+							'class' => 'post-meta',
+						),
+						'visibility' =>  array(
+							'show_categories' => 'on',
+						),
+						'required' => array(
+							'show_categories' => 'on',
+						),
+					), true );
 				?>
-
-				<?php if ( 'on' === $show_title ) : ?>
-					<<?php echo et_pb_process_header_level( $header_level, 'h2' ) ?> class="et_pb_module_header">
-						<a href="<?php echo esc_url( $permalink ); ?>"><?php echo et_core_intentionally_unescaped( $titletext, 'html' ); ?></a>
-					</<?php echo et_pb_process_header_level( $header_level, 'h2' ) ?>>
-				<?php endif; ?>
-
-				<?php if ( 'on' === $show_categories ) : ?>
-					<p class="post-meta"><?php echo et_core_esc_wp( $post_meta ); ?></p>
-				<?php endif; ?>
-
 				</div><!-- .et_pb_portfolio_item -->
 				<?php
 			}
@@ -668,13 +692,37 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 			);
 		}
 
+		$pagination_classes_multi_view_attr = $multi_view->render_attrs( array(
+			'classes' =>  array(
+				'clearfix' => array(
+					'show_pagination' => 'on',
+				),
+				'no_pagination' => array(
+					'show_pagination' => 'off',
+				)
+			),
+		) );
+
+		$pagination_multi_view = $multi_view->render_element( array(
+			'tag'   => 'div',
+			'attrs' => array(
+				'class' => 'et_pb_portofolio_pagination',
+			),
+			'visibility' => array(
+				'show_pagination' => 'on',
+			),
+			'required' => array(
+				'show_pagination' => 'on',
+			)
+		) );
+
 		$output = sprintf(
 			'<div%4$s class="%1$s" data-posts-number="%5$d"%8$s%11$s%12$s>
 				%10$s
 				%9$s
 				<div class="et_pb_portfolio_filters clearfix">%2$s</div><!-- .et_pb_portfolio_filters -->
 
-				<div class="et_pb_portfolio_items_wrapper %6$s">
+				<div class="et_pb_portfolio_items_wrapper %6$s"%13$s>
 					<div class="et_pb_portfolio_items">%3$s</div><!-- .et_pb_portfolio_items -->
 				</div>
 				%7$s
@@ -684,13 +732,14 @@ class ET_Builder_Module_Filterable_Portfolio extends ET_Builder_Module_Type_Post
 			$posts,
 			$this->module_id(),
 			esc_attr( $posts_number), // #5
-			('on' === $show_pagination ? 'clearfix' : 'no_pagination' ),
-			('on' === $show_pagination ? '<div class="et_pb_portofolio_pagination"></div>' : '' ),
+			( 'on' === $multi_view->get_value( 'show_pagination' ) ? 'clearfix' : 'no_pagination' ),
+			$pagination_multi_view,
 			is_rtl() ? ' data-rtl="true"' : '',
 			$video_background,
 			$parallax_image_background, // #10
 			et_core_esc_previously( $data_background_layout ),
-			et_core_esc_previously( $data_background_layout_hover )
+			et_core_esc_previously( $data_background_layout_hover ),
+			$pagination_classes_multi_view_attr
 		);
 
 		return $output;

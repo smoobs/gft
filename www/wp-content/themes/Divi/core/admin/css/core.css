@@ -299,6 +299,12 @@ body.rtl.et-db:not(.et-fb-no-rtl) button.et-core-button {
 	animation: et-core-fade-out-scale-center .5s 1 cubic-bezier(0.77,0,.175,1);
 }
 
+.et-core-modal-overlay--transparent {
+	background: transparent;
+	/* 100025 = Settings Modal Modal z-index */
+	z-index: 100024;
+}
+
 .et-core-modal-header {
 	background-color: #6c2eb9;
 	margin: 0;

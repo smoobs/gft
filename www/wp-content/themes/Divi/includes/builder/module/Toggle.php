@@ -85,6 +85,24 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 						'default' => '0px',
 					),
 				),
+				'closed_title' => array(
+					'label'    => esc_html__( 'Closed Title', 'et_builder' ),
+					'css'      => array(
+						'main' => "{$this->main_css_element}.et_pb_toggle_close h5, {$this->main_css_element}.et_pb_toggle_close h1.et_pb_toggle_title, {$this->main_css_element}.et_pb_toggle_close h2.et_pb_toggle_title, {$this->main_css_element}.et_pb_toggle_close h3.et_pb_toggle_title, {$this->main_css_element}.et_pb_toggle_close h4.et_pb_toggle_title, {$this->main_css_element}.et_pb_toggle_close h6.et_pb_toggle_title",
+						'important' => 'plugin_only',
+					),
+					'hide_text_color' => true,
+					'default_from'    => 'title',
+					'line_height'     => array(
+						'default' => '1.7em',
+					),
+					'font_size'       => array(
+						'default' => '16px',
+					),
+					'letter_spacing'  => array(
+						'default' => '0px',
+					),
+				),
 				'body'                 => array(
 					'label'          => esc_html__( 'Body', 'et_builder' ),
 					'css'            => array(
@@ -95,6 +113,7 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 					),
 				),
 			),
@@ -148,6 +167,8 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 				'description'     => esc_html__( 'The title will appear above the content and when the toggle is closed.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'open' => array(
 				'label'           => esc_html__( 'State', 'et_builder' ),
@@ -168,6 +189,8 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 				'description'       => esc_html__( 'Input the main text content for your module here.', 'et_builder' ),
 				'toggle_slug'       => 'main_content',
 				'dynamic_content'   => 'text',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'open_toggle_text_color' => array(
 				'label'             => esc_html__( 'Open Title Text Color', 'et_builder' ),
@@ -287,6 +310,7 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                            = et_pb_multi_view_options( $this );
 		$open                                  = $this->props['open'];
 		$header_level                          = $this->props['title_level'];
 		$open_toggle_background_color_values   = et_pb_responsive_options()->get_property_values( $this->props, 'open_toggle_background_color' );
@@ -442,11 +466,17 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 		$video_background = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
 
-		$heading = sprintf(
-			'<%1$s class="et_pb_toggle_title">%2$s</%1$s>',
-			et_pb_process_header_level( $header_level, 'h5' ),
-			$this->_esc_attr( 'title' )
-		);
+		$heading = $multi_view->render_element( array(
+			'tag'     => et_pb_process_header_level( $header_level, 'h5' ),
+			'content' => '{{title}}',
+			'attrs'   => array(
+				'class' => 'et_pb_toggle_title',
+			),
+		) );
+
+		$multi_view_content = $multi_view->render_attrs( array(
+			'content' => '{{content}}',
+		) );
 
 		// Module classnames
 		$this->add_classname( array(
@@ -464,7 +494,7 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 				%6$s
 				%5$s
 				%1$s
-				<div class="et_pb_toggle_content clearfix">
+				<div class="et_pb_toggle_content clearfix"%7$s>
 					%3$s
 				</div> <!-- .et_pb_toggle_content -->
 			</div> <!-- .et_pb_toggle -->',
@@ -472,11 +502,44 @@ class ET_Builder_Module_Toggle extends ET_Builder_Module {
 			$this->module_classname( $render_slug ),
 			$this->content,
 			$this->module_id(),
-			$video_background,
-			$parallax_image_background
+			$video_background, // #5
+			$parallax_image_background,
+			et_core_esc_previously( $multi_view_content )
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view  ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+
+		if ( $raw_value && 'title' === $name ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ) );
+		}
+
+		return $raw_value;
 	}
 }
 

@@ -395,7 +395,7 @@ class ET_Builder_Module_Settings_Migration_OptionsHarmony2 extends ET_Builder_Mo
 		return $modules;
 	}
 
-	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content ) {
+	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content, $module_address ) {
 
 		// Migrate Email Optin fields text shadow. There is a conflict on Fields & Email Optin. There
 		// are two different Text Shadow settings. The first one under Fields settings, the second one

@@ -38,6 +38,7 @@ class ET_Builder_Module_Tabs_Item extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 					),
 				),
 				'tab'   => array(
@@ -100,6 +101,8 @@ class ET_Builder_Module_Tabs_Item extends ET_Builder_Module {
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
 				'option_category' => 'basic_option',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'content' => array(
 				'label'           => esc_html__( 'Body', 'et_builder' ),
@@ -108,23 +111,63 @@ class ET_Builder_Module_Tabs_Item extends ET_Builder_Module {
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
 				'option_category' => 'basic_option',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 		);
 		return $fields;
+	}
+
+	/**
+	 * Set the `product` prop on TabItem.
+	 *
+	 * `product` prop is only available w/ the Parents' Tab module and not w/ TabsItem module.
+	 *
+	 * The global $et_pb_wc_tabs variable is set
+	 */
+	function maybe_inherit_values() {
+		// Inheriting Tabs attribute.
+		global $et_pb_wc_tabs;
+
+		if ( isset( $et_pb_wc_tabs ) && ! empty( $et_pb_wc_tabs['product'] ) ) {
+			$this->props['product'] = $et_pb_wc_tabs['product'];
+		}
+
+	}
+
+	/**
+	 * Return the Product ID when set. Otherwise return parent::get_the_ID()
+	 *
+	 * $this->props['product'] is set using
+	 * @see ET_Builder_Module_Tabs_Item->maybe_inherit_values()
+	 *
+	 * @return bool|int
+	 */
+	function get_the_ID() {
+		if ( ! isset( $this->props['product'] ) ) {
+			return parent::get_the_ID();
+		}
+
+		$product = wc_get_product( absint( $this->props['product'] ) );
+		if ( $product instanceof WC_Product ) {
+			return $product->get_id();
+		}
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
 		global $et_pb_tab_titles;
 		global $et_pb_tab_classes;
 
-		$title = $this->props['title'];
+		$multi_view = et_pb_multi_view_options( $this );
 
 		$video_background = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
 
 		$i = 0;
 
-		$et_pb_tab_titles[]  = '' !== $title ? $title : esc_html__( 'Tab', 'et_builder' );
+		$multi_view->set_default_value( 'title', esc_html__( 'Tab', 'et_builder' ) );
+
+		$et_pb_tab_titles[]  = $multi_view->get_values( 'title' );
 		$et_pb_tab_classes[] = ET_Builder_Element::get_module_order_class( $render_slug );
 
 		// Module classnames
@@ -142,15 +185,21 @@ class ET_Builder_Module_Tabs_Item extends ET_Builder_Module {
 			'et_pb_module',
 		) );
 
+		$content = $multi_view->render_element( array(
+			'tag'     => 'div',
+			'content' => '{{content}}',
+			'attrs'   => array(
+				'class' => 'et_pb_tab_content',
+			),
+		) );
+
 		$output = sprintf(
 			'<div class="%2$s">
 				%4$s
 				%3$s
-				<div class="et_pb_tab_content">
-					%1$s
-				</div><!-- .et_pb_tab_content" -->
+				%1$s
 			</div> <!-- .et_pb_tab -->',
-			$this->content,
+			$content,
 			$this->module_classname( $render_slug ),
 			$video_background,
 			$parallax_image_background

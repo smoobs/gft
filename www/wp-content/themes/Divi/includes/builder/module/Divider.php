@@ -108,6 +108,8 @@ class ET_Builder_Module_Divider extends ET_Builder_Module {
 				),
 				'toggle_slug'       => 'main_content',
 				'description'       => esc_html__( 'This settings turns on and off the 1px divider line, but does not affect the divider height.', 'et_builder' ),
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'divider_style' => array(
 				'label'             => esc_html__( 'Line Style', 'et_builder' ),
@@ -184,6 +186,7 @@ class ET_Builder_Module_Divider extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                  = et_pb_multi_view_options( $this );
 		$show_divider                = $this->props['show_divider'];
 		$divider_position_customizer = ! et_is_builder_plugin_active() ? et_get_option( 'et_pb_divider-divider_position', 'top' ) : 'top';
 		$custom_padding              = $this->props['custom_padding'];
@@ -353,12 +356,24 @@ class ET_Builder_Module_Divider extends ET_Builder_Module {
 			$this->add_classname( 'et_pb_divider_hidden' );
 		}
 
+		$multi_view_data_attr = $multi_view->render_attrs( array(
+			'classes' =>  array(
+				'et_pb_divider' => array(
+					'show_divider' => 'on',
+				),
+				'et_pb_divider_hidden' => array(
+					'show_divider' => 'off',
+				)
+			),
+		) );
+
 		$output = sprintf(
-			'<div%2$s class="%1$s">%4$s%3$s<div class="et_pb_divider_internal"></div></div>',
+			'<div%2$s class="%1$s"%5$s>%4$s%3$s<div class="et_pb_divider_internal"></div></div>',
 			$this->module_classname( $render_slug ),
 			$this->module_id(),
 			$video_background,
-			$parallax_image_background
+			$parallax_image_background,
+			$multi_view_data_attr
 		);
 
 		return $output;

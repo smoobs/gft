@@ -47,6 +47,7 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 						'css'               => array(
 							'main' => "{$this->main_css_element}",
 						),
@@ -204,6 +205,8 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 				'description'     => esc_html__( 'Choose a title of your login box.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'current_page_redirect' => array(
 				'label'           => esc_html__( 'Redirect To The Current Page', 'et_builder' ),
@@ -224,6 +227,8 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 				'description'       => esc_html__( 'Input the main text content for your module here.', 'et_builder' ),
 				'toggle_slug'       => 'main_content',
 				'dynamic_content'   => 'text',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 		);
 
@@ -235,8 +240,15 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view                        = et_pb_multi_view_options( $this );
 		$module_id                         = $this->props['module_id'];
-		$title                             = $this->_esc_attr( 'title' );
+		$title                             = $multi_view->render_element( array(
+			'tag'     => et_pb_process_header_level( $this->props['header_level'], 'h2' ),
+			'content' => '{{title}}',
+			'attrs'   => array(
+				'class' => 'et_pb_module_header',
+			),
+		) );
 		$background_color                  = $this->props['background_color'];
 		$background_layout                 = $this->props['background_layout'];
 		$background_layout_hover           = et_pb_hover_options()->get_value( 'background_layout', $this->props, 'light' );
@@ -297,7 +309,7 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 						</p>
 						<p class="et_pb_forgot_password"><a href="%2$s">%1$s</a></p>
 						<p>
-							<button type="submit" class="et_pb_newsletter_button et_pb_button%11$s"%10$s%13$s%14$s>%8$s</button>
+							<button type="submit" name="et_builder_submit_button" class="et_pb_newsletter_button et_pb_button%11$s"%10$s%13$s%14$s>%8$s</button>
 							%9$s
 						</p>
 					</form>
@@ -362,6 +374,14 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 			$this->add_classname( 'et_pb_with_focus_border' );
 		}
 
+		$content = $multi_view->render_element( array(
+			'tag'     => 'div',
+			'content' => '{{content}}',
+			'attrs'   => array(
+				'class' => 'et_pb_newsletter_description_content',
+			),
+		) );
+
 		$output = sprintf(
 			'<div%6$s class="%4$s"%5$s%9$s%10$s>
 				%8$s
@@ -372,8 +392,8 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 				</div>
 				%3$s
 			</div>',
-			( '' !== $title ? sprintf( '<%1$s class="et_pb_module_header">%2$s</%1$s>', et_pb_process_header_level( $header_level, 'h2' ), et_core_esc_previously( $title ) ) : '' ),
-			( '' !== $content ? '<div class="et_pb_newsletter_description_content">' . $content . '</div>' : '' ),
+			$title,
+			$content,
 			$form,
 			$this->module_classname( $render_slug ),
 			'',
@@ -385,6 +405,55 @@ class ET_Builder_Module_Login extends ET_Builder_Module {
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 *
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+
+		if ( is_user_logged_in() && ! is_customize_preview() && ! is_et_pb_preview() && 'content' === $name ) {
+			$current_user = wp_get_current_user();
+			$redirect_url = 'on' === $this->props['current_page_redirect']
+				? ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']
+				: '';
+
+			$raw_value .= sprintf( '<br/>%1$s <a href="%2$s">%3$s</a>',
+				sprintf( esc_html__( 'Logged in as %1$s', 'et_builder' ), esc_html( $current_user->display_name ) ),
+				esc_url( wp_logout_url( esc_url( $redirect_url ) ) ),
+				esc_html__( 'Log out', 'et_builder' )
+			);
+		}
+
+		$fields_need_escape = array(
+			'title',
+		);
+
+		if ( $raw_value && in_array( $name, $fields_need_escape, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ) );
+		}
+
+		return $raw_value;
 	}
 }
 

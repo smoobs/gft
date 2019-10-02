@@ -150,6 +150,8 @@ class ET_Builder_Module_Countdown_Timer extends ET_Builder_Module {
 				'description'     => esc_html__( 'This is the title displayed for the countdown timer.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'date_time' => array(
 				'label'           => esc_html__( 'Date', 'et_builder' ),
@@ -164,10 +166,16 @@ class ET_Builder_Module_Countdown_Timer extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
-		$title                           = $this->_esc_attr( 'title' );
+		$multi_view                      = et_pb_multi_view_options( $this );
+		$title                           = $multi_view->render_element( array(
+			'tag'     => et_pb_process_header_level( $this->props['header_level'], 'h4' ),
+			'content' => '{{title}}',
+			'attrs'   => array(
+				'class' => 'title',
+			),
+		) );
 		$date_time                       = $this->props['date_time'];
 		$use_background_color            = $this->props['use_background_color'];
-		$header_level                    = $this->props['header_level'];
 		$end_date                        = gmdate( 'M d, Y H:i:s', strtotime( $date_time ) );
 		$gmt_offset                      = get_option( 'gmt_offset' );
 		$gmt_divider                     = '-' === substr( $gmt_offset, 0, 1 ) ? '-' : '+';
@@ -181,14 +189,6 @@ class ET_Builder_Module_Countdown_Timer extends ET_Builder_Module {
 		$background_layout_values        = et_pb_responsive_options()->get_property_values( $this->props, 'background_layout' );
 		$background_layout_tablet        = isset( $background_layout_values['tablet'] ) ? $background_layout_values['tablet'] : '';
 		$background_layout_phone         = isset( $background_layout_values['phone'] ) ? $background_layout_values['phone'] : '';
-
-		if ( '' !== $title ) {
-			$title = sprintf(
-				'<%2$s class="title">%s</%2$s>',
-				et_core_esc_previously( $title ),
-				et_pb_process_header_level( $header_level, 'h4' )
-			);
-		}
 
 		$video_background = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
@@ -270,6 +270,42 @@ class ET_Builder_Module_Countdown_Timer extends ET_Builder_Module {
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+
+		$fields_need_escape = array(
+			'title',
+		);
+
+		if ( $raw_value && in_array( $name, $fields_need_escape, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ) );
+		}
+
+		return $raw_value;
 	}
 }
 

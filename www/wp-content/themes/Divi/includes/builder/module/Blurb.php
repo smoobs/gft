@@ -61,6 +61,7 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 					),
 					'block_elements' => array(
 						'tabbed_subtoggles' => true,
+						'bb_icons_support'  => true,
 						'css'               => array(
 							'main' => "{$this->main_css_element} .et_pb_blurb_description",
 						),
@@ -103,6 +104,7 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 						'show_if_not' => array(
 							'use_icon' => 'on',
 						),
+						'overlay' => 'inset',
 					),
 					'default_on_fronts'  => array(
 						'color'    => '',
@@ -198,6 +200,8 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 				'description'     => esc_html__( 'The title of your blurb will appear in bold below your blurb image.', 'et_builder' ),
 				'toggle_slug'     => 'main_content',
 				'dynamic_content' => 'text',
+				'mobile_options'  => true,
+				'hover'           => 'tabs',
 			),
 			'url' => array(
 				'label'           => esc_html__( 'Title Link URL', 'et_builder' ),
@@ -259,6 +263,8 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 				'toggle_slug'         => 'image',
 				'description'         => esc_html__( 'Choose an icon to display with your blurb.', 'et_builder' ),
 				'depends_show_if'     => 'on',
+				'mobile_options'      => true,
+				'hover'               => 'tabs',
 			),
 			'icon_color' => array(
 				'default'           => $et_accent_color,
@@ -339,6 +345,8 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 				'description'        => esc_html__( 'Upload an image to display at the top of your blurb.', 'et_builder' ),
 				'toggle_slug'        => 'image',
 				'dynamic_content'    => 'image',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'alt' => array(
 				'label'           => esc_html__( 'Image Alt Text', 'et_builder' ),
@@ -368,6 +376,8 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 				'description'       => esc_html__( 'Input the main text content for your module here.', 'et_builder' ),
 				'toggle_slug'       => 'main_content',
 				'dynamic_content'   => 'text',
+				'mobile_options'    => true,
+				'hover'             => 'tabs',
 			),
 			'image_max_width' => array(
 				'label'           => esc_html__( 'Image Width', 'et_builder' ),
@@ -477,7 +487,7 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
-		$title                           = $this->_esc_attr( 'title' );
+		$multi_view                      = et_pb_multi_view_options( $this );
 		$url                             = $this->props['url'];
 		$image                           = $this->props['image'];
 		$url_new_window                  = $this->props['url_new_window'];
@@ -674,16 +684,22 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 			$icon_placement_phone = 'right';
 		}
 
-		if ( '' !== $title && '' !== $url ) {
-			$title = sprintf( '<a href="%1$s"%3$s>%2$s</a>',
-				esc_url( $url ),
-				et_core_esc_previously( $title ),
-				( 'on' === $url_new_window ? ' target="_blank"' : '' )
-			);
-		} else {
-			// Allowing full html for backwards compatibility.
-			$title = $this->_esc_attr( 'title', 'full' );
+		$title_tag   = '' !== $url ? 'a' : 'span';
+		$title_attrs = array();
+
+		if ( 'a' === $title_tag ) {
+			$title_attrs['href'] = $url;
+
+			if ( 'on' === $url_new_window ) {
+				$title_attrs['target'] = '_blank';
+			}
 		}
+
+		$title = $multi_view->render_element( array(
+			'tag'     => $title_tag,
+			'content' => '{{title}}',
+			'attrs'   => $title_attrs,
+		) );
 
 		if ( '' !== $title ) {
 			$title = sprintf(
@@ -698,15 +714,27 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 			$animation = 'top';
 		}
 
+		$image_classes = array( 'et-waypoint', 'et_pb_animation_' . $multi_view->get_value_desktop( 'animation', 'top' ) );
+
+		$animations = $multi_view->get_values( 'animation' );
+		foreach ( $animations as $mode => $animation ) {
+			if ( ! in_array( $mode, array( 'tablet', 'phone' ), true ) ) {
+				continue;
+			}
+
+			$image_classes[] = "et_pb_animation_{$animation}_{$mode}";
+		}
+
 		if ( 'off' === $use_icon ) {
-			$image = ( '' !== trim( $image ) ) ? sprintf(
-				'<img src="%1$s" alt="%2$s" class="et-waypoint%3$s%4$s%5$s" />',
-				esc_attr( $image ),
-				et_core_esc_previously( $alt ),
-				esc_attr( " et_pb_animation_{$animation}" ),
-				! empty( $animation_tablet ) ? esc_attr( " et_pb_animation_{$animation_tablet}_tablet" ) : '',
-				! empty( $animation_phone ) ? esc_attr( " et_pb_animation_{$animation_phone}_phone" ) : ''
-			) : '';
+			$image = $multi_view->render_element( array(
+				'tag'   => 'img',
+				'attrs' => array(
+					'src'   => '{{image}}',
+					'class' => implode( ' ', $image_classes ),
+					'alt'   => $alt,
+				),
+				'required' => 'image',
+			) );
 		} else {
 			$icon_style        = sprintf( 'color: %1$s;', esc_attr( $icon_color ) );
 			$icon_tablet_style = '' !== $icon_color_tablet ? sprintf( 'color: %1$s;', esc_attr( $icon_color_tablet ) ) : '';
@@ -761,16 +789,22 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 				) );
 			}
 
-			$image = ( '' !== $font_icon ) ? sprintf(
-				'<span class="et-pb-icon et-waypoint%2$s%3$s%4$s%6$s%7$s">%1$s</span>',
-				esc_attr( et_pb_process_font_icon( $font_icon ) ),
-				esc_attr( " et_pb_animation_{$animation}" ),
-				( 'on' === $use_circle ? ' et-pb-icon-circle' : '' ),
-				( 'on' === $use_circle && 'on' === $use_circle_border ? ' et-pb-icon-circle-border' : '' ),
-				$icon_style,
-				! empty( $animation_tablet ) ? esc_attr( " et_pb_animation_{$animation_tablet}_tablet" ) : '',
-				! empty( $animation_phone ) ? esc_attr( " et_pb_animation_{$animation_phone}_phone" ) : ''
-			) : '';
+			$image_classes[] = 'et-pb-icon';
+
+			if ( 'on' === $use_circle ) {
+				$image_classes[] = 'et-pb-icon-circle';
+			}
+
+			if ( 'on' === $use_circle && 'on' === $use_circle_border ) {
+				$image_classes[] = 'et-pb-icon-circle-border';
+			}
+
+			$image = $multi_view->render_element( array(
+				'content' => '{{font_icon}}',
+				'attrs'   => array(
+					'class' => implode( ' ', $image_classes ),
+				),
+			) );
 		}
 
 		// Images: Add CSS Filters and Mix Blend Mode rules (if set)
@@ -837,6 +871,14 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 			);
 		}
 
+		$content = $multi_view->render_element( array(
+			'tag'     => 'div',
+			'content' => '{{content}}',
+			'attrs'   => array(
+				'class' => 'et_pb_blurb_description',
+			),
+		) );
+
 		$output = sprintf(
 			'<div%5$s class="%4$s"%8$s%9$s>
 				%7$s
@@ -845,13 +887,11 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 					%2$s
 					<div class="et_pb_blurb_container">
 						%3$s
-						<div class="et_pb_blurb_description">
-							%1$s
-						</div><!-- .et_pb_blurb_description -->
+						%1$s
 					</div>
 				</div> <!-- .et_pb_blurb_content -->
 			</div> <!-- .et_pb_blurb -->',
-			$this->content,
+			$content,
 			et_core_esc_previously( $image ),
 			et_core_esc_previously( $title ),
 			$this->module_classname( $render_slug ),
@@ -863,6 +903,51 @@ class ET_Builder_Module_Blurb extends ET_Builder_Module {
 		);
 
 		return $output;
+	}
+
+	/**
+	 * Filter multi view value.
+	 *
+	 * @since 3.27.1
+	 * 
+	 * @see ET_Builder_Module_Helper_MultiViewOptions::filter_value
+	 *
+	 * @param mixed $raw_value Props raw value.
+	 * @param array $args {
+	 *     Context data.
+	 *
+	 *     @type string $context      Context param: content, attrs, visibility, classes.
+	 *     @type string $name         Module options props name.
+	 *     @type string $mode         Current data mode: desktop, hover, tablet, phone.
+	 *     @type string $attr_key     Attribute key for attrs context data. Example: src, class, etc.
+	 *     @type string $attr_sub_key Attribute sub key that availabe when passing attrs value as array such as styes. Example: padding-top, margin-botton, etc.
+	 * }
+	 * @param ET_Builder_Module_Helper_MultiViewOptions $multi_view Multiview object instance.
+	 *
+	 * @return mixed
+	 */
+	public function multi_view_filter_value( $raw_value, $args, $multi_view ) {
+		$name = isset( $args['name'] ) ? $args['name'] : '';
+		$mode = isset( $args['mode'] ) ? $args['mode'] : '';
+
+		if ( $raw_value && 'font_icon' === $name ) {
+			$processed_value = html_entity_decode( et_pb_process_font_icon( $raw_value ) );
+			if ( '%%1%%' === $raw_value ) {
+				$processed_value = "\"";
+			}
+
+			return $processed_value;
+		}
+
+		$fields_need_escape = array(
+			'button_text',
+		);
+
+		if ( $raw_value && in_array( $name, $fields_need_escape, true ) ) {
+			return $this->_esc_attr( $multi_view->get_name_by_mode( $name, $mode ) );
+		}
+
+		return $raw_value;
 	}
 }
 

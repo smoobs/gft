@@ -108,6 +108,8 @@ class ET_Builder_Module_Image extends ET_Builder_Module {
 				'description'        => esc_html__( 'Upload your desired image, or type in the URL to the image you would like to display.', 'et_builder' ),
 				'toggle_slug'        => 'main_content',
 				'dynamic_content'    => 'image',
+				'mobile_options'     => true,
+				'hover'              => 'tabs',
 			),
 			'alt' => array(
 				'label'           => esc_html__( 'Image Alternative Text', 'et_builder' ),
@@ -285,6 +287,7 @@ class ET_Builder_Module_Image extends ET_Builder_Module {
 	}
 
 	function render( $attrs, $content = null, $render_slug ) {
+		$multi_view              = et_pb_multi_view_options( $this );
 		$src                     = $this->props['src'];
 		$alt                     = $this->props['alt'];
 		$title_text              = $this->props['title_text'];
@@ -300,7 +303,7 @@ class ET_Builder_Module_Image extends ET_Builder_Module {
 		$hover_icon              = $this->props['hover_icon'];
 		$use_overlay             = $this->props['use_overlay'];
 		$animation_style         = $this->props['animation_style'];
-		$box_shadow_style        = $this->props['box_shadow_style'];
+		$box_shadow_style        = self::$_->array_get( $this->props, 'box_shadow_style', '' );
 
 		$video_background          = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
@@ -406,11 +409,19 @@ class ET_Builder_Module_Image extends ET_Builder_Module {
 			? '<div class="box-shadow-overlay"></div>'
 			: '';
 
+		$image_html = $multi_view->render_element( array(
+			'tag'   => 'img',
+			'attrs' => array(
+				'src'   => '{{src}}',
+				'alt'   => '{{alt}}',
+				'title' => '{{title_text}}',
+			),
+			'required' => 'src',
+		) );
+
 		$output = sprintf(
-			'<span class="et_pb_image_wrap %5$s">%6$s<img src="%1$s" alt="%2$s"%3$s />%4$s</span>',
-			esc_attr( $src ),
-			esc_attr( $alt ),
-			( '' !== $title_text ? sprintf( ' title="%1$s"', esc_attr( $title_text ) ) : '' ),
+			'<span class="et_pb_image_wrap %3$s">%4$s%1$s%2$s</span>',
+			$image_html,
 			'on' === $is_overlay_applied ? $overlay_output : '',
 			$box_shadow_overlay_wrap_class,
 			$box_shadow_overlay_element

@@ -1413,7 +1413,9 @@ html.et_fb_preview_active--responsive_preview--phone_preview .comment-reply-link
   bottom: -10px;
   top: auto !important;
 }
-html.et_fb_preview_active--responsive_preview--phone_preview #commentform input[type="text"] {
+html.et_fb_preview_active--responsive_preview--phone_preview #commentform input[type="text"],
+html.et_fb_preview_active--responsive_preview--phone_preview #commentform input[type="email"],
+html.et_fb_preview_active--responsive_preview--phone_preview #commentform input[type="url"] {
   width: 100%;
   box-sizing: border-box;
   -moz-box-sizing: border-box;

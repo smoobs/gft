@@ -53,3 +53,62 @@ function wcc_change_breadcrumb_home_text( $defaults ) {
 	return $defaults;
 }
 
+// this snippet can be placed inside functions.php of your active theme
+add_action('wpmm_head', 'wpmm_custom_css');
+
+function wpmm_custom_css(){
+ echo '<style>
+       .wrap {
+           width: 900px;
+           display: flex;
+           flex-direction: column;
+           text-align: left;
+           font-size: 18px;
+           line-height: 1.4em;
+           margin: 4em auto;
+       }
+
+       .wrap p {
+           margin: 1em 0;
+       }
+
+       .wrap h1 {
+           margin-bottom: 1em;
+           font-weight: normal;
+           paddding-bottom: 0;
+       }
+
+       .wrap h2 {
+           font-size: 18px;
+           margin: 0;
+           padding: 0;
+           line-height: 1.4em;
+       }
+
+       .wrap h3 {
+           font-weight: 500;
+           font-size: 20px;
+           margin-top: 1em;
+           margin-bottom: 0.5em;
+           line-height: 20px;
+       }
+
+       .wrap img.banner {
+           width: 100%;
+           max-width: 900px;
+       }
+
+       .wrap img.juliette {
+           float: right;
+           margin: 0 0 1em 1em;
+           max-width: 200px;
+           
+       }
+
+       .wrap .textblock {
+           max-width: 400px;
+           display: inline-block; 
+           margin-right: 2em;
+       }
+       </style>';
+}

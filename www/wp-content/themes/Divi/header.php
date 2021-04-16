@@ -28,6 +28,8 @@
 </head>
 <body <?php body_class(); ?>>
 <?php
+	wp_body_open();
+
 	$product_tour_enabled = et_builder_is_product_tour_enabled();
 	$page_container_style = $product_tour_enabled ? ' style="padding-top: 0px;"' : ''; ?>
 	<div id="page-container"<?php echo et_core_intentionally_unescaped( $page_container_style, 'fixed_string' ); ?>>
@@ -155,6 +157,13 @@
 							get_search_query(),
 							esc_attr__( 'Search for:', 'Divi' )
 						);
+
+						/**
+						 * Fires inside the search form element, just before its closing tag.
+						 *
+						 * @since ??
+						 */
+						do_action( 'et_search_form_fields' );
 					?>
 					<button type="submit" id="searchsubmit_header"></button>
 				</form>
@@ -318,6 +327,13 @@
 							get_search_query(),
 							esc_attr__( 'Search for:', 'Divi' )
 						);
+
+						/**
+						 * Fires inside the search form element, just before its closing tag.
+						 *
+						 * @since ??
+						 */
+						do_action( 'et_search_form_fields' );
 					?>
 					</form>
 					<span class="et_close_search_field"></span>

@@ -7,7 +7,7 @@
  *
  * @package Divi\Builder
  *
- * @since   ??
+ * @since   3.29
  */
 
 /**
@@ -37,13 +37,13 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 		$this->settings_modal_toggles = array(
 			'general'  => array(
 				'toggles' => array(
-					'main_content' => esc_html__( 'Content', 'et_builder' ),
+					'main_content' => et_builder_i18n( 'Content' ),
 				),
 			),
 			'advanced' => array(
 				'toggles' => array(
-					'overlay' => esc_html__( 'Overlay', 'et_builder' ),
-					'image'   => esc_html__( 'Image', 'et_builder' ),
+					'overlay' => et_builder_i18n( 'Overlay' ),
+					'image'   => et_builder_i18n( 'Image' ),
 					// Avoid Text suffix by manually defining the `star` toggle slug.
 					'star'    => esc_html__( 'Star Rating', 'et_builder' ),
 				),
@@ -53,7 +53,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 		$this->advanced_fields = array(
 			'fonts'          => array(
 				'title'         => array(
-					'label'       => esc_html__( 'Title', 'et_builder' ),
+					'label'       => et_builder_i18n( 'Title' ),
 					'css'         => array(
 						'main'      => '%%order_class%% section.products > h1, %%order_class%% section.products > h2, %%order_class%% section.products > h3, %%order_class%% section.products > h4, %%order_class%% section.products > h5, %%order_class%% section.products > h6',
 						'important' => 'all',
@@ -78,6 +78,15 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 					'hide_font'        => true,
 					'hide_line_height' => true,
 					'hide_text_shadow' => true,
+					'text_align'       => array(
+						'label' => esc_html__( 'Star Rating Alignment', 'et_builder' ),
+					),
+					'font_size'        => array(
+						'label' => esc_html__( 'Star Rating Size', 'et_builder' ),
+					),
+					'text_color'       => array(
+						'label' => esc_html__( 'Star Rating Color', 'et_builder' ),
+					),
 					'toggle_slug'      => 'star',
 				),
 				'product_title' => array(
@@ -161,12 +170,12 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 				'image'   => array(
 					'css'          => array(
 						'main'      => array(
-							'border_radii'  => '%%order_class%%.et_pb_module .et_shop_image > img, %%order_class%%.et_pb_module .et_shop_image',
-							'border_styles' => '%%order_class%%.et_pb_module .et_shop_image > img',
+							'border_radii'  => '%%order_class%%.et_pb_module .et_shop_image',
+							'border_styles' => '%%order_class%%.et_pb_module .et_shop_image',
 						),
 						'important' => 'all',
 					),
-					'label_prefix' => esc_html__( 'Image', 'et_builder' ),
+					'label_prefix' => et_builder_i18n( 'Image' ),
 					'tab_slug'     => 'advanced',
 					'toggle_slug'  => 'image',
 				),
@@ -243,15 +252,15 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 				'selector' => 'li.product .onsale',
 			),
 			'image'     => array(
-				'label'    => esc_html__( 'Image', 'et_builder' ),
+				'label'    => et_builder_i18n( 'Image' ),
 				'selector' => '.et_shop_image',
 			),
 			'overlay'   => array(
-				'label'    => esc_html__( 'Overlay', 'et_builder' ),
+				'label'    => et_builder_i18n( 'Overlay' ),
 				'selector' => '.et_overlay',
 			),
 			'title'     => array(
-				'label'    => esc_html__( 'Title', 'et_builder' ),
+				'label'    => et_builder_i18n( 'Title' ),
 				'selector' => ET_Builder_Module_Helper_Woocommerce_Modules::get_title_selector(),
 			),
 			'rating'    => array(
@@ -270,7 +279,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 
 		$this->help_videos = array(
 			array(
-				'id'   => esc_html( '7X03vBPYJ1o' ),
+				'id'   => '7X03vBPYJ1o',
 				'name' => esc_html__( 'Divi WooCommerce Modules', 'et_builder' ),
 			),
 		);
@@ -280,12 +289,11 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 	 * {@inheritdoc}
 	 */
 	public function get_fields() {
-		$post_id = $this->get_the_ID();
-		$fields  = array(
+		$fields = array(
 			'product'             => ET_Builder_Module_Helper_Woocommerce_Modules::get_field(
 				'product',
 				array(
-					'default'          => 'product' === $this->get_post_type() ? 'current' : 'latest',
+					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_product_default(),
 					'computed_affects' => array(
 						'__upsells',
 					),
@@ -302,7 +310,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 			'posts_number'        => ET_Builder_Module_Helper_Woocommerce_Modules::get_field(
 				'posts_number',
 				array(
-					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_columns_posts_default_number_by_post_id( $post_id ),
+					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_columns_posts_default(),
 					'computed_affects' => array(
 						'__upsells',
 					),
@@ -311,7 +319,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 			'columns_number'      => ET_Builder_Module_Helper_Woocommerce_Modules::get_field(
 				'columns_number',
 				array(
-					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_columns_posts_default_number_by_post_id( $post_id ),
+					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_columns_posts_default(),
 					'computed_affects' => array(
 						'__upsells',
 					),
@@ -334,6 +342,17 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 					),
 				)
 			),
+			'sale_badge_color'    => array(
+				'label'          => esc_html__( 'Sale Badge Color', 'et_builder' ),
+				'description'    => esc_html__( 'Pick a color to use for the sales bade that appears on products that are on sale.', 'et_builder' ),
+				'type'           => 'color-alpha',
+				'custom_color'   => true,
+				'tab_slug'       => 'advanced',
+				'toggle_slug'    => 'sale_badge',
+				'hover'          => 'tabs',
+				'mobile_options' => true,
+				'sticky'         => true,
+			),
 			'icon_hover_color'    => array(
 				'label'          => esc_html__( 'Overlay Icon Color', 'et_builder' ),
 				'description'    => esc_html__( 'Pick a color to use for the icon that appears when hovering over a product.', 'et_builder' ),
@@ -342,6 +361,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 				'tab_slug'       => 'advanced',
 				'toggle_slug'    => 'overlay',
 				'mobile_options' => true,
+				'sticky'         => true,
 			),
 			'hover_overlay_color' => array(
 				'label'          => esc_html__( 'Overlay Background Color', 'et_builder' ),
@@ -351,6 +371,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 				'tab_slug'       => 'advanced',
 				'toggle_slug'    => 'overlay',
 				'mobile_options' => true,
+				'sticky'         => true,
 			),
 			'hover_icon'          => array(
 				'label'           => esc_html__( 'Overlay Icon', 'et_builder' ),
@@ -361,6 +382,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 				'tab_slug'        => 'advanced',
 				'toggle_slug'     => 'overlay',
 				'mobile_options'  => true,
+				'sticky'          => true,
 			),
 			'__upsells'           => array(
 				'type'                => 'computed',
@@ -411,6 +433,21 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 	 */
 	public static function get_upsells( $args = array(), $conditional_tags = array(), $current_page = array() ) {
 		self::$static_props = $args;
+
+		// Force set product's class to ET_Theme_Builder_Woocommerce_Product_Variable_Placeholder
+		// in TB so related product can outputs visible content based on pre-filled value in TB
+		if ( 'true' === et_()->array_get( $conditional_tags, 'is_tb', false ) ) {
+			// Set upsells id; adjust it with module's arguments. This is specifically needed if
+			// the module fetched the value via computed callback due to some fields no longer uses
+			// default value
+			ET_Theme_Builder_Woocommerce_Product_Variable_Placeholder::set_tb_upsells_ids(
+				array(
+					'limit' => et_()->array_get( $args, 'posts_number', 4 ),
+				)
+			);
+
+			add_filter( 'woocommerce_product_class', 'et_theme_builder_wc_product_class' );
+		}
 
 		add_filter(
 			'woocommerce_upsell_display_args',
@@ -487,6 +524,15 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 			''
 		);
 
+		// Set default values when parameters are empty.
+		$default = ET_Builder_Module_Helper_Woocommerce_Modules::get_columns_posts_default_value();
+		if ( empty( $selected_args['posts_per_page'] ) ) {
+			$selected_args['posts_per_page'] = $default;
+		}
+		if ( empty( $selected_args['columns'] ) ) {
+			$selected_args['columns'] = $default;
+		}
+
 		$selected_args = array_filter( $selected_args, 'strlen' );
 
 		return $selected_args;
@@ -501,7 +547,7 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 	 *
 	 * @return string
 	 */
-	public function render( $attrs, $content = null, $render_slug ) {
+	public function render( $attrs, $content, $render_slug ) {
 		ET_Builder_Module_Helper_Woocommerce_Modules::process_background_layout_data( $render_slug, $this );
 		ET_Builder_Module_Helper_Woocommerce_Modules::add_star_rating_style(
 			$render_slug,
@@ -510,41 +556,42 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 			'%%order_class%% ul.products li.product:hover .star-rating'
 		);
 
-		$sale_badge_color_hover    = $this->get_hover_value( 'sale_badge_color' );
-		$sale_badge_color_values   = et_pb_responsive_options()->get_property_values( $this->props, 'sale_badge_color' );
-		$icon_hover_color_values   = et_pb_responsive_options()->get_property_values( $this->props, 'icon_hover_color' );
-		$hover_overlay_color_value = et_pb_responsive_options()->get_property_values( $this->props, 'hover_overlay_color' );
-
 		// Sale Badge Color.
-		et_pb_responsive_options()->generate_responsive_css( $sale_badge_color_values, '%%order_class%% span.onsale', 'background-color', $render_slug, ' !important;', 'color' );
-
-		if ( et_builder_is_hover_enabled( 'sale_badge_color', $this->props ) ) {
-			ET_Builder_Element::set_style(
-				$render_slug,
-				array(
-					'selector'    => '%%order_class%%:hover span.onsale',
-					'declaration' => sprintf(
-						'background-color: %1$s !important;',
-						esc_html( $sale_badge_color_hover )
-					),
-				)
-			);
-		}
+		$this->generate_styles(
+			array(
+				'base_attr_name' => 'sale_badge_color',
+				'selector'       => '%%order_class%% span.onsale',
+				'css_property'   => 'background-color',
+				'important'      => true,
+				'render_slug'    => $render_slug,
+				'type'           => 'color',
+			)
+		);
 
 		// Icon Hover Color.
-		et_pb_responsive_options()->generate_responsive_css( $icon_hover_color_values, '%%order_class%% .et_overlay:before', 'color', $render_slug, ' !important;', 'color' );
+		$this->generate_styles(
+			array(
+				'hover'          => false,
+				'base_attr_name' => 'icon_hover_color',
+				'selector'       => '%%order_class%% .et_overlay:before',
+				'css_property'   => 'color',
+				'important'      => true,
+				'render_slug'    => $render_slug,
+				'type'           => 'color',
+			)
+		);
 
 		// Hover Overlay Color.
-		et_pb_responsive_options()->generate_responsive_css(
-			$hover_overlay_color_value,
-			'%%order_class%% .et_overlay',
+		$this->generate_styles(
 			array(
-				'background-color',
-				'border-color',
-			),
-			$render_slug,
-			' !important;',
-			'color'
+				'hover'          => false,
+				'base_attr_name' => 'hover_overlay_color',
+				'selector'       => '%%order_class%% .et_overlay',
+				'css_property'   => array( 'background-color', 'border-color' ),
+				'important'      => true,
+				'render_slug'    => $render_slug,
+				'type'           => 'color',
+			)
 		);
 
 		// Images: Add CSS Filters and Mix Blend Mode rules (if set).
@@ -560,7 +607,36 @@ class ET_Builder_Module_Woocommerce_Upsells extends ET_Builder_Module {
 
 		$this->add_classname( $this->get_text_orientation_classname() );
 
+		$is_shop                        = function_exists( 'is_shop' ) && is_shop();
+		$is_wc_loop_prop_get_set_exists = function_exists( 'wc_get_loop_prop' ) && function_exists( 'wc_set_loop_prop' );
+		$is_product_category            = function_exists( 'is_product_category' ) && is_product_category();
+
+		if ( $is_shop ) {
+			$display_type = ET_Builder_Module_Helper_Woocommerce_Modules::set_display_type_to_render_only_products( 'woocommerce_shop_page_display' );
+		} elseif ( is_product_category() ) {
+			$display_type = ET_Builder_Module_Helper_Woocommerce_Modules::set_display_type_to_render_only_products( 'woocommerce_category_archive_display' );
+		}
+
+		// Required to handle Customizer preview pane.
+		// Refer: https://github.com/elegantthemes/Divi/issues/17998#issuecomment-565955422
+		if ( $is_wc_loop_prop_get_set_exists && is_customize_preview() ) {
+			$is_filtered = wc_get_loop_prop( 'is_filtered' );
+			wc_set_loop_prop( 'is_filtered', true );
+		}
+
 		$output = self::get_upsells( $this->props );
+
+		// Required to handle Customizer preview pane.
+		// Refer: https://github.com/elegantthemes/Divi/issues/17998#issuecomment-565955422
+		if ( $is_wc_loop_prop_get_set_exists && is_customize_preview() && isset( $is_filtered ) ) {
+			wc_set_loop_prop( 'is_filtered', $is_filtered );
+		}
+
+		if ( $is_shop && isset( $display_type ) ) {
+			ET_Builder_Module_Helper_Woocommerce_Modules::reset_display_type( 'woocommerce_shop_page_display', $display_type );
+		} elseif ( $is_product_category && isset( $display_type ) ) {
+			ET_Builder_Module_Helper_Woocommerce_Modules::reset_display_type( 'woocommerce_category_archive_display', $display_type );
+		}
 
 		// Render empty string if no output is generated to avoid unwanted vertical space.
 		if ( '' === $output ) {

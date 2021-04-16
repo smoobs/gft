@@ -24,24 +24,29 @@
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
-<?php if ( ! is_single() || ! have_posts() ) { ?>
-	<article id="post-0">
-		<div id="page-container-bfb" class="entry-content">
-			<div id="et-boc" class="et-boc">
-				<div class="<?php echo esc_attr( $inner_classes ); ?>">
-					<div id="et-fb-app"></div>
+	<?php if ( ! is_single() || ! have_posts() ) { ?>
+		<article id="post-0">
+			<div id="page-container-bfb" class="entry-content">
+				<div id="et-boc" class="et-boc">
+					<div class="et-l">
+						<div class="<?php echo esc_attr( $inner_classes ); ?>">
+							<div id="et-fb-app"></div>
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>
-	</article>
-<?php } ?>
-<?php while ( have_posts() ): the_post(); ?>
-	<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<div id="page-container-bfb" class="entry-content">
-			<?php the_content(); ?>
-		</div>
-	</article>
-<?php endwhile; ?>
+		</article>
+	<?php } ?>
+	<?php
+	while ( have_posts() ) :
+		the_post();
+		?>
+		<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+			<div id="page-container-bfb" class="entry-content">
+				<?php the_content(); ?>
+			</div>
+		</article>
+	<?php endwhile; ?>
 	<div class="bfb-template-footer" style="display: none;">
 		<?php wp_footer(); ?>
 	</div>

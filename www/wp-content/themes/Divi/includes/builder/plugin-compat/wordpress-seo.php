@@ -21,6 +21,7 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 	/**
 	 * Hook methods to WordPress
 	 * Latest plugin version: 3.1.1
+	 *
 	 * @return void
 	 */
 	public function init_hooks() {
@@ -32,6 +33,7 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 		// Enable Sitemap Cache
 		add_filter( 'wpseo_enable_xml_sitemap_transient_caching', '__return_true' );
 		add_filter( 'pre_get_posts', array( $this, 'maybe_load_builder_modules_early' ), 0 );
+		add_filter( 'wpseo_indexable_excluded_post_types', array( $this, 'exclude_tb_post_types' ), 0 );
 	}
 
 	/**
@@ -56,6 +58,23 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 		add_filter( 'wpseo_sitemap_content_before_parse_html_images', array( $this, 'do_shortcode' ) );
 	}
 
+	/**
+	 * Exclude TB post types from indexable posts.
+	 *
+	 * @param array $post_types Post Types.
+	 *
+	 * @return array;
+	 */
+	public function exclude_tb_post_types( $post_types ) {
+		$tb_post_types = array(
+			ET_THEME_BUILDER_HEADER_LAYOUT_POST_TYPE,
+			ET_THEME_BUILDER_BODY_LAYOUT_POST_TYPE,
+			ET_THEME_BUILDER_FOOTER_LAYOUT_POST_TYPE,
+		);
+
+		return array_merge( $post_types, $tb_post_types );
+	}
+
 	public function do_shortcode( $content ) {
 		// Check if content includes ET shortcode.
 		if ( false === strpos( $content, '[et_pb_section' ) ) {
@@ -74,4 +93,4 @@ class ET_Builder_Plugin_Compat_WordPress_SEO extends ET_Builder_Plugin_Compat_Ba
 	}
 }
 
-new ET_Builder_Plugin_Compat_WordPress_SEO;
+new ET_Builder_Plugin_Compat_WordPress_SEO();

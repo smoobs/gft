@@ -32,6 +32,7 @@ class ET_Builder_Plugin_Compat_The_Events_Calendar extends ET_Builder_Plugin_Com
 	 * @todo once this issue is fixed in future version, run version_compare() to limit the scope of the hooked fix
 	 *
 	 * @since 3.10
+	 * @since 4.4.6 Bump loop_start hook priority to cover post hijacking issue.
 	 *
 	 * @return void
 	 */
@@ -42,6 +43,8 @@ class ET_Builder_Plugin_Compat_The_Events_Calendar extends ET_Builder_Plugin_Com
 		}
 
 		add_action( 'wp', array( $this, 'register_spoofed_post_fix' ) );
+		add_action( 'loop_start', array( $this, 'maybe_disable_post_spoofing' ), 1001 );
+		add_filter( 'wp_insert_post_empty_content', array( $this, 'maybe_allow_save_empty_content' ), 10, 2 );
 	}
 
 	/**
@@ -91,7 +94,7 @@ class ET_Builder_Plugin_Compat_The_Events_Calendar extends ET_Builder_Plugin_Com
 		$GLOBALS['post'] = $this->actual_post_query; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
 	}
 
-	/*
+	/**
 	 * Re-return actual $post object into spoofed post so The Event Calendar works as expected
 	 *
 	 * @since 3.10
@@ -101,6 +104,54 @@ class ET_Builder_Plugin_Compat_The_Events_Calendar extends ET_Builder_Plugin_Com
 	function respoofed_post_query() {
 		$GLOBALS['post'] = $this->spoofed_post_query; // phpcs:ignore WordPress.Variables.GlobalVariables.OverrideProhibited
 	}
+
+	/**
+	 * Maybe disable post spoofing when a TB body layout is used.
+	 *
+	 * @since 4.2.2
+	 * @since 4.4.6 Maybe disable post hijacking on Page Template v2.
+	 */
+	function maybe_disable_post_spoofing() {
+		if ( et_theme_builder_overrides_layout( ET_THEME_BUILDER_BODY_LAYOUT_POST_TYPE ) ) {
+			remove_action( 'the_post', array( 'Tribe__Events__Templates', 'spoof_the_post' ) );
+
+			// Ensure to check the class and tribe() method exists. Method tribe() is used
+			// to return an instance of the class and resolve the object.
+			if ( class_exists( '\Tribe\Events\Views\V2\Template\Page' ) && function_exists( 'tribe' ) ) {
+				$page = tribe( \Tribe\Events\Views\V2\Template\Page::class );
+				remove_action( 'the_post', array( $page, 'hijack_the_post' ), 25 );
+			}
+		}
+	}
+
+	/**
+	 * Allow event with empty title to update post and trigger save_post action when
+	 * activating BFB for the first time. So, event post meta can be saved as well.
+	 *
+	 * @since 4.4.4
+	 *
+	 * @param bool  $maybe_empty Original status.
+	 * @param array $postarr     Array of post data.
+	 */
+	public function maybe_allow_save_empty_content( $maybe_empty, $postarr ) {
+		$post_action        = et_()->array_get( $postarr, 'action' );
+		$post_id            = et_()->array_get( $postarr, 'post_ID', 0 );
+		$post_status        = et_()->array_get( $postarr, 'post_status' );
+		$post_origin_status = et_()->array_get( $postarr, 'original_post_status' );
+		$post_type          = et_()->array_get( $postarr, 'post_type' );
+
+		// Ensure to override the status only on very first BFB activation and
+		// limited for tribe_events post type only.
+		$is_edit_action  = 'editpost' === $post_action;
+		$is_builder_used = et_pb_is_pagebuilder_used( $post_id );
+		$is_post_draft   = 'draft' === $post_status && 'auto-draft' === $post_origin_status;
+		$is_post_event   = 'tribe_events' === $post_type;
+		if ( $is_edit_action && $is_builder_used && $is_post_draft && $is_post_event ) {
+			return false;
+		}
+
+		return $maybe_empty;
+	}
 }
 
-new ET_Builder_Plugin_Compat_The_Events_Calendar;
+new ET_Builder_Plugin_Compat_The_Events_Calendar();

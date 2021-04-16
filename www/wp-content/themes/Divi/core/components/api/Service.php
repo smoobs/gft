@@ -133,6 +133,14 @@ abstract class ET_Core_API_Service {
 	public $http_auth = false;
 
 	/**
+	 * Maximum number of accounts user is allowed to add for the service.
+	 *
+	 * @since 4.0.7
+	 * @var int
+	 */
+	public $max_accounts;
+
+	/**
 	 * The service's proper name (will be shown in the UI).
 	 *
 	 * @since 1.1.0
@@ -223,7 +231,7 @@ abstract class ET_Core_API_Service {
 	 * @param string $api_key      The api key for the account. Optional (can be set after instantiation).
 	 */
 	public function __construct( $owner = 'ET_Core', $account_name = '', $api_key = '' ) {
-		$this->account_name   = sanitize_text_field( $account_name );
+		$this->account_name   = str_replace( '.', '', sanitize_text_field( $account_name ) );
 		$this->owner          = sanitize_text_field( $owner );
 		$this->account_fields = $this->get_account_fields();
 
@@ -304,6 +312,12 @@ abstract class ET_Core_API_Service {
 			$this->data['refresh_token'] = $this->OAuth_Helper->token->refresh_token;
 		}
 
+		// If there an `instance_url` returned from the auth response, save it.
+		// Salesforce API should use this URL instead of the `login_url` provided by user.
+		if ( ! empty( $this->OAuth_Helper->INSTANCE_URL ) ) { // @phpcs:ignore ET.Sniffs.ValidVariableName.UsedPropertyNotSnakeCase -- No need to change the prop name.
+			$this->data['instance_url'] = $this->OAuth_Helper->INSTANCE_URL; // @phpcs:ignore ET.Sniffs.ValidVariableName.UsedPropertyNotSnakeCase -- No need to change the prop name.
+		}
+
 		return true;
 	}
 
@@ -366,13 +380,13 @@ abstract class ET_Core_API_Service {
 				$this->save_data();
 				return true;
 			}
-		} else if ( '2.0' === $this->oauth_version ) {
+		} elseif ( '2.0' === $this->oauth_version ) {
 			$nonce = wp_create_nonce( 'et_core_api_service_oauth2' );
 			$args  = array(
 				'client_id'     => $this->data['api_key'],
 				'response_type' => 'code',
-				'state'         => rawurlencode( "ET_Core|{$this->name}|{$this->account_name}|{$nonce}" ),
-				'redirect_uri'  => $this->REDIRECT_URL,
+				'state'         => rawurlencode( "ET_Core|{$this->slug}|{$this->account_name}|{$nonce}" ),
+				'redirect_uri'  => $this->REDIRECT_URL, // @phpcs:ignore -- No need to change the class property
 			);
 
 			$this->save_data();
@@ -505,7 +519,7 @@ abstract class ET_Core_API_Service {
 	 *
 	 * @return array
 	 */
-	public function transform_data_to_our_format( $data = array(), $key_type, $exclude_keys = array() ) {
+	public function transform_data_to_our_format( $data, $key_type, $exclude_keys = array() ) {
 		if ( ! isset( $this->data_keys[ $key_type ] ) ) {
 			return array();
 		}
@@ -522,7 +536,7 @@ abstract class ET_Core_API_Service {
 	 *
 	 * @return array
 	 */
-	public function transform_data_to_provider_format( $data = array(), $key_type, $exclude_keys = array() ) {
+	public function transform_data_to_provider_format( $data, $key_type, $exclude_keys = array() ) {
 		if ( ! isset( $this->data_keys[ $key_type ] ) ) {
 			return array();
 		}

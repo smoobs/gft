@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<wpml-config>
+    <admin-texts>
+        <key name="ywctm_inquiry_form_tab_title"/>
+        <key name="ywctm_text_before_form"/>
+        <key name="ywctm_toggle_button_text"/>
+        <key name="ywctm_default_table_form">
+            <key name="*">
+                <key name="label"/>
+                <key name="placeholder"/>
+                <key name="description"/>
+            </key>
+        </key>
+        <key name="ywctm_mail_subject"/>
+        <key name="ywctm_mail_heading"/>
+        <key name="ywctm_mail_body"/>
+        <key name="ywctm_mail_customer_subject"/>
+        <key name="ywctm_mail_customer_heading"/>
+        <key name="ywctm_mail_customer_body"/>
+    </admin-texts>
+    <custom-fields>
+        <custom-field action="translate" style="visual" label="Label Text">ywctm_label_text</custom-field>
+        <custom-field action="copy">ywctm_icon_type</custom-field>
+        <custom-field action="copy">ywctm_custom_icon</custom-field>
+        <custom-field action="copy">ywctm_selected_icon</custom-field>
+        <custom-field action="copy">ywctm_selected_icon_size</custom-field>
+        <custom-field action="copy">ywctm_selected_icon_alignment</custom-field>
+        <custom-field action="copy">ywctm_icon_color</custom-field>
+        <custom-field action="copy">ywctm_width_settings</custom-field>
+        <custom-field action="copy">ywctm_default_colors</custom-field>
+        <custom-field action="copy">ywctm_hover_colors</custom-field>
+        <custom-field action="copy">ywctm_border_thickness</custom-field>
+        <custom-field action="copy">ywctm_border_radius</custom-field>
+        <custom-field action="copy">ywctm_margin_settings</custom-field>
+        <custom-field action="copy">ywctm_padding_settings</custom-field>
+        <custom-field action="copy">ywctm_button_url_type</custom-field>
+        <custom-field action="translate" style="line" label="URL">ywctm_button_url</custom-field>
+        <custom-field action="copy">ywctm_hover_animation</custom-field>
+    </custom-fields>
+    <custom-types>
+        <custom-type translate="1">ywctm-button-label</custom-type>
+    </custom-types>
+</wpml-config>

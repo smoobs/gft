@@ -1,0 +1,28 @@
+/**
+ * @license
+ * MyFonts Webfont Build ID 3968884, 2020-11-04T14:33:50-0500
+ * 
+ * The fonts listed in this notice are subject to the End User License
+ * Agreement(s) entered into by the website owner. All other parties are 
+ * explicitly restricted from using the Licensed Webfonts(s).
+ * 
+ * You may obtain a valid license at the URLs below.
+ * 
+ * Webfont: AlgerianD by URW Type Foundry
+ * URL: https://www.myfonts.com/fonts/urw/algerian/d/
+ * Copyright: Copyright 2010 URW++ Design &amp;amp; Development Hamburg
+ * 
+ * 
+ * 
+ * © 2020 MyFonts Inc
+*/
+
+
+/* @import must be at top of file, otherwise CSS will not work */
+@import url("//hello.myfonts.net/count/3c8f74");
+  
+@font-face {
+  font-family: 'AlgerianD';
+  src: url('webFonts/AlgerianD/font.woff2') format('woff2'), url('webFonts/AlgerianD/font.woff') format('woff');
+}
+

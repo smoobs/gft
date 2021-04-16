@@ -24,13 +24,11 @@ CREATE TABLE `wp_term_relationships` (
 LOCK TABLES `wp_term_relationships` WRITE;
 /*!40000 ALTER TABLE `wp_term_relationships` DISABLE KEYS */;
 INSERT INTO `wp_term_relationships` VALUES (1,1,0);
-INSERT INTO `wp_term_relationships` VALUES (91,2,0);
-INSERT INTO `wp_term_relationships` VALUES (93,2,0);
-INSERT INTO `wp_term_relationships` VALUES (94,2,0);
 INSERT INTO `wp_term_relationships` VALUES (95,2,0);
 INSERT INTO `wp_term_relationships` VALUES (96,2,0);
-INSERT INTO `wp_term_relationships` VALUES (146,2,0);
-INSERT INTO `wp_term_relationships` VALUES (246,2,0);
+INSERT INTO `wp_term_relationships` VALUES (359,2,0);
+INSERT INTO `wp_term_relationships` VALUES (360,2,0);
+INSERT INTO `wp_term_relationships` VALUES (379,2,0);
 /*!40000 ALTER TABLE `wp_term_relationships` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

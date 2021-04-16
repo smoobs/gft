@@ -20,7 +20,7 @@ CREATE TABLE `wp_terms` (
   PRIMARY KEY (`term_id`),
   KEY `slug` (`slug`(191)),
   KEY `name` (`name`(191))
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 LOCK TABLES `wp_terms` WRITE;
@@ -28,6 +28,20 @@ LOCK TABLES `wp_terms` WRITE;
 INSERT INTO `wp_terms` VALUES (1,'Uncategorized','uncategorized',0);
 INSERT INTO `wp_terms` VALUES (2,'mainnav','mainnav',0);
 INSERT INTO `wp_terms` VALUES (3,'layout','layout',0);
+INSERT INTO `wp_terms` VALUES (4,'simple','simple',0);
+INSERT INTO `wp_terms` VALUES (5,'grouped','grouped',0);
+INSERT INTO `wp_terms` VALUES (6,'variable','variable',0);
+INSERT INTO `wp_terms` VALUES (7,'external','external',0);
+INSERT INTO `wp_terms` VALUES (8,'exclude-from-search','exclude-from-search',0);
+INSERT INTO `wp_terms` VALUES (9,'exclude-from-catalog','exclude-from-catalog',0);
+INSERT INTO `wp_terms` VALUES (10,'featured','featured',0);
+INSERT INTO `wp_terms` VALUES (11,'outofstock','outofstock',0);
+INSERT INTO `wp_terms` VALUES (12,'rated-1','rated-1',0);
+INSERT INTO `wp_terms` VALUES (13,'rated-2','rated-2',0);
+INSERT INTO `wp_terms` VALUES (14,'rated-3','rated-3',0);
+INSERT INTO `wp_terms` VALUES (15,'rated-4','rated-4',0);
+INSERT INTO `wp_terms` VALUES (16,'rated-5','rated-5',0);
+INSERT INTO `wp_terms` VALUES (17,'Uncategorized','uncategorized',0);
 /*!40000 ALTER TABLE `wp_terms` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

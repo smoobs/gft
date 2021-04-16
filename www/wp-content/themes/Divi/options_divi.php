@@ -111,7 +111,7 @@ $options = array (
 				   "id" => $shortname . "_grab_image",
 				   "type" => "checkbox",
 				   "std" => "false",
-				   "desc" => esc_html__("By default thumbnail images are created using custom fields. However, if you would rather use the images that are already in your post for your thumbnail (and bypass using custom fields) you can activate this option. Once activcated thumbnail images will be generated automatically using the first image in your post. The image must be hosted on your own server.",$themename)
+				   "desc" => esc_html__("By default thumbnail images are created using custom fields. However, if you would rather use the images that are already in your post for your thumbnail (and bypass using custom fields) you can activate this option. Once activated thumbnail images will be generated automatically using the first image in your post. The image must be hosted on your own server.",$themename)
 			),
 
 			array( "name" => esc_html__( "Blog Style Mode", $themename ),
@@ -510,14 +510,6 @@ $options = array (
 			"desc" => esc_html__( "In some cases users will want to create parent categories or links as placeholders to hold a list of child links or categories. In this case it is not desirable to have the parent links lead anywhere, but instead merely serve an organizational function. Enabling this options will remove the links from all parent pages/categories so that they don't lead anywhere when clicked.", $themename )
 			),
 
-			array(
-				"name" => esc_html__( "Alternative scroll-to-anchor method", $themename ),
-				"id"   => $shortname . "_scroll_to_anchor_fix",
-				"type" => "checkbox2",
-				"std"  => "false",
-				"desc" => esc_html__( "Sometimes when using the CSS ID of a section to link directly to it from another page, the page's final scroll position can be inaccurate. Enable this option to use an alternative method for scrolling to anchors which can be more accurate than the default method in some cases.", $themename ),
-			),
-
 		array( "name" => "navigation-3",
 			   "type" => "subcontent-end",),
 
@@ -551,11 +543,11 @@ $options = array (
 		array( "name" => "layout-1",
 			   "type" => "subcontent-start",),
 
-			array( "name" => esc_html__( "Choose which items to display in the postinfo section", $themename ),
+			array( "name" => esc_html__( "Choose which items to display in the post info section", $themename ),
 				   "id" => $shortname . "_postinfo2",
 				   "type" => "different_checkboxes",
 				   "std" => array("author","date","categories","comments"),
-				   "desc" => esc_html__( "Here you can choose which items appear in the postinfo section on single post pages. This is the area, usually below the post title, which displays basic information about your post. The highlighted itmes shown below will appear. ", $themename ),
+				   "desc" => esc_html__( "Here you can choose which items appear in the post info section on single post pages. This is the area, usually below the post title, which displays basic information about your post. The highlighted items shown below will appear. ", $themename ),
 				   "options" => array("author","date","categories","comments")),
 
 			array(
@@ -603,7 +595,7 @@ $options = array (
 				   "id" => $shortname . "_postinfo1",
 				   "type" => "different_checkboxes",
 				   "std" => array("author","date","categories"),
-				   "desc" => esc_html__( "Here you can choose which items appear in the postinfo section on pages. This is the area, usually below the post title, which displays basic information about your post. The highlighted itmes shown below will appear. ", $themename ),
+				   "desc" => esc_html__( "Here you can choose which items appear in the post info section on pages. This is the area, usually below the post title, which displays basic information about your post. The highlighted items shown below will appear. ", $themename ),
 				   "options" => array("author","date","categories","comments")),
 
 			array( "name" => esc_html__( "Show Thumbs on Index pages", $themename ),

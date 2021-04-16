@@ -1,48 +1,74 @@
 <?php
+/**
+ * Divi Library.
+ *
+ * @package Builder
+ */
 
+/**
+ * Core class used to implement Layout Library.
+ */
 class ET_Builder_Library {
 
 	/**
+	 * Instance of `ET_Builder_Library`.
+	 *
 	 * @var ET_Builder_Library
 	 */
 	private static $_instance;
 
 	/**
+	 * Instance of  `ET_Core_Data_Utils`.
+	 *
 	 * @var ET_Core_Data_Utils
 	 */
 	protected static $_;
 
 	/**
+	 * List of i18n strings.
+	 *
 	 * @var mixed[]
 	 */
 	protected static $_i18n;
 
 	/**
+	 * Yoast primary category meta key.
+	 *
 	 * @var string
 	 */
 	protected static $_primary_category_key;
 
 	/**
+	 * List of Divi Library's Standard Post Types.
+	 *
 	 * @var string[]
 	 */
 	protected static $_standard_post_types = array( 'post', 'page', 'project' );
 
 	/**
+	 * Instance of `ET_Builder_Post_Taxonomy_LayoutCategory`.
+	 *
 	 * @var ET_Builder_Post_Taxonomy_LayoutCategory
 	 */
 	public $layout_categories;
 
 	/**
+	 * Instance of `ET_Builder_Post_Taxonomy_LayoutPack`.
+	 *
 	 * @var ET_Builder_Post_Taxonomy_LayoutPack
 	 */
 	public $layout_packs;
 
 	/**
+	 * Instance of `ET_Builder_Post_Taxonomy_LayoutType`.
+	 *
 	 * @var ET_Builder_Post_Taxonomy_LayoutType
 	 */
 	public $layout_types;
 
 	/**
+	 * Instance of `ET_Builder_Post_Type_Layout`.
+	 *
 	 * @var ET_Builder_Post_Type_Layout
 	 */
 	public $layouts;
@@ -59,7 +85,7 @@ class ET_Builder_Library {
 		$this->_register_hooks();
 		$this->_register_ajax_callbacks();
 
-		self::$_i18n = require( ET_BUILDER_DIR . '/frontend-builder/i18n/library.php' );
+		self::$_i18n = require ET_BUILDER_DIR . '/frontend-builder/i18n/library.php';
 
 		self::$_standard_post_types = self::_standard_post_types();
 	}
@@ -67,8 +93,8 @@ class ET_Builder_Library {
 	/**
 	 * Compare by slug
 	 *
-	 * @param object $a
-	 * @param object $b
+	 * @param object $a First category in comparison.
+	 * @param object $b Second category in comparison.
 	 *
 	 * @return bool
 	 */
@@ -137,8 +163,8 @@ class ET_Builder_Library {
 	 *
 	 * @since 3.0.99
 	 *
-	 * @param string  $long_name
-	 * @param WP_Post $layout
+	 * @param string  $long_name Layout title.
+	 * @param WP_Post $layout Layout post.
 	 *
 	 * @return string
 	 */
@@ -165,7 +191,8 @@ class ET_Builder_Library {
 	 * @param array[] $layout_categories Processed layouts.
 	 */
 	protected function _process_layout_categories( $post, $layout, $index, &$layout_categories ) {
-		if ( ! $terms = wp_get_post_terms( $post->ID, $this->layout_categories->name ) ) {
+		$terms = wp_get_post_terms( $post->ID, $this->layout_categories->name );
+		if ( ! $terms ) {
 			$layout->category_slug = 'uncategorized';
 			return;
 		}
@@ -192,10 +219,12 @@ class ET_Builder_Library {
 				$layout->category_slug = $category->slug;
 			}
 
-			if ( $id = get_post_meta( $post->ID, self::$_primary_category_key, true ) ) {
+			$id = get_post_meta( $post->ID, self::$_primary_category_key, true );
+
+			if ( $id ) {
 				// $id is a string, $category->term_id is an int.
 				if ( $id === $category->term_id ) {
-					// This is the primary category (used in the layout URL)
+					// This is the primary category (used in the layout URL).
 					$layout->category_slug = $category->slug;
 				}
 			}
@@ -213,7 +242,8 @@ class ET_Builder_Library {
 	 * @param array[] $layout_packs Processed layouts.
 	 */
 	protected function _process_layout_packs( $post, $layout, $index, &$layout_packs ) {
-		if ( ! $terms = wp_get_post_terms( $post->ID, $this->layout_packs->name ) ) {
+		$terms = wp_get_post_terms( $post->ID, $this->layout_packs->name );
+		if ( ! $terms ) {
 			return;
 		}
 
@@ -265,7 +295,8 @@ class ET_Builder_Library {
 	 * @since 3.0.99
 	 */
 	protected function _register_cpt_and_taxonomies() {
-		if ( ! $files = glob( ET_BUILDER_DIR . 'post/*/Layout*.php' ) ) {
+		$files = glob( ET_BUILDER_DIR . 'post/*/Layout*.php' );
+		if ( ! $files ) {
 			return;
 		}
 
@@ -303,8 +334,8 @@ class ET_Builder_Library {
 	 *
 	 * @since 3.0.99
 	 *
-	 * @param array[] $categories
-	 * @param array[] $packs
+	 * @param array[] $categories Layout categories.
+	 * @param array[] $packs Layout packs.
 	 *
 	 * @return array[] {
 	 *
@@ -330,6 +361,11 @@ class ET_Builder_Library {
 		return $sorted;
 	}
 
+	/**
+	 * Get Divi Library's Standard Post Types.
+	 *
+	 * @return mixed|void
+	 */
 	public static function _standard_post_types() {
 		/**
 		 * Filters the Divi Library's Standard Post Types.
@@ -368,15 +404,16 @@ class ET_Builder_Library {
 		$posts = self::$_->array_sort_by( is_array( $posts ) ? $posts : array( $posts ), 'post_name' );
 
 		foreach ( $posts as $post ) {
-			$layout = new stdClass;
+			$layout = new stdClass();
 
 			setup_postdata( $post );
 
 			$layout->id    = $post->ID;
 			$layout->index = $index;
 			$layout->date  = $post->post_date;
+			$types         = wp_get_post_terms( $layout->id, $this->layout_types->name );
 
-			if ( ! $types = wp_get_post_terms( $layout->id, $this->layout_types->name ) ) {
+			if ( ! $types ) {
 				continue;
 			}
 
@@ -387,45 +424,46 @@ class ET_Builder_Library {
 				continue;
 			}
 
-			$title = html_entity_decode( $post->post_title );
+			$title      = html_entity_decode( $post->post_title );
+			$short_name = get_post_meta( $post->ID, '_et_builder_library_short_name', true );
 
-			if ( ! $short_name = get_post_meta( $post->ID, '_et_builder_library_short_name', true ) ) {
+			if ( ! $short_name ) {
 				$short_name = $this->_get_layout_short_name( $title, $post );
 
 				if ( $short_name !== $title ) {
 					update_post_meta( $post->ID, '_et_builder_library_short_name', $short_name );
 				}
 			}
-
-			$layout->name = $layout->short_name = '';
+			$layout->short_name = '';
+			$layout->name       = $layout->short_name;
 
 			if ( $title ) {
-				// Remove periods since we use dot notation to retrieve translation
+				// Remove periods since we use dot notation to retrieve translation.
 				str_replace( '.', '', $title );
 
 				$layout->name = et_core_intentionally_unescaped( self::__( $title, '@layoutsLong' ), 'react_jsx' );
 			}
 
 			if ( $short_name ) {
-				// Remove periods since we use dot notation to retrieve translation
+				// Remove periods since we use dot notation to retrieve translation.
 				str_replace( '.', '', $title );
 
 				$layout->short_name = et_core_intentionally_unescaped( self::__( $short_name, '@layoutsShort' ), 'react_jsx' );
 			}
 
-			$layout->slug            = $post->post_name;
-			$layout->url             = esc_url( wp_make_link_relative( get_permalink( $post ) ) );
+			$layout->slug = $post->post_name;
+			$layout->url  = esc_url( wp_make_link_relative( get_permalink( $post ) ) );
 
 			$layout->thumbnail       = esc_url( get_the_post_thumbnail_url( $post->ID, $thumbnail ) );
 			$layout->thumbnail_small = esc_url( get_the_post_thumbnail_url( $post->ID, $thumbnail_small ) );
 			$layout->screenshot      = esc_url( get_the_post_thumbnail_url( $post->ID, $screenshot ) );
 
-			$layout->categories      = array();
-			$layout->category_ids    = array();
+			$layout->categories   = array();
+			$layout->category_ids = array();
 
-			$layout->is_global       = $this->layouts->is_global( $layout->id );
-			$layout->is_landing      = ! empty( $post->post_excerpt );
-			$layout->description     = '';
+			$layout->is_global   = $this->layouts->is_global( $layout->id );
+			$layout->is_landing  = ! empty( $post->post_excerpt );
+			$layout->description = '';
 
 			$this->_process_layout_categories( $post, $layout, $index, $layout_categories );
 			$this->_process_layout_packs( $post, $layout, $index, $layout_packs );
@@ -511,12 +549,13 @@ class ET_Builder_Library {
 		 *     }
 		 * }
 		 */
-		$saved_layouts_data = apply_filters( 'et_builder_library_saved_layouts', array(
+		$saved_layouts_data = array(
 			'categories' => $layout_categories,
 			'packs'      => $layout_packs,
 			'layouts'    => $layouts,
 			'sorted'     => self::_sort_builder_library_data( $layout_categories, $layout_packs ),
-		) );
+		);
+		$saved_layouts_data = apply_filters( 'et_builder_library_saved_layouts', $saved_layouts_data );
 
 		/**
 		 * Filters custom tabs layout data for the library modal. Custom tabs must be registered
@@ -532,9 +571,13 @@ class ET_Builder_Library {
 		 * }
 		 * @param array[] $saved_layouts_data {@see 'et_builder_library_saved_layouts'} for array structure.
 		 */
-		$custom_layouts_data = apply_filters( 'et_builder_library_custom_layouts', array(
-			'existing_pages' => $this->builder_library_modal_custom_tabs_existing_pages(),
-		), $saved_layouts_data );
+		$custom_layouts_data = apply_filters(
+			'et_builder_library_custom_layouts',
+			array(
+				'existing_pages' => $this->_builder_library_modal_custom_tabs_existing_pages(),
+			),
+			$saved_layouts_data
+		);
 
 		return array(
 			'layouts_data'        => $saved_layouts_data,
@@ -616,7 +659,7 @@ class ET_Builder_Library {
 	 *     }
 	 * }
 	 */
-	protected function builder_library_modal_custom_tabs_existing_pages() {
+	protected function _builder_library_modal_custom_tabs_existing_pages() {
 		et_core_nonce_verified_previously();
 
 		$categories = array();
@@ -628,13 +671,25 @@ class ET_Builder_Library {
 		$thumbnail_small = self::_get_image_size_name( 'thumbnail_small' );
 		$screenshot      = self::_get_image_size_name( 'screenshot' );
 
-		$post_types = et_builder_get_builder_post_types();
+		/**
+		 * Array of post types that should be listed as categories under "Existing Pages".
+		 *
+		 * @since 4.0
+		 *
+		 * @param string[] $post_types
+		 */
+		$post_types = apply_filters( 'et_library_builder_post_types', et_builder_get_builder_post_types() );
+
+		// Remove Extra's category layouts from "Your Existing Pages" layout list.
+		if ( in_array( 'layout', $post_types, true ) ) {
+			unset( $post_types[ array_search( 'layout', $post_types, true ) ] );
+		}
 
 		if ( wp_doing_ajax() ) {
-			// VB case
+			// VB case.
 			$exclude = isset( $_POST['postId'] ) ? (int) $_POST['postId'] : false;
 		} else {
-			// BB case
+			// BB case.
 			$exclude = get_the_ID();
 		}
 
@@ -665,7 +720,11 @@ class ET_Builder_Library {
 
 				$query = new ET_Core_Post_Query( $post_type );
 
-				$posts = $query->run();
+				$posts = $query
+					// Do not include unused Theme Builder layouts. For more information
+					// see et_theme_builder_trash_draft_and_unused_posts().
+					->not()->with_meta( '_et_theme_builder_marked_as_unused' )
+					->run();
 
 				$posts = self::$_->array_sort_by( is_array( $posts ) ? $posts : array( $posts ), 'post_name' );
 
@@ -676,7 +735,7 @@ class ET_Builder_Library {
 							continue;
 						}
 
-						// Do not add the current page to the list
+						// Do not add the current page to the list.
 						if ( $post->ID === $exclude ) {
 							continue;
 						}
@@ -686,14 +745,14 @@ class ET_Builder_Library {
 							continue;
 						}
 
-						// Only include posts that the user is allowed to edit
+						// Only include posts that the user is allowed to edit.
 						if ( ! current_user_can( 'edit_post', $post->ID ) ) {
 							continue;
 						}
 
 						$title = html_entity_decode( $post->post_title );
 
-						$slug  = $post->post_name;
+						$slug = $post->post_name;
 
 						if ( ! $slug ) {
 							// Generate a slug, if none is available - this is necessary as draft posts
@@ -711,36 +770,40 @@ class ET_Builder_Library {
 							continue;
 						}
 
-						$seen[ $slug ]              = true;
-						$layout                     = new stdClass();
-						$layout->index              = $index;
-						$layout->id                 = $post->ID;
-						$layout->date               = $post->post_date;
-						$layout->status             = $post->post_status;
-						$layout->icon               = 'layout';
-						$layout->type               = $post_type;
-						$layout->name               = et_core_intentionally_unescaped( $title, 'react_jsx' );
-						$layout->short_name         = et_core_intentionally_unescaped( $title, 'react_jsx' );
-						$layout->slug               = $slug;
-						$layout->url                = esc_url( wp_make_link_relative( get_permalink( $post ) ) );
+						$type_label = et_theme_builder_is_layout_post_type( $post_type )
+							? $post_type_obj->labels->singular_name
+							: $post_type;
 
-						$layout->thumbnail          = esc_url( get_the_post_thumbnail_url( $post->ID, $thumbnail ) );
-						$layout->thumbnail_small    = esc_url( get_the_post_thumbnail_url( $post->ID, $thumbnail_small ) );
-						$layout->screenshot         = esc_url( get_the_post_thumbnail_url( $post->ID, $screenshot ) );
+						$seen[ $slug ]      = true;
+						$layout             = new stdClass();
+						$layout->index      = $index;
+						$layout->id         = $post->ID;
+						$layout->date       = $post->post_date;
+						$layout->status     = $post->post_status;
+						$layout->icon       = 'layout';
+						$layout->type       = $type_label;
+						$layout->name       = et_core_intentionally_unescaped( $title, 'react_jsx' );
+						$layout->short_name = et_core_intentionally_unescaped( $title, 'react_jsx' );
+						$layout->slug       = $slug;
+						$layout->url        = esc_url( wp_make_link_relative( get_permalink( $post ) ) );
 
-						$layout->categories         = array();
-						$layout->category_ids       = array( $category_id );
+						$layout->thumbnail       = esc_url( get_the_post_thumbnail_url( $post->ID, $thumbnail ) );
+						$layout->thumbnail_small = esc_url( get_the_post_thumbnail_url( $post->ID, $thumbnail_small ) );
+						$layout->screenshot      = esc_url( get_the_post_thumbnail_url( $post->ID, $screenshot ) );
 
-						$layout->is_global          = false;
-						$layout->is_landing         = false;
-						$layout->description        = '';
-						$layout->category_slug      = $post_type;
+						$layout->categories   = array();
+						$layout->category_ids = array( $category_id );
+
+						$layout->is_global     = false;
+						$layout->is_landing    = false;
+						$layout->description   = '';
+						$layout->category_slug = $post_type;
 						// $layout_index is the array index, not the $post->ID
-						$category->layouts[]        = $layout_index;
+						$category->layouts[] = $layout_index;
 
-						$post_status_object         = get_post_status_object( $post->post_status );
+						$post_status_object = get_post_status_object( $post->post_status );
 
-						$layout->status             = isset( $post_status_object->label ) ? $post_status_object->label : $post->post_status;
+						$layout->status = isset( $post_status_object->label ) ? $post_status_object->label : $post->post_status;
 
 						$layouts[ $layout_index++ ] = $layout;
 
@@ -752,8 +815,8 @@ class ET_Builder_Library {
 			}
 		}
 
-		if ( count( $categories ) > 1) {
-			// Sort categories (post_type in this case) by slug
+		if ( count( $categories ) > 1 ) {
+			// Sort categories (post_type in this case) by slug.
 			uasort( $categories, array( 'self', 'compare_by_slug' ) );
 		}
 
@@ -762,16 +825,16 @@ class ET_Builder_Library {
 			'packs'      => $packs,
 			'layouts'    => $layouts,
 			'options'    => array(
-				'content'    => array(
+				'content' => array(
 					'title' => array(
 						et_core_intentionally_unescaped( self::__( '%d Pages' ), 'react_jsx' ),
 						et_core_intentionally_unescaped( self::__( '%d Page' ), 'react_jsx' ),
 					),
 				),
-				'sidebar'    => array(
+				'sidebar' => array(
 					'title' => et_core_intentionally_unescaped( self::__( 'Find A Page' ), 'react_jsx' ),
 				),
-				'list'       => array(
+				'list'    => array(
 					'columns' => array(
 						'status' => et_core_intentionally_unescaped( self::__( 'Status' ), 'react_jsx' ),
 					),
@@ -787,7 +850,7 @@ class ET_Builder_Library {
 	/**
 	 * Get custom tabs for the library modal.
 	 *
-	 * @param string $post_type
+	 * @param string $post_type Post type.
 	 *
 	 * @return array[] {
 	 *     Custom Tabs
@@ -837,12 +900,14 @@ class ET_Builder_Library {
 
 		global $wpdb;
 
-		return $all_built_for_post_types = $wpdb->get_col(
+		$all_built_for_post_types = $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT DISTINCT( meta_value ) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value > ''",
 				'_et_pb_built_for_post_type'
 			)
 		);
+
+		return $all_built_for_post_types;
 	}
 
 	/**
@@ -854,7 +919,7 @@ class ET_Builder_Library {
 	 */
 	public static function instance() {
 		if ( ! self::$_instance ) {
-			self::$_instance = new self;
+			self::$_instance = new self();
 		}
 
 		return self::$_instance;
@@ -919,7 +984,7 @@ class ET_Builder_Library {
 					continue;
 				}
 
-				// Sanity check just to be safe
+				// Sanity check just to be safe.
 				if ( get_post_meta( $post->ID, '_et_pb_predefined_layout', true ) ) {
 					wp_delete_post( $post->ID, true );
 				}
@@ -971,7 +1036,7 @@ class ET_Builder_Library {
 					$result['savedShortcode'] = et_fb_process_shortcode( $result['savedShortcode'] );
 				} else {
 					$post_content_processed = do_shortcode( $result['shortcode'] );
-					$result['migrations'] = ET_Builder_Module_Settings_Migration::$migrated;
+					$result['migrations']   = ET_Builder_Module_Settings_Migration::$migrated;
 				}
 
 				unset( $result['shortcode'] );
@@ -985,16 +1050,18 @@ class ET_Builder_Library {
 				break;
 		}
 
-		$response = wp_json_encode( array(
-			'success' => true,
-			'data'    => $result,
-		) );
+		$response = wp_json_encode(
+			array(
+				'success' => true,
+				'data'    => $result,
+			)
+		);
 
 		$tmp_dir = function_exists( 'sys_get_temp_dir' ) ? sys_get_temp_dir() : '/tmp';
 
 		$tmp_file = tempnam( $tmp_dir, 'et' );
 
-		@file_put_contents( $tmp_file, $response );
+		et_()->WPFS()->put_contents( $tmp_file, $response );
 
 		// Remove any previous buffered content since we're setting `Content-Length` header
 		// based on $response value only.
@@ -1002,12 +1069,12 @@ class ET_Builder_Library {
 			ob_end_clean();
 		}
 
-		header( 'Content-Length: ' . @filesize( $tmp_file ) );
+		header( 'Content-Length: ' . @filesize( $tmp_file ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- `filesize` may fail due to the permissions denied error.
 
-		@unlink( $tmp_file );
+		@unlink( $tmp_file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- `unlink` may fail due to the permissions denied error.
 
 		// Charset has to be explicitly mentioned when it is other than UTF-8.
-		@header( 'Content-Type: application/json; charset=' . esc_attr( get_option( 'blog_charset' ) ) );
+		header( 'Content-Type: application/json; charset=' . esc_attr( get_option( 'blog_charset' ) ) );
 
 		die( et_core_intentionally_unescaped( $response, 'html' ) );
 	}
@@ -1062,6 +1129,8 @@ class ET_Builder_Library {
 	 * Enqueues library-related styles and scripts in the admin.
 	 * {@see 'admin_enqueue_scripts'}
 	 *
+	 * @param string $page The current admin page.
+	 *
 	 * @since 3.0.99
 	 */
 	public function wp_hook_admin_enqueue_scripts( $page ) {
@@ -1069,25 +1138,25 @@ class ET_Builder_Library {
 
 		et_core_load_main_fonts();
 
-		wp_enqueue_style( 'et-builder-notification-popup-styles', ET_BUILDER_URI . '/styles/notification_popup_styles.css' );
+		wp_enqueue_style( 'et-builder-notification-popup-styles', ET_BUILDER_URI . '/styles/notification_popup_styles.css', array(), ET_BUILDER_PRODUCT_VERSION );
 
 		if ( 'et_pb_layout' === $typenow ) {
 			$new_layout_modal = et_pb_generate_new_layout_modal();
 
 			wp_enqueue_style( 'library-styles', ET_BUILDER_URI . '/styles/library_pages.css', array( 'et-core-admin' ), ET_BUILDER_PRODUCT_VERSION );
-			wp_enqueue_script( 'library-scripts', ET_BUILDER_URI . '/scripts/library_scripts.js', array(
+			$deps = array(
 				'jquery',
-				'et_pb_admin_global_js'
-			), ET_BUILDER_PRODUCT_VERSION );
-
-			wp_localize_script( 'library-scripts', 'et_pb_new_template_options', array(
-					'ajaxurl' => admin_url( 'admin-ajax.php' ),
-					'et_admin_load_nonce' => wp_create_nonce( 'et_admin_load_nonce' ),
-					'modal_output' => $new_layout_modal,
-				)
 			);
+			wp_enqueue_script( 'library-scripts', ET_BUILDER_URI . '/scripts/library_scripts.js', $deps, ET_BUILDER_PRODUCT_VERSION, false );
+
+			$new_template_options_data = array(
+				'ajaxurl'             => admin_url( 'admin-ajax.php' ),
+				'et_admin_load_nonce' => wp_create_nonce( 'et_admin_load_nonce' ),
+				'modal_output'        => $new_layout_modal,
+			);
+			wp_localize_script( 'library-scripts', 'et_pb_new_template_options', $new_template_options_data );
 		} else {
-			wp_enqueue_script( 'et-builder-failure-notice', ET_BUILDER_URI . '/scripts/failure_notice.js', array( 'jquery' ), ET_BUILDER_PRODUCT_VERSION );
+			wp_enqueue_script( 'et-builder-failure-notice', ET_BUILDER_URI . '/scripts/failure_notice.js', array( 'jquery' ), ET_BUILDER_PRODUCT_VERSION, false );
 		}
 	}
 }

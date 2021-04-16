@@ -42,7 +42,7 @@ class ET_Builder_Plugin_Compat_Eventon extends ET_Builder_Plugin_Compat_Base {
 			return;
 		}
 
-		add_filter( 'et_builder_post_type_blacklist', array( $this, 'maybe_filter_post_type_blacklist' ) );
+		add_filter( 'et_builder_post_type_blocklist', array( $this, 'maybe_filter_post_type_blocklist' ) );
 		add_filter( 'et_builder_third_party_post_types', array( $this, 'maybe_filter_third_party_post_types' ) );
 		add_filter( 'et_builder_post_types', array( $this, 'maybe_filter_builder_post_types' ) );
 		add_filter( 'et_fb_post_types', array( $this, 'maybe_filter_builder_post_types' ) );
@@ -62,15 +62,15 @@ class ET_Builder_Plugin_Compat_Eventon extends ET_Builder_Plugin_Compat_Base {
 	}
 
 	/**
-	 * Maybe filter the post type blacklist if the post type is not supported.
+	 * Maybe filter the post type blocklist if the post type is not supported.
 	 *
 	 * @since 3.10
 	 *
-	 * @param array<string> $post_types
+	 * @param string[] $post_types
 	 *
-	 * @return array<string>
+	 * @return string[]
 	 */
-	public function maybe_filter_post_type_blacklist( $post_types ) {
+	public function maybe_filter_post_type_blocklist( $post_types ) {
 		if ( ! $this->uses_default_filter() ) {
 			$post_types[] = $this->event_post_type;
 		}
@@ -79,13 +79,13 @@ class ET_Builder_Plugin_Compat_Eventon extends ET_Builder_Plugin_Compat_Base {
 	}
 
 	/**
-	 * Maybe filter the supported post type whitelist if the post type is supported.
+	 * Maybe filter the supported post type allowlist if the post type is supported.
 	 *
 	 * @since 3.10
 	 *
-	 * @param array<string> $post_types
+	 * @param string[] $post_types
 	 *
-	 * @return array<string>
+	 * @return string[]
 	 */
 	public function maybe_filter_third_party_post_types( $post_types ) {
 		if ( $this->uses_default_filter() ) {
@@ -101,9 +101,9 @@ class ET_Builder_Plugin_Compat_Eventon extends ET_Builder_Plugin_Compat_Base {
 	 *
 	 * @since 3.10
 	 *
-	 * @param array<string> $post_types
+	 * @param string[] $post_types
 	 *
-	 * @return array<string>
+	 * @return string[]
 	 */
 	public function maybe_filter_builder_post_types( $post_types ) {
 		if ( ! $this->uses_default_filter() ) {
@@ -136,4 +136,4 @@ class ET_Builder_Plugin_Compat_Eventon extends ET_Builder_Plugin_Compat_Base {
 	}
 }
 
-new ET_Builder_Plugin_Compat_Eventon;
+new ET_Builder_Plugin_Compat_Eventon();

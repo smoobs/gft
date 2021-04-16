@@ -1,0 +1,1819 @@
+# Translation of YITH WooCommerce Catalog Mode in Dutch
+# This file is distributed under the same license as the YITH WooCommerce Catalog Mode package.
+msgid ""
+msgstr ""
+"Project-Id-Version: YITH WooCommerce Catalog Mode\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/yith-woocommerce-"
+"catalog-mode.premium\n"
+"POT-Creation-Date: 2021-04-12 07:50:36+00:00\n"
+"PO-Revision-Date: 2021-04-07 12:33:05+0000\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/3.0.0-alpha.2\n"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:335
+msgid "Select at least one product"
+msgstr "Selecteer minstens een product"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:336
+msgid "Select at least one category"
+msgstr "Selecteer minstens een categorie"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:337
+msgid "Select at least one tag"
+msgstr "Selecteer minstens een tag"
+
+#. translators: %1$s start hours value - %2$s end hours value
+#. translators: %1$s start minutes value - %2$s end minutes value
+#: class-yith-woocommerce-catalog-mode-premium.php:339
+#: class-yith-woocommerce-catalog-mode-premium.php:341
+msgid "Please only insert a number between %1$s and %2$s"
+msgstr "Allen een nummer invoeren tussen %1$s en %2$s"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:417
+#: includes/admin/meta-boxes/class-ywctm-product-metabox.php:138
+msgid "Add to exclusion list"
+msgstr "Toevoegen aan uitsluitingenlijst"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:427
+#: includes/admin/meta-boxes/class-ywctm-product-metabox.php:94
+msgid "Catalog Mode Options"
+msgstr "Catalogus modus opties"
+
+#: class-yith-woocommerce-catalog-mode.php:194
+#: plugin-options/settings-options.php:20
+msgid "Settings"
+msgstr "Instellingen"
+
+#: class-yith-woocommerce-catalog-mode.php:195
+msgid "Premium Version"
+msgstr "Premium Versie"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:30
+msgid "Sample Button 1"
+msgstr "Voorbeeld knop 1"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:32
+msgid "ASK INFO"
+msgstr "INFO VRAGEN"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:95
+msgid "Sample Button 2"
+msgstr "Voorbeeld knop 2"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:97
+msgid "SEND INQUIRY"
+msgstr "AANVRAAG VERSTUREN"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:161
+msgid "Sample Button 3"
+msgstr "Voorbeeld knop 3"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:163
+msgid "LOGIN TO SEE PRICE"
+msgstr "INLOGGEN OM DE PRIJS TE ZIEN"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:227
+msgid "Sample Label"
+msgstr "Voorbeeld label"
+
+#. translators: %s sample phone number
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:230
+msgid "Contact us to inquire about this product"
+msgstr "Neem contact met ons op over dit product"
+
+#: includes/actions/update-2.0.0/ywctm-default-buttons.php:230
+msgid ""
+"If you love this product and wish for a customized quote contact us at "
+"number %s and we will be happy to provide you with more info!"
+msgstr ""
+"Als je dit product geweldig vindt en een prijsofferte op maat wilt "
+"ontvangen, neem dan contact op met ons via %s en we zijn blij je te voorzien "
+"van meer informatie."
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:72
+msgid "item"
+msgstr "item"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:73
+msgid "items"
+msgstr "items"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:119
+msgid "1 exclusion added successfully"
+msgstr "1 uitzondering succesvol toegevoegd"
+
+#. translators: %s: number of excluisions added
+#: includes/admin/tables/class-ywctm-exclusions-table.php:121
+msgid "%s exclusions added successfully"
+msgstr "%s uitzonderingen succesvol toegevoegd"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:130
+msgid "Exclusion updated successfully"
+msgstr "Uitzonderingen succesvol bijgewerkt"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:244
+#: includes/admin/tables/class-ywctm-vendors-table.php:174
+#: includes/ywctm-functions-premium.php:1000
+msgid "Remove from list"
+msgstr "Verwijderen van lijst"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:283
+msgid "All types"
+msgstr "Alle types"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:284
+#: includes/admin/tables/class-ywctm-exclusions-table.php:497
+msgid "Products"
+msgstr "Producten"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:285
+#: includes/admin/tables/class-ywctm-exclusions-table.php:498
+msgid "Categories"
+msgstr "Categorieën"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:286
+#: includes/admin/tables/class-ywctm-exclusions-table.php:499
+msgid "Tags"
+msgstr "Tags"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:315
+msgid "1 exclusion removed successfully"
+msgstr "1 uitzondering succesvol verwijderd"
+
+#. translators: number of excluisions deleted
+#: includes/admin/tables/class-ywctm-exclusions-table.php:317
+msgid "%s exclusions removed successfully"
+msgstr "%s uitzonderingen succesvol verwijderd"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:354
+msgid "Exclusion list"
+msgstr "Uitzonderingen lijst"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:360
+#: includes/admin/tables/class-ywctm-exclusions-table.php:439
+msgid "Add exclusion"
+msgstr "Uitzondering toevoegen"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:381
+msgid "Search item"
+msgstr "Item zoeken"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:439
+msgid "Update exclusion"
+msgstr "Uitzondering bijwerken"
+
+#. translators: %s item type
+#: includes/admin/tables/class-ywctm-exclusions-table.php:472
+msgid "%s to edit"
+msgstr "%s om te bewerken"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:501
+msgid "Item type"
+msgstr "Item type"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:503
+msgid ""
+"Choose whether to add specific products, categories or tags to the exclusion "
+"list."
+msgstr ""
+"Bepaal of je specifieke producten, categorieën of tags wilt toevoegen aan de "
+"uitzonderingenlijst."
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:511
+msgid "Search products"
+msgstr "Producten zoeken"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:513
+msgid "Select products"
+msgstr "Selecteer producten"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:514
+msgid "Select which products to add to the exclusion list."
+msgstr "Selecteer welke producten je wilt toevoegen aan de uitsluitingenlijst."
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:522
+msgid "Search categories"
+msgstr "Categorieën zoeken"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:525
+msgid "Select categories"
+msgstr "Selecteer categorieën"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:526
+msgid "Select which product categories to add in the exclusion list."
+msgstr ""
+"Selecteer welke producten je wilt toevoegen aan de uitzonderingenlijst."
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:534
+msgid "Search tags"
+msgstr "Tags zoeken"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:537
+msgid "Select tags"
+msgstr "Tags selecteren"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:538
+msgid "Select which product tags to add in the exclusion list."
+msgstr ""
+"Selecteer welke product tags je wilt toevoegen aan de uitzonderingenlijst."
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:591
+msgid "Exclusions"
+msgstr "Uitzonderingen"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:70
+msgid "vendor"
+msgstr "verkoper"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:71
+msgid "vendors"
+msgstr "verkopers"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:96
+msgid "1 vendor added successfully"
+msgstr "1 verkoper is succesvol toegevoegd"
+
+#. translators: %s number of vendors
+#: includes/admin/tables/class-ywctm-vendors-table.php:98
+msgid "%s vendors added successfully"
+msgstr "%s verkopers zijn succesvol toegevoegd"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:107
+msgid "Vendor updated successfully"
+msgstr "Verkoper succesvol bijgewerkt"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:157
+msgid "Vendor"
+msgstr "verkoper"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:158
+msgid "Exclusion"
+msgstr "Uitzondering"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:209
+msgid "1 vendor removed successfully"
+msgstr "1 verkoper succesvol verwijderd"
+
+#. translators: %s number of vendors
+#: includes/admin/tables/class-ywctm-vendors-table.php:211
+msgid "%s vendors removed successfully"
+msgstr "%s verkopers succesvol verwijderd"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:248
+msgid "Vendor Exclusion list"
+msgstr "Verkoper uitzonderingen lijst"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:254
+#: includes/admin/tables/class-ywctm-vendors-table.php:328
+msgid "Add vendor"
+msgstr "Verkoper toevoegen"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:270
+msgid "Search vendor"
+msgstr "Verkoper zoeken"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:328
+msgid "Update vendor"
+msgstr "Verkoper bijwerken"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:354
+msgid "Search vendors"
+msgstr "Verkopers zoeken"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:357
+msgid "Select vendors"
+msgstr "Verkopers selecteren"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:363
+msgid "Enable Exclusion"
+msgstr "Uitzondering inschakelen"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:377
+msgid "Vendor to edit"
+msgstr "Verkoper om te bewerken"
+
+#: includes/admin/tables/class-ywctm-vendors-table.php:409
+msgid "Vendors"
+msgstr "Verkopers"
+
+#: includes/class-ywctm-button-label-post-type.php:89
+#: includes/class-ywctm-button-label-post-type.php:950
+msgid "Return to buttons list"
+msgstr "Ga terug naar lijst"
+
+#: includes/class-ywctm-button-label-post-type.php:125
+msgid "Add button or label"
+msgstr "Knop of label toevoegen"
+
+#: includes/class-ywctm-button-label-post-type.php:126
+msgid "Create a new button or label"
+msgstr "Nieuwe knop of label aanmaken"
+
+#: includes/class-ywctm-button-label-post-type.php:127
+msgid "New button or label"
+msgstr "Nieuwe knop of label"
+
+#: includes/class-ywctm-button-label-post-type.php:128
+#: includes/class-ywctm-button-label-post-type.php:958
+msgid "Edit button or label"
+msgstr "Bewerk knop of label"
+
+#: includes/class-ywctm-button-label-post-type.php:129
+msgid "View button or label"
+msgstr "Bekijk knop of label"
+
+#: includes/class-ywctm-button-label-post-type.php:130
+msgid "Search button or label"
+msgstr "Zoek knop of label"
+
+#: includes/class-ywctm-button-label-post-type.php:131
+msgid "Not found"
+msgstr "Niet gevonden"
+
+#: includes/class-ywctm-button-label-post-type.php:132
+msgid "Not found in Trash"
+msgstr "Niet gevonden in prullenbak"
+
+#: includes/class-ywctm-button-label-post-type.php:235
+msgid "Title"
+msgstr "Titel"
+
+#: includes/class-ywctm-button-label-post-type.php:318
+msgid "Duplicate"
+msgstr "Dupliceren"
+
+#: includes/class-ywctm-button-label-post-type.php:346
+msgid "Add name"
+msgstr "Naam toevoegen"
+
+#: includes/class-ywctm-button-label-post-type.php:415
+msgid "Choose an icon"
+msgstr "Kies een icoon"
+
+#: includes/class-ywctm-button-label-post-type.php:416
+msgid "Close"
+msgstr "Sluiten"
+
+#: includes/class-ywctm-button-label-post-type.php:417
+msgid "Insert Icon"
+msgstr "Icoon invoegen"
+
+#: includes/class-ywctm-button-label-post-type.php:650
+msgid "Label text"
+msgstr "Label tekst"
+
+#: includes/class-ywctm-button-label-post-type.php:651
+msgid "Enter a text for the label."
+msgstr "Tekst invoeren voor het label."
+
+#: includes/class-ywctm-button-label-post-type.php:657
+msgid "Icon"
+msgstr "Icoon"
+
+#: includes/class-ywctm-button-label-post-type.php:659
+msgid "Optional: add one of the default icons or upload a custom one."
+msgstr ""
+"Optioneel: voeg een van de standaard pictogrammen toe of upload een "
+"aangepast icoon."
+
+#: includes/class-ywctm-button-label-post-type.php:661
+#: includes/class-ywctm-button-label-post-type.php:922
+msgid "None"
+msgstr "Geen"
+
+#: includes/class-ywctm-button-label-post-type.php:662
+msgid "Choose from default icons"
+msgstr "Kies uit standaard iconen"
+
+#: includes/class-ywctm-button-label-post-type.php:663
+msgid "Upload custom icon"
+msgstr "Aangepast icoon uploaden"
+
+#: includes/class-ywctm-button-label-post-type.php:671
+msgid "Choose icon"
+msgstr "Kies icoon"
+
+#: includes/class-ywctm-button-label-post-type.php:673
+msgid "Choose one of default icons."
+msgstr "Kies een van de standaardiconen."
+
+#: includes/class-ywctm-button-label-post-type.php:680
+msgid "Icon size"
+msgstr "Icoon afmeting"
+
+#: includes/class-ywctm-button-label-post-type.php:682
+msgid "Set the icon size in pixels."
+msgstr "Icoon formaat in pixels instellen."
+
+#: includes/class-ywctm-button-label-post-type.php:689
+msgid "Upload your icon"
+msgstr "Je icoon uploaden"
+
+#: includes/class-ywctm-button-label-post-type.php:691
+msgid "Upload your custom icon."
+msgstr "Je aangepaste icoon uploaden."
+
+#: includes/class-ywctm-button-label-post-type.php:697
+msgid "Icon/image alignment"
+msgstr "Icoon/afbeelding uitlijning"
+
+#: includes/class-ywctm-button-label-post-type.php:699
+msgid "Set the icon/image vertical alignment."
+msgstr "Icoon/afbeelding voor verticale uitlijning instellen."
+
+#: includes/class-ywctm-button-label-post-type.php:701
+#: includes/class-ywctm-button-label-post-type.php:840
+msgid "Top"
+msgstr "Bovenkant"
+
+#: includes/class-ywctm-button-label-post-type.php:702
+msgid "Middle"
+msgstr "Midden"
+
+#: includes/class-ywctm-button-label-post-type.php:703
+#: includes/class-ywctm-button-label-post-type.php:842
+msgid "Bottom"
+msgstr "Onderkant"
+
+#: includes/class-ywctm-button-label-post-type.php:714
+msgid "Set colors for icon."
+msgstr "Bepaal de icoon kleuren."
+
+#: includes/class-ywctm-button-label-post-type.php:718
+#: includes/ywctm-functions-premium.php:1228
+#: plugin-options/inquiry-form-options.php:263
+#: plugin-options/inquiry-form-options.php:286
+msgid "Default"
+msgstr "Default"
+
+#: includes/class-ywctm-button-label-post-type.php:723
+#: plugin-options/inquiry-form-options.php:268
+#: plugin-options/inquiry-form-options.php:291
+msgid "Hover"
+msgstr "Hoveren"
+
+#: includes/class-ywctm-button-label-post-type.php:727
+msgid "Icon colors"
+msgstr "Icoon kleuren"
+
+#: includes/class-ywctm-button-label-post-type.php:738
+msgid "Width"
+msgstr "Breedte"
+
+#: includes/class-ywctm-button-label-post-type.php:739
+msgid "Set a size for this button or label."
+msgstr "Afmeting instellen voor deze knop of dit label."
+
+#: includes/class-ywctm-button-label-post-type.php:766
+msgid "Set default colors."
+msgstr "Standard kleuren instellen."
+
+#: includes/class-ywctm-button-label-post-type.php:770
+#: includes/class-ywctm-button-label-post-type.php:794
+msgid "Background"
+msgstr "Achtergrond"
+
+#: includes/class-ywctm-button-label-post-type.php:775
+#: includes/class-ywctm-button-label-post-type.php:799
+msgid "Text"
+msgstr "Tekst"
+
+#: includes/class-ywctm-button-label-post-type.php:780
+#: includes/class-ywctm-button-label-post-type.php:804
+msgid "Borders"
+msgstr "Randen"
+
+#: includes/class-ywctm-button-label-post-type.php:784
+msgid "Default colors"
+msgstr "Standaard kleuren"
+
+#: includes/class-ywctm-button-label-post-type.php:790
+msgid "Set hover colors."
+msgstr "Hoveren kleuren instellen."
+
+#: includes/class-ywctm-button-label-post-type.php:808
+msgid "Hover colors"
+msgstr "Hoveren kleuren"
+
+#: includes/class-ywctm-button-label-post-type.php:813
+msgid "Border thickness"
+msgstr "Rand dikte"
+
+#: includes/class-ywctm-button-label-post-type.php:814
+msgid "Set the border thickness."
+msgstr "Rand dikte instellen."
+
+#: includes/class-ywctm-button-label-post-type.php:833
+msgid "Border radius"
+msgstr "Rand radius"
+
+#: includes/class-ywctm-button-label-post-type.php:834
+msgid "Set the border radius."
+msgstr "Rand radius instellen."
+
+#: includes/class-ywctm-button-label-post-type.php:841
+msgid "Right"
+msgstr "Rechts"
+
+#: includes/class-ywctm-button-label-post-type.php:843
+msgid "Left"
+msgstr "Links"
+
+#: includes/class-ywctm-button-label-post-type.php:859
+msgid "Margin"
+msgstr "Margen"
+
+#: includes/class-ywctm-button-label-post-type.php:860
+msgid "Set a margin to manage the space around the button or label."
+msgstr "Een margen instellen voor de ruimte om de knop of het label heen."
+
+#: includes/class-ywctm-button-label-post-type.php:877
+msgid "Padding"
+msgstr "Opvulling"
+
+#: includes/class-ywctm-button-label-post-type.php:878
+msgid "Set a padding to manage the space inside the button or label."
+msgstr "Opvulling instellen om de ruimte in de knop of het label te beheren."
+
+#: includes/class-ywctm-button-label-post-type.php:902
+msgid "Unlinked text label"
+msgstr "Niet gelinkt tekstlabel"
+
+#: includes/class-ywctm-button-label-post-type.php:903
+msgid "Product Page"
+msgstr "Productpagina"
+
+#: includes/class-ywctm-button-label-post-type.php:904
+#: includes/class-ywctm-button-label-post-type.php:914
+msgid "Custom URL"
+msgstr "Aangepaste URL"
+
+#: includes/class-ywctm-button-label-post-type.php:907
+msgid "Link To:"
+msgstr "Link naar:"
+
+#: includes/class-ywctm-button-label-post-type.php:908
+msgid "Select whether to link this button or remain as a static label."
+msgstr ""
+"Selecteer of je deze knop wilt koppelen of als statisch label wilt houden."
+
+#: includes/class-ywctm-button-label-post-type.php:915
+msgid "Optional: add a custom URL."
+msgstr "Optioneel: een aangepaste url toevoegen."
+
+#: includes/class-ywctm-button-label-post-type.php:918
+msgid "Hover animation"
+msgstr "Hoveren animatie"
+
+#: includes/class-ywctm-button-label-post-type.php:920
+msgid "Choose a hover animation."
+msgstr "Kies een hoveren animatie."
+
+#: includes/class-ywctm-button-label-post-type.php:923
+msgid "Fade"
+msgstr "Fade"
+
+#: includes/class-ywctm-button-label-post-type.php:924
+msgid "Float"
+msgstr "Float"
+
+#: includes/class-ywctm-button-label-post-type.php:925
+msgid "Grow Button"
+msgstr "Grow Button"
+
+#: includes/class-ywctm-button-label-post-type.php:926
+msgid "Move Hover Color"
+msgstr "Move Hover Color"
+
+#: includes/class-ywctm-button-label-post-type.php:927
+msgid "Press"
+msgstr "Press"
+
+#: includes/class-ywctm-button-label-post-type.php:928
+msgid "Push"
+msgstr "Push"
+
+#: includes/class-ywctm-button-label-post-type.php:929
+msgid "Shake"
+msgstr "Schudden"
+
+#: includes/class-ywctm-button-label-post-type.php:930
+msgid "Slide Top"
+msgstr "Slide naar boven"
+
+#: includes/class-ywctm-button-label-post-type.php:931
+msgid "Slide Left"
+msgstr "Slide links"
+
+#: includes/class-ywctm-button-label-post-type.php:960
+msgid "Create button or label"
+msgstr "Knop of label aanmaken"
+
+#: includes/class-ywctm-button-label-post-type.php:968
+msgid "Name"
+msgstr "Naam"
+
+#: includes/class-ywctm-button-label-post-type.php:971
+msgid "This field is required."
+msgstr "Dit is een verplicht veld."
+
+#: includes/class-ywctm-button-label-post-type.php:972
+msgid "Enter a name to identify this button or label."
+msgstr "Naam invoeren om deze knop of label te identificeren."
+
+#: includes/class-ywctm-button-label-post-type.php:1020
+msgid "Preview"
+msgstr "Voorbeeld"
+
+#: includes/class-ywctm-button-label-post-type.php:1035
+msgid "Update"
+msgstr "Bijwerken"
+
+#: includes/class-ywctm-button-label-post-type.php:1038
+msgid "Save"
+msgstr "Opslaan"
+
+#: includes/class-ywctm-button-label-post-type.php:1169
+msgid "(Copy)"
+msgstr "(Kopieer)"
+
+#: includes/integrations/elementor/ywctm-elementor.php:19
+#: includes/integrations/elementor/ywctm-elementor.php:23
+msgid "YITH Catalog Mode Button"
+msgstr "YITH Catalog Mode knop"
+
+#. translators: %1$s: open <b> tag - %2$s: close </b> tag - %3$s: open link tag
+#. - %4$s: close link tag
+#: includes/integrations/elementor/ywctm-elementor.php:28
+#: includes/integrations/elementor/ywctm-elementor.php:43
+msgid ""
+"This widget inherits the style from the settings of %1$sYITH Catalog Mode"
+"%2$s plugin that you can edit %3$shere%4$s"
+msgstr ""
+"Deze widget neemt de stijl van de instellen van de %1$sYITH Catalog Mode%2$s "
+"plugin over, welke je kunt bewerken vanaf %3$shier%4$s"
+
+#: includes/integrations/elementor/ywctm-elementor.php:34
+#: includes/integrations/elementor/ywctm-elementor.php:38
+msgid "YITH Catalog Mode Inquiry Form"
+msgstr "YITH Catalog Mode aanvraagformulier"
+
+#: includes/integrations/forms/contact-form-7/ywctm-contact-form-7.php:88
+#: includes/integrations/forms/default/class-ywctm-default-form.php:235
+#: includes/integrations/forms/gravity-forms/ywctm-gravity-forms.php:88
+#: includes/integrations/forms/wpforms/ywctm-wpforms.php:86
+#: includes/ywctm-functions-premium.php:892
+msgid "Product"
+msgstr "Product"
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:96
+msgid "This is a required field."
+msgstr "Dit is een verplicht veld."
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:97
+msgid "The mail you have entered seems to be wrong."
+msgstr "De e-mail die je hebt ingevoerd lijkt onjuist."
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:136
+msgid "required"
+msgstr "verplicht"
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:187
+msgid "Please check the re-Captcha form."
+msgstr "Controleer alsjeblieft het re-Captcha formulier."
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:221
+msgid "Yes"
+msgstr "Ja"
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:221
+msgid "No"
+msgstr "Nee"
+
+#: includes/integrations/forms/default/class-ywctm-default-form.php:249
+msgid ""
+"Your message has been sent successfully. You'll find a copy in your mailbox."
+msgstr ""
+"Je bericht is succesvol verzonden. Je kunt een kopie vinden in je inbox."
+
+#. translators: %s field name
+#: includes/integrations/forms/default/class-ywctm-default-form.php:279
+msgid "%s is required."
+msgstr "%s is verplicht."
+
+#. translators: %s email address
+#: includes/integrations/forms/default/class-ywctm-default-form.php:289
+msgid " %s is not a valid email address."
+msgstr "%s is geen geldig e-mailadres."
+
+#: includes/integrations/forms/default/emails/class-ywctm-request-mail-customer.php:55
+msgid "Catalog Mode: Customer Email"
+msgstr "Catalog Mode: Klant e-mail"
+
+#: includes/integrations/forms/default/emails/class-ywctm-request-mail-customer.php:57
+msgid "Copy of the inquiry email for the customer"
+msgstr "Kopie van de verzoek e-mail voor de klant"
+
+#: includes/integrations/forms/default/emails/class-ywctm-request-mail.php:55
+msgid "Catalog Mode: Admin Email"
+msgstr "Catalog mode: Beheerder e-mail"
+
+#: includes/integrations/forms/default/emails/class-ywctm-request-mail.php:57
+msgid "Inquiry email for the admin"
+msgstr "Verzoek e-mail voor de beheerder"
+
+#: includes/integrations/forms/default/panel/class-ywctm-default-form-field.php:63
+msgid "Edit field"
+msgstr "Veld bewerken"
+
+#: includes/integrations/forms/default/panel/class-ywctm-default-form-field.php:64
+msgid "Save Field"
+msgstr "Veld opslaan"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:32
+msgid "First Name"
+msgstr "Voornaam"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:44
+msgid "Last Name"
+msgstr "Achternaam"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:56
+msgid "Email"
+msgstr "E-mail"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:68
+msgid "Message"
+msgstr "Bericht"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:80
+msgid "Acceptance"
+msgstr "Accepteren"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:87
+msgid "I have read and accepted your [terms] and [privacy_policy]"
+msgstr "Ik heb de [terms] en [privacy_policy]  gelezen en geaccepteerd"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:123
+msgid "First"
+msgstr "Eerste"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:124
+msgid "Last"
+msgstr "Laatste"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:125
+msgid "Wide"
+msgstr "Breed"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:308
+#: includes/integrations/forms/default/ywctm-default-form.php:389
+msgid "Plain text"
+msgstr "Platte tekst"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:311
+#: includes/integrations/forms/default/ywctm-default-form.php:392
+msgid "HTML"
+msgstr "HTML"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:312
+#: includes/integrations/forms/default/ywctm-default-form.php:393
+msgid "Multipart"
+msgstr "Multipart"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:315
+msgid "Recipient(s)"
+msgstr "Ontvanger(s)"
+
+#. translators: %s default email
+#: includes/integrations/forms/default/ywctm-default-form.php:319
+msgid "Enter recipients (comma separated) for this email. Defaults to %s"
+msgstr ""
+"Ontvangers invoeren (gescheiden met komma) voor deze e-mail. Standaard naar "
+"%s"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:324
+#: includes/integrations/forms/default/ywctm-default-form.php:396
+msgid "Email subject"
+msgstr "E-mail onderwerp"
+
+#. translators: %s placeholders
+#: includes/integrations/forms/default/ywctm-default-form.php:327
+#: includes/integrations/forms/default/ywctm-default-form.php:336
+#: includes/integrations/forms/default/ywctm-default-form.php:345
+#: includes/integrations/forms/default/ywctm-default-form.php:399
+#: includes/integrations/forms/default/ywctm-default-form.php:408
+#: includes/integrations/forms/default/ywctm-default-form.php:417
+msgid "Available placeholders: %s"
+msgstr "Beschikbare plaatshouders: %s"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:329
+msgid "[{site_title}] You have a new inquiry."
+msgstr "[{site_title}] Je hebt een nieuw verzoek."
+
+#: includes/integrations/forms/default/ywctm-default-form.php:333
+#: includes/integrations/forms/default/ywctm-default-form.php:405
+msgid "Email heading"
+msgstr "E-mail hoofd"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:338
+msgid "Inquiry message"
+msgstr "Verzoek bericht"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:342
+#: includes/integrations/forms/default/ywctm-default-form.php:414
+msgid "Email body"
+msgstr "E-mail hoofdtekst"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:347
+msgid "You have received a new inquiry message."
+msgstr "Je hebt een nieuw verzoek bericht ontvangen."
+
+#: includes/integrations/forms/default/ywctm-default-form.php:352
+#: includes/integrations/forms/default/ywctm-default-form.php:424
+msgid "Email type"
+msgstr "E-mail type"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:356
+#: includes/integrations/forms/default/ywctm-default-form.php:428
+msgid "Choose which format of email to send."
+msgstr "Kies welk e-mail format je wilt sturen."
+
+#: includes/integrations/forms/default/ywctm-default-form.php:401
+msgid "[{site_title}] We have received your inquiry."
+msgstr "[{site_title}] We hebben je verzoek ontvangen."
+
+#: includes/integrations/forms/default/ywctm-default-form.php:410
+msgid "Your inquiry was received."
+msgstr "Je verzoek is ontvangen."
+
+#: includes/integrations/forms/default/ywctm-default-form.php:419
+msgid ""
+"We have received your inquiry message. Here's a recap of the details you "
+"have submitted:"
+msgstr ""
+"We hebben je verzoek bericht ontvangen. Hierbij een samenvatting van de "
+"details die je hebt ingedient:"
+
+#: includes/ywctm-functions-premium.php:116
+#: plugin-options/inquiry-form-options.php:75
+msgid "Inquiry Form"
+msgstr "Vragenformulier"
+
+#: includes/ywctm-functions-premium.php:118
+msgid "Choose whether to show or hide the inquiry form on these product pages."
+msgstr ""
+"Bepaal of je het aanvraagformulier wilt tonen of verbergen in deze "
+"productpagina's."
+
+#: includes/ywctm-functions-premium.php:124
+msgid "Use custom options for \"Add to Cart\""
+msgstr "Gebruik aangepaste opties voor \"Toevoegen aan winkelwagen\""
+
+#: includes/ywctm-functions-premium.php:126
+msgid "Enable to override the default settings for the \"Add to cart\" button."
+msgstr ""
+"Inschakelen om de standaardinstellingen voor de \"Toevoegen aan winkelwagen"
+"\" knop te overschrijven."
+
+#: includes/ywctm-functions-premium.php:134
+#: includes/ywctm-functions-premium.php:192
+#: includes/ywctm-functions-premium.php:828
+#: includes/ywctm-functions-premium.php:830
+#: includes/ywctm-functions-premium.php:864
+#: includes/ywctm-functions-premium.php:866
+msgid "Visible"
+msgstr "ZIchtbaar"
+
+#: includes/ywctm-functions-premium.php:135
+#: includes/ywctm-functions-premium.php:193
+#: includes/ywctm-functions-premium.php:828
+#: includes/ywctm-functions-premium.php:830
+#: includes/ywctm-functions-premium.php:864
+#: includes/ywctm-functions-premium.php:866
+msgid "Hidden"
+msgstr "Verborgen"
+
+#: includes/ywctm-functions-premium.php:137
+msgid "Set \"Add to Cart\" as:"
+msgstr "\"Toevoegen aan winkelwagen\" instellen als:"
+
+#: includes/ywctm-functions-premium.php:147
+msgid "Replace \"Add to Cart\" in the product page with:"
+msgstr "Vervang \"Toevoegen aan winkelwagen\" in productpagina met:"
+
+#: includes/ywctm-functions-premium.php:155
+#: includes/ywctm-functions-premium.php:174
+#: includes/ywctm-functions-premium.php:213
+msgid "Override URL:"
+msgstr "URL overschrijven:"
+
+#: includes/ywctm-functions-premium.php:157
+#: includes/ywctm-functions-premium.php:176
+#: includes/ywctm-functions-premium.php:215
+msgid ""
+"Replace the button URL with a custom one. Leave empty to use the default URL."
+msgstr ""
+"Vervang de knop URL met een aangepaste URL. Laat leeg om de standaard URL te "
+"gebruiken"
+
+#: includes/ywctm-functions-premium.php:166
+msgid "Replace \"Add to Cart\" in shop pages with:"
+msgstr "Vervang \"Toevoegen aan winkelwagen\" in winkelpagina's met:"
+
+#: includes/ywctm-functions-premium.php:182
+msgid "Use custom options for price"
+msgstr "Gebruik aangepaste opties voor prijs"
+
+#: includes/ywctm-functions-premium.php:184
+msgid "Enable to override the default settings for price."
+msgstr ""
+"Inschakelen om de standaardinstellingen voor de prijs te overschrijven."
+
+#: includes/ywctm-functions-premium.php:195
+msgid "Set price as:"
+msgstr "Prijs instellen als:"
+
+#: includes/ywctm-functions-premium.php:205
+msgid "Replace price with:"
+msgstr "Prijs vervangen met:"
+
+#: includes/ywctm-functions-premium.php:243
+#: includes/ywctm-functions-premium.php:292
+msgid "Nothing"
+msgstr "Niets"
+
+#: includes/ywctm-functions-premium.php:247
+#: includes/ywctm-functions-premium.php:293
+msgid "(no name)"
+msgstr "(naamloos)"
+
+#. translators: %s button name
+#: includes/ywctm-functions-premium.php:833
+msgid "Replaced with %s in product page"
+msgstr "Vervangen door %s in productpagina"
+
+#. translators: %s button name
+#: includes/ywctm-functions-premium.php:837
+msgid "Replaced with %s in shop page"
+msgstr "Vervangen met %s in winkelpagina"
+
+#. translators: %s button name
+#: includes/ywctm-functions-premium.php:869
+msgid "Replaced with %s"
+msgstr "Vervangen door %s"
+
+#: includes/ywctm-functions-premium.php:893
+msgid "Category"
+msgstr "Categorie"
+
+#: includes/ywctm-functions-premium.php:894
+msgid "Tag"
+msgstr "Tag"
+
+#: includes/ywctm-functions-premium.php:937
+msgid "Edit product"
+msgstr "Bewerk product"
+
+#: includes/ywctm-functions-premium.php:950
+msgid "Edit category"
+msgstr "Bewerk categorie"
+
+#: includes/ywctm-functions-premium.php:965
+msgid "Edit tag"
+msgstr "Bewerk tag"
+
+#: includes/ywctm-functions-premium.php:980
+msgid "Edit vendor"
+msgstr "Bewerk verkoper"
+
+#: includes/ywctm-functions-premium.php:998
+#: includes/ywctm-functions-premium.php:1008
+msgid "Edit exclusion"
+msgstr "Bewerk uitzondering"
+
+#: includes/ywctm-functions-premium.php:1001
+msgid "View"
+msgstr "Bekijk"
+
+#: includes/ywctm-functions-premium.php:1179
+msgid "Item Name"
+msgstr "Naam item"
+
+#: includes/ywctm-functions-premium.php:1180
+msgid "Item Type"
+msgstr "Type item"
+
+#: includes/ywctm-functions-premium.php:1181
+msgid "Add to cart"
+msgstr "Toevoegen aan winkelwagen"
+
+#: includes/ywctm-functions-premium.php:1182
+msgid "Price"
+msgstr "Prijs"
+
+#: includes/ywctm-functions-premium.php:1188
+#: plugin-options/inquiry-form-options.php:229
+msgid "Inquiry form"
+msgstr "Vragenformulier"
+
+#: includes/ywctm-functions-premium.php:1291
+msgid "Plugin not activated or not installed"
+msgstr "Plugin is niet geactiveerd of geïnstalleerd"
+
+#: includes/ywctm-functions-premium.php:1293
+msgid "No contact form found"
+msgstr "Geen contactformulier gevonden"
+
+#. translators: %s name of the plugin
+#: init.php:37
+msgid ""
+"%s is enabled but not effective. In order to work, it requires WooCommerce."
+msgstr ""
+"%s is ingeschakeld maar niet werkend. Het heeft WooCommerce nodig om te "
+"werken."
+
+#: plugin-options/exclusions-options.php:23
+msgid "List of excluded items"
+msgstr "Lijst met uitgezonderde items"
+
+#: plugin-options/exclusions-options.php:32
+msgid "List of vendors"
+msgstr "Lijst met verkopers"
+
+#: plugin-options/inquiry-form-options.php:17
+msgid "Choose form"
+msgstr "Kies een formulier"
+
+#: plugin-options/inquiry-form-options.php:18
+msgid "Select the form to display on the product page."
+msgstr "Selecteer het formulier om weer te geven op de productpagina."
+
+#: plugin-options/inquiry-form-options.php:79
+msgid "Set inquiry form as:"
+msgstr "Vragenformulier instellen als:"
+
+#: plugin-options/inquiry-form-options.php:82
+msgid ""
+"Choose to make the inquiry form visible to all products or only to the ones "
+"in the exclusion list."
+msgstr ""
+"Kies ervoor om het aanvraagformulier zichtbaar te maken voor alle producten "
+"of alleen voor die in de uitsluitingenlijst."
+
+#: plugin-options/inquiry-form-options.php:84
+msgid "Hidden in all products"
+msgstr "Verbergen in alle producten"
+
+#: plugin-options/inquiry-form-options.php:85
+msgid "Visible in all products"
+msgstr "Zichtbaar in alle producten"
+
+#: plugin-options/inquiry-form-options.php:86
+msgid "Visible in products added to the Exclusion List only"
+msgstr ""
+"Uitsluitend zichtbaar in producten die zijn toegevoegd aan de "
+"uitsluitingenlijst"
+
+#: plugin-options/inquiry-form-options.php:92
+msgid "Form to show"
+msgstr "Formulier om weer te geven"
+
+#. translators: %s list of supported plugins
+#: plugin-options/inquiry-form-options.php:97
+msgid ""
+"Select which form to show. You can use the default form or it is possible to "
+"use another plugin and show a form created with %s"
+msgstr ""
+"Selecteren welk formulier je wilt tonen. Je kan het standaard formulier "
+"gebruiken of het is mogelijk om een andere plugin te gebruiken en een "
+"formulier te tonen gemaakt door %s"
+
+#: plugin-options/inquiry-form-options.php:130
+msgid "Add a reCAPTCHA to the default form"
+msgstr "Een reCAPTCHA toevoegen aan het standaard formulier"
+
+#: plugin-options/inquiry-form-options.php:144
+msgid "Site key"
+msgstr "Site key"
+
+#: plugin-options/inquiry-form-options.php:145
+msgid "Enter the reCAPTCHA site key"
+msgstr "De reCAPTCHA site key invoeren"
+
+#: plugin-options/inquiry-form-options.php:157
+msgid "Secret key"
+msgstr "Secret key"
+
+#: plugin-options/inquiry-form-options.php:158
+msgid "Enter reCAPTCHA secret key"
+msgstr "reCAPTCHA secret key invoeren"
+
+#: plugin-options/inquiry-form-options.php:177
+msgid "Show form in:"
+msgstr "Toon formulier in:"
+
+#: plugin-options/inquiry-form-options.php:181
+msgid "WooCommerce Tabs"
+msgstr "WooCommerce tabbladen"
+
+#: plugin-options/inquiry-form-options.php:182
+msgid "Short description area"
+msgstr "Korte beschrijving sectie"
+
+#: plugin-options/inquiry-form-options.php:186
+msgid ""
+"Choose to show the inquiry form inside a WooCommerce tab or in the short "
+"description area."
+msgstr ""
+"Bepaal of je het aanvraagformulier in een WooCommerce tabblad wilt tonen of "
+"in de korte beschrijving sectie."
+
+#: plugin-options/inquiry-form-options.php:190
+msgid "Form Position"
+msgstr "Positie formulier"
+
+#: plugin-options/inquiry-form-options.php:195
+msgid "After price"
+msgstr "Na prijs"
+
+#: plugin-options/inquiry-form-options.php:196
+msgid "After short description"
+msgstr "Na korte beschrijving"
+
+#: plugin-options/inquiry-form-options.php:197
+msgid "After \"Add to cart\" button"
+msgstr "Na \"Toevoegen aan winkelwagen\" knop"
+
+#: plugin-options/inquiry-form-options.php:208
+msgid "Form style"
+msgstr "Stijl formulier"
+
+#: plugin-options/inquiry-form-options.php:212
+msgid "Classic"
+msgstr "Klassiek"
+
+#: plugin-options/inquiry-form-options.php:213
+msgid "Hidden in toggle"
+msgstr "Verbergen in toggle"
+
+#: plugin-options/inquiry-form-options.php:222
+msgid ""
+"Choose whether to show the form is visible in the page or it is hidden in a "
+"toggled section."
+msgstr ""
+"Bepaal of je het formulier wilt tonen op de pagina of dat het verborgen is "
+"in een toggle sectie."
+
+#: plugin-options/inquiry-form-options.php:227
+msgid "Tab title"
+msgstr "Titel tabblad"
+
+#: plugin-options/inquiry-form-options.php:240
+msgid "Text before form"
+msgstr "Tekst vóór formulier"
+
+#: plugin-options/inquiry-form-options.php:242
+msgid "Enter a custom text to show before the inquiry form."
+msgstr "Een aangepaste tekst invoeren om te tonen vóór het aanvraagformulier."
+
+#: plugin-options/inquiry-form-options.php:247
+msgid "Toggle button text"
+msgstr "Toggle-knop tekst"
+
+#: plugin-options/inquiry-form-options.php:249
+msgid "Send an inquiry"
+msgstr "Stuur een aanvraag"
+
+#: plugin-options/inquiry-form-options.php:272
+msgid "Toggle button text colors"
+msgstr "Toggle-knop tekstkleuren"
+
+#: plugin-options/inquiry-form-options.php:295
+msgid "Toggle button colors"
+msgstr "Toggle-knop kleuren"
+
+#: plugin-options/inquiry-form-options.php:303
+msgid "Include product Permalink"
+msgstr "Product permalink bijvoegen"
+
+#. translators: %s line break
+#: plugin-options/inquiry-form-options.php:307
+msgid ""
+"Use this option to include the product permalink in the email body.%sIn this "
+"way, you can identify from which product page the message was sent."
+msgstr ""
+"Gebruik deze opties om de product permalink in te sluiten in de e-mail "
+"hoofdtekst.%sOp deze manier kun je nagaan vanaf welke pagina het bericht is "
+"gestuurd."
+
+#: plugin-options/premium-settings-options.php:22
+msgid "Admininstrator overrides vendors' settings"
+msgstr "Beheerder overschrijft verkoper instellingen"
+
+#: plugin-options/premium-settings-options.php:25
+msgid ""
+"If enabled, the administrator settings will override the vendors' settings"
+msgstr ""
+"Indien ingeschakeld, zullen de beheerdersinstellingen de verkoper "
+"instellingen overschrijven"
+
+#: plugin-options/premium-settings-options.php:32
+msgid "Apply the admin settings to all or only to selected vendors."
+msgstr ""
+"Beheerdersinstellingen toepassen op alle of alleen geselecteerde verkopers."
+
+#: plugin-options/premium-settings-options.php:33
+msgid "Choose to apply the admin settings to all or only to selected vendors."
+msgstr ""
+"Bepaal of je de beheerdersinstellingen wilt toepassen op alle of alleen "
+"geselecteerde verkopers."
+
+#: plugin-options/premium-settings-options.php:39
+msgid "Apply admin settings"
+msgstr "Beheerdersinstellingen toepassen"
+
+#: plugin-options/premium-settings-options.php:40
+msgid "Do not apply admin settings"
+msgstr "Beheerdersinstellingen niet toepassen"
+
+#: plugin-options/premium-settings-options.php:46
+msgid "to"
+msgstr "naar"
+
+#: plugin-options/premium-settings-options.php:48
+msgid "All vendors"
+msgstr "Alle verkopers"
+
+#: plugin-options/premium-settings-options.php:49
+msgid "Vendors in exclusion list"
+msgstr "Verkopers in uitsluitingenlijst"
+
+#: plugin-options/premium-settings-options.php:67
+msgid "Step 1 - Set your users rules"
+msgstr "Stap 1 - Je gebruikersregels instellen"
+
+#: plugin-options/premium-settings-options.php:71
+msgid "Enable Catalog Mode for"
+msgstr "Catalogus modus inschakelen voor"
+
+#: plugin-options/premium-settings-options.php:74
+msgid "Choose to enable the Catalog Mode for all users or only to guest users."
+msgstr ""
+"Bepaal of je de Catalog Modus wilt inschakelen voor alle gebruikers of "
+"alleen gastgebruikers."
+
+#: plugin-options/premium-settings-options.php:76
+#: plugin-options/premium-settings-options.php:109
+msgid "All users"
+msgstr "Alle gebruikers"
+
+#: plugin-options/premium-settings-options.php:77
+#: plugin-options/premium-settings-options.php:110
+msgid "Only guest users"
+msgstr "Alleen gastgebruikers"
+
+#: plugin-options/premium-settings-options.php:85
+msgid ""
+"If enabled, you can set specific rules for users from different countries."
+msgstr ""
+"Indien ingeschakeld, kun je specifieke regels instellen voor gebruikers uit "
+"verschillende landen."
+
+#: plugin-options/premium-settings-options.php:86
+msgid "Additional geolocation filter"
+msgstr "Aanvullende geolocatie filter"
+
+#: plugin-options/premium-settings-options.php:93
+msgid ""
+"Choose to enable or disable the Catalog Mode settings to users from specific "
+"countries."
+msgstr ""
+"Bepaal of je de catalogus modus instellingen wilt inschakelen of "
+"uitschakelen voor gebruikers uit specifieke landen."
+
+#: plugin-options/premium-settings-options.php:94
+msgid "Set geolocation rules for users"
+msgstr "Geolocalisatie regels instellen voor gebruikers"
+
+#: plugin-options/premium-settings-options.php:100
+msgid "Enable Catalog Mode"
+msgstr "Catalogus modus inschakelen"
+
+#: plugin-options/premium-settings-options.php:101
+msgid "Disable Catalog Mode"
+msgstr "Catalogus modus uitschakelen"
+
+#: plugin-options/premium-settings-options.php:107
+#: plugin-options/premium-settings-options.php:241
+#: plugin-options/premium-settings-options.php:302
+msgid "for"
+msgstr "voor"
+
+#: plugin-options/premium-settings-options.php:116
+msgid "from"
+msgstr "van"
+
+#: plugin-options/premium-settings-options.php:131
+#: plugin-options/settings-options.php:24
+msgid "Catalog mode for administrators"
+msgstr "Catalogus modus voor beheerders"
+
+#: plugin-options/premium-settings-options.php:134
+#: plugin-options/settings-options.php:27
+msgid "If enabled, the Catalog Mode rules will also work for admin users."
+msgstr ""
+"Indien ingeschakeld, zullen de Catalog Mode regels ook werken voor "
+"gebruikers met een beheerder rol."
+
+#: plugin-options/premium-settings-options.php:139
+msgid "Hide the review tab for guest users"
+msgstr "Verberg het review tabblad voor gastgebruikers"
+
+#: plugin-options/premium-settings-options.php:142
+msgid "If enabled, guest users can't see the review tab in the product pages."
+msgstr ""
+"Indien ingeschakeld, kunnen gastgebruikers het review tabblad niet zien in "
+"de productpagina's."
+
+#: plugin-options/premium-settings-options.php:152
+msgid "Step 2: Set your Catalog Mode options"
+msgstr "Stap 2: Je catalogus modus opties instellen"
+
+#: plugin-options/premium-settings-options.php:156
+#: plugin-options/settings-options.php:32
+msgid "Disable shop"
+msgstr "Winkel uitschakelen"
+
+#: plugin-options/premium-settings-options.php:159
+#: plugin-options/settings-options.php:35
+msgid ""
+"Use this option to hide the \"Cart\" page, \"Checkout\" page and all the "
+"\"Add to Cart\" buttons in the shop."
+msgstr ""
+"Gebruik deze optie voor het verbergen van de \"Winkelwagen\" pagina, "
+"\"Afrekenen\" pagina en alle \"Toevoegen aan winkelwagen\" knoppen in de "
+"winkel."
+
+#: plugin-options/premium-settings-options.php:164
+msgid "Disable the shop during specific time ranges"
+msgstr "De winkel uitschakelen tijdens specifiek tijdsbestek"
+
+#. translators: %s line break
+#: plugin-options/premium-settings-options.php:168
+msgid ""
+"If enabled, the shop will not receive orders during a specific time range. "
+"%s To set the times, please use 24 hour format. For example: if you do not "
+"take orders from 8 in the evening till 8 in the morning, use: 20.00 to 8.00."
+msgstr ""
+"Indien ingeschakeld, zal de winkel geen bestellingen ontvangen gedurende een "
+"bepaald tijdsbestek. %s Gebruik het 24-uurs formaat om de tijden in te "
+"stellen. Voorbeeld: neem je geen bestellingen op van 8 uur 's avonds tot 8 "
+"uur' s ochtends, gebruik dan: 20.00 uur tot 8.00 uur."
+
+#: plugin-options/premium-settings-options.php:178
+msgid "Disable shop during this time range:"
+msgstr "Winkel uitschakelen tijdens dit tijdsbestek:"
+
+#: plugin-options/premium-settings-options.php:190
+msgid "Disable shop during specific dates"
+msgstr "Winkel uitschakelen tijdens specifieke data"
+
+#: plugin-options/premium-settings-options.php:193
+msgid ""
+"If enabled, the shop will not receive orders during a specific date range "
+"(for example: from 23 December to 9 January)"
+msgstr ""
+"Indien ingeschakeld, zal de winkel geen bestellingen ontvangen tijdens een "
+"specifieke datum reeks (bijvoorbeeld: van 23 december tot 9 januari)"
+
+#: plugin-options/premium-settings-options.php:203
+msgid "Disable the shop during this date range:"
+msgstr "De winkel uitschakelen tijdens deze datumreeks: "
+
+#: plugin-options/premium-settings-options.php:217
+#: plugin-options/settings-options.php:42
+msgid "\"Add to Cart\" settings in Catalog Mode"
+msgstr "\"Toevoegen aan winkelwagen\" instellingen in catalogus modus"
+
+#: plugin-options/premium-settings-options.php:218
+msgid ""
+"Choose to hide \"Add to Cart\" and whether to apply these to all products or "
+"only to the exclusion list."
+msgstr ""
+"Bepaal of je ''Toevoegen aan winkelwagen\" wilt verbergen en of je dit wilt "
+"toepassen op alle producten of alleen op die in de uitsluitingen lijst."
+
+#: plugin-options/premium-settings-options.php:224
+msgid "Show \"Add to Cart\""
+msgstr "Toon \"Toevoegen aan winkelwagen\""
+
+#: plugin-options/premium-settings-options.php:225
+msgid "Hide \"Add to Cart\""
+msgstr "Verberg \"Toevoegen aan winkelwagen\""
+
+#: plugin-options/premium-settings-options.php:231
+msgid "in"
+msgstr "in"
+
+#: plugin-options/premium-settings-options.php:233
+#: plugin-options/settings-options.php:52
+msgid "All pages"
+msgstr "Alle pagina's"
+
+#: plugin-options/premium-settings-options.php:234
+#: plugin-options/settings-options.php:53
+msgid "Shop page"
+msgstr "Winkelpagina"
+
+#: plugin-options/premium-settings-options.php:235
+#: plugin-options/settings-options.php:54
+msgid "Product page"
+msgstr "Productpagina"
+
+#: plugin-options/premium-settings-options.php:243
+#: plugin-options/premium-settings-options.php:304
+msgid "All products"
+msgstr "Alle producten"
+
+#: plugin-options/premium-settings-options.php:244
+#: plugin-options/premium-settings-options.php:305
+msgid "Items in the exclusion list only"
+msgstr "Alleen items in uitsluitingenlijst"
+
+#: plugin-options/premium-settings-options.php:258
+#: plugin-options/settings-options.php:72
+msgid "Hide product variations"
+msgstr "Productvariaties verbergen"
+
+#: plugin-options/premium-settings-options.php:261
+#: plugin-options/settings-options.php:75
+msgid ""
+"Use this option to hide product variations where \"Add to cart\" is hidden."
+msgstr ""
+"Gebruik deze optie om productvariaties te verbergen waar \"Toevoegen aan "
+"winkelwagen\" is verborgen."
+
+#: plugin-options/premium-settings-options.php:266
+msgid "In product pages, replace \"Add to cart\" with:"
+msgstr "Vervang \"Toevoegen aan winkelwagen\" in productpagina's met:"
+
+#: plugin-options/premium-settings-options.php:270
+#: plugin-options/premium-settings-options.php:280
+msgid ""
+"Optional: choose a custom button to replace ALL the hidden \"Add to cart\" "
+"buttons or links."
+msgstr ""
+"Optioneel: kies een aangepaste knop om ALLE verborgen \"Toevoegen aan "
+"winkelwagentje\" -knoppen of -links te vervangen."
+
+#: plugin-options/premium-settings-options.php:276
+msgid "In shop pages, replace \"Add to cart\" with:"
+msgstr "Vervang \"Toevoegen aan winkelwagen\" in winkelpagina's met:"
+
+#: plugin-options/premium-settings-options.php:288
+msgid "Price settings in Catalog Mode"
+msgstr "Prijsinstellingen in catalogus modus"
+
+#: plugin-options/premium-settings-options.php:289
+msgid ""
+"Choose to hide or to show product prices and whether to apply these to all "
+"products or only to the exclusion list."
+msgstr ""
+"Bepaal of je productprijzen wilt tonen of verbergen en of je dit wilt "
+"toepassen op alle producten of alleen op die in de uitzonderingenlijst."
+
+#: plugin-options/premium-settings-options.php:289
+msgid "Note: if you hide the price, \"Add to cart\" will be hidden too."
+msgstr ""
+"Let op: als je de prijs verbergt, zal \"toevoegen aan winkelwagen\" ook "
+"worden verborgen."
+
+#: plugin-options/premium-settings-options.php:295
+msgid "Show price"
+msgstr "Prijs tonen"
+
+#: plugin-options/premium-settings-options.php:296
+msgid "Hide price"
+msgstr "Prijs verbergen"
+
+#: plugin-options/premium-settings-options.php:314
+msgid "Where hidden, replace price with:"
+msgstr "Waar verborgen, vervang prijs met:"
+
+#: plugin-options/premium-settings-options.php:318
+msgid "Optional: choose a label to replace ALL the hidden prices."
+msgstr "Optioneel: kies een label om ALLE verborgen prijzen te vervangen."
+
+#: plugin-options/settings-options.php:43
+msgid "Choose where to hide \"Add to Cart\"."
+msgstr "Bepaal waar je \"Toevoegen aan winkelwagen\" wilt verbergen."
+
+#: templates/catalog-mode-default-form.php:41
+msgid "Send Your Request"
+msgstr "Verstuur je verzoek"
+
+#: views/panel/types/ywctm-default-form.php:283
+msgid "This field is already defined"
+msgstr "Dit veld is al gedefinieerd"
+
+#: views/panel/types/ywctm-default-form.php:286
+msgid "This field is required"
+msgstr "Dit veld is verplicht"
+
+#. translators: 5s 'Plus' sign
+#: views/panel/types/ywctm-multiple-dates.php:36
+#: views/panel/types/ywctm-multiple-times.php:39
+msgid "%s Add rule"
+msgstr "%s Regel toevoegen"
+
+#: views/panel/types/ywctm-multiple-times.php:101
+#: views/panel/types/ywctm-multiple-times.php:198
+msgid "All days"
+msgstr "Alle dagen"
+
+#: views/panel/types/ywctm-multiple-times.php:102
+#: views/panel/types/ywctm-multiple-times.php:200
+msgid "Monday"
+msgstr "Maandag"
+
+#: views/panel/types/ywctm-multiple-times.php:103
+#: views/panel/types/ywctm-multiple-times.php:201
+msgid "Tuesday"
+msgstr "Dinsdag"
+
+#: views/panel/types/ywctm-multiple-times.php:104
+#: views/panel/types/ywctm-multiple-times.php:202
+msgid "Wednesday"
+msgstr "Woensdag"
+
+#: views/panel/types/ywctm-multiple-times.php:105
+#: views/panel/types/ywctm-multiple-times.php:203
+msgid "Thursday"
+msgstr "Donderdag"
+
+#: views/panel/types/ywctm-multiple-times.php:106
+#: views/panel/types/ywctm-multiple-times.php:204
+msgid "Friday"
+msgstr "Vrijdag"
+
+#: views/panel/types/ywctm-multiple-times.php:107
+#: views/panel/types/ywctm-multiple-times.php:205
+msgid "Saturday"
+msgstr "Zaterdag"
+
+#: views/panel/types/ywctm-multiple-times.php:108
+#: views/panel/types/ywctm-multiple-times.php:199
+msgid "Sunday"
+msgstr "Zondag"
+
+#. Description of the plugin/theme
+msgid ""
+"<code><strong>YITH WooCommerce Catalog Mode</strong></code> allows hiding "
+"product prices, cart and checkout from your store and turning it into a "
+"performing product catalogue. You will be able to adjust your catalogue "
+"settings as you prefer based on your requirements. <a href=\"https://"
+"yithemes.com/\" target=\"_blank\">Get more plugins for your e-commerce shop "
+"on <strong>YITH</strong></a>"
+msgstr ""
+"<code><strong> YITH WooCommerce Catalog Mode </strong></code> biedt de "
+"mogelijkheid om productprijzen, winkelwagen en afrekenen te verbergen in je "
+"winkel en deze om te zetten in een uitvoerige productcatalogus. Je kunt je "
+"catalogusinstellingen naar wens aanpassen op basis van je vereisten. <a href="
+"\"https://yithemes.com/\" target=\"_blank\"> Download meer plug-ins voor je "
+"e-commerceshop op<strong>YITH</strong></a>"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:344
+msgctxt "Exclusion page popup title label "
+msgid "Add exclusion in list"
+msgstr "Uitsluiting toevoegen aan lijst"
+
+#: class-yith-woocommerce-catalog-mode-premium.php:345
+msgctxt "Exclusion page popup save button label "
+msgid "Add exclusion to list"
+msgstr "Uitsluiting toevoegen aan de lijst"
+
+#: class-yith-woocommerce-catalog-mode.php:185
+#: includes/integrations/class-ywctm-multi-vendor.php:112
+msgctxt "general settings tab name"
+msgid "Settings"
+msgstr "Instellingen"
+
+#: class-yith-woocommerce-catalog-mode.php:186
+#: includes/integrations/class-ywctm-multi-vendor.php:113
+msgctxt "exclusion settings tab name"
+msgid "Exclusion List"
+msgstr "Uitzonderingenlijst"
+
+#: class-yith-woocommerce-catalog-mode.php:187
+#: includes/integrations/class-ywctm-multi-vendor.php:114
+msgctxt "inquiry form settings tab name"
+msgid "Inquiry Form"
+msgstr "Vragenformulier"
+
+#: class-yith-woocommerce-catalog-mode.php:188
+#: includes/integrations/class-ywctm-multi-vendor.php:115
+msgctxt "buttons & labels settings tab name"
+msgid "Buttons & Labels"
+msgstr "Knoppen & labels"
+
+#: includes/admin/tables/class-ywctm-exclusions-table.php:299
+msgctxt "Label for filter button in exclusion list"
+msgid "Filter"
+msgstr "Filter"
+
+#: includes/class-ywctm-button-label-post-type.php:123
+msgctxt "Post Type General Name"
+msgid "Buttons & Labels"
+msgstr "Knoppen & labels"
+
+#: includes/class-ywctm-button-label-post-type.php:124
+msgctxt "Post Type Singular Name"
+msgid "Buttons & Labels"
+msgstr "Knoppen & labels"
+
+#: includes/class-ywctm-button-label-post-type.php:644
+msgctxt "buttons & labels options group name"
+msgid "Content"
+msgstr "Inhoud"
+
+#: includes/class-ywctm-button-label-post-type.php:732
+msgctxt "buttons & labels options group name"
+msgid "Style"
+msgstr "Stijl"
+
+#: includes/class-ywctm-button-label-post-type.php:895
+msgctxt "buttons & labels options group name"
+msgid "Options"
+msgstr "Opties"
+
+#: includes/class-ywctm-button-label-post-type.php:654
+#: includes/class-ywctm-button-label-post-type.php:1026
+msgctxt "preview button placeholder text"
+msgid "Contact Us"
+msgstr "Contact Ons"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:104
+msgctxt "Text field"
+msgid "Text"
+msgstr "Tekst"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:105
+msgctxt "Email field"
+msgid "Email"
+msgstr "E-mail"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:106
+msgctxt "Textarea field"
+msgid "Textarea"
+msgstr "Tekstveld"
+
+#: includes/integrations/forms/default/ywctm-default-form.php:107
+msgctxt "Field to add the Acceptance on form"
+msgid "Acceptance"
+msgstr "Accepteren"
+
+#: plugin-options/inquiry-form-options.php:111
+msgctxt "Admin options title"
+msgid "Default form fields"
+msgstr "Standaard formulier velden"
+
+#: plugin-options/inquiry-form-options.php:174
+msgctxt "Admin options title"
+msgid "Form options"
+msgstr "Formulier opties"
+
+#. translators: %1$s line break, %2$s link opening, %3$s link closing
+#: plugin-options/inquiry-form-options.php:132
+msgctxt "string with placeholder do not translate or remove it"
+msgid ""
+"Enable to add reCAPTCHA option in default form. %1$s To start using "
+"reCAPTCHA V2, you need to %2$s sign up for an API key %3$s pair for your "
+"site."
+msgstr ""
+"Inschakelen om de reCAPTCHA optie in een standaard formulier toe te voegen. "
+"%1$s Om te starten met het gebruiken van reCAPTCHA V2, moet je %2$s "
+"registreren voor een API key %3$s set voor je site."
+
+#: views/panel/types/ywctm-default-form.php:32
+msgctxt "Default form column"
+msgid "Name"
+msgstr "Naam"
+
+#: views/panel/types/ywctm-default-form.php:37
+msgctxt "Default form column"
+msgid "Type"
+msgstr "Type"
+
+#: views/panel/types/ywctm-default-form.php:45
+msgctxt "Default form column"
+msgid "Class"
+msgstr "Klasse"
+
+#: views/panel/types/ywctm-default-form.php:51
+msgctxt "Default form column"
+msgid "Label"
+msgstr "Label"
+
+#: views/panel/types/ywctm-default-form.php:56
+msgctxt "Default form column"
+msgid "Label Class"
+msgstr "Label klasse"
+
+#: views/panel/types/ywctm-default-form.php:62
+msgctxt "Default form column"
+msgid "Placeholder"
+msgstr "Plaatshouder"
+
+#: views/panel/types/ywctm-default-form.php:71
+msgctxt "Default form column"
+msgid "Description"
+msgstr "Beschrijving"
+
+#: views/panel/types/ywctm-default-form.php:83
+msgctxt "Default form column"
+msgid "Position"
+msgstr "Positie"
+
+#: views/panel/types/ywctm-default-form.php:91
+msgctxt "Default form column"
+msgid "Required"
+msgstr "Verplicht"
+
+#: views/panel/types/ywctm-default-form.php:101
+msgctxt "Default form column"
+msgid "Activate"
+msgstr "Activeren"
+
+#: views/panel/types/ywctm-default-form.php:46
+#: views/panel/types/ywctm-default-form.php:57
+msgctxt "Default form description"
+msgid "Separate classes with commas"
+msgstr "Klassen scheiden met komma's"
+
+#: views/panel/types/ywctm-default-form.php:72
+msgctxt "Default form description"
+msgid "You can use the shortcode [terms] and [privacy_policy]"
+msgstr "Je kunt de volgende shortcodes gebruiken [terms] en [privacy_policy]"
+
+#: views/panel/types/ywctm-default-form.php:173
+#: views/panel/types/ywctm-default-form.php:271
+msgctxt "YES/NO button: use MAX 3 characters!"
+msgid "YES"
+msgstr "JA"
+
+#: views/panel/types/ywctm-default-form.php:173
+#: views/panel/types/ywctm-default-form.php:271
+msgctxt "YES/NO button: use MAX 3 characters!"
+msgid "NO"
+msgstr "NEE"
+
+#: views/panel/types/ywctm-multiple-dates.php:52
+#: views/panel/types/ywctm-multiple-dates.php:114
+msgctxt "Part of the sentence: \"From [date] To [date]\""
+msgid "From"
+msgstr "Van"
+
+#: views/panel/types/ywctm-multiple-dates.php:66
+#: views/panel/types/ywctm-multiple-dates.php:128
+msgctxt "Part of the sentence: \"From [date] To [date]\""
+msgid "To"
+msgstr "tot"
+
+#: views/panel/types/ywctm-multiple-times.php:55
+#: views/panel/types/ywctm-multiple-times.php:152
+msgctxt "Part of the sentence: \"From [time] To [time] on [days of the week]\""
+msgid "From"
+msgstr "Van"
+
+#: views/panel/types/ywctm-multiple-times.php:77
+#: views/panel/types/ywctm-multiple-times.php:174
+msgctxt "Part of the sentence: \"From [time] To [time] on [days of the week]\""
+msgid "To"
+msgstr "Tot"
+
+#: views/panel/types/ywctm-multiple-times.php:99
+#: views/panel/types/ywctm-multiple-times.php:196
+msgctxt "Part of the sentence: \"From [time] To [time] on [days of the week]\""
+msgid "on"
+msgstr "op"
+
+#: views/panel/types/ywctm-multiple-times.php:60
+#: views/panel/types/ywctm-multiple-times.php:82
+#: views/panel/types/ywctm-multiple-times.php:157
+#: views/panel/types/ywctm-multiple-times.php:179
+msgctxt "Abbreviation for \"Hours\""
+msgid "HH"
+msgstr "UU"
+
+#: views/panel/types/ywctm-multiple-times.php:71
+#: views/panel/types/ywctm-multiple-times.php:93
+#: views/panel/types/ywctm-multiple-times.php:168
+#: views/panel/types/ywctm-multiple-times.php:190
+msgctxt "Abbreviation for \"Minutes\""
+msgid "MM"
+msgstr "MM"

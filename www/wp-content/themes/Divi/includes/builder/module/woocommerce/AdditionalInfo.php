@@ -7,7 +7,7 @@
  *
  * @package Divi\Builder
  *
- * @since   ??
+ * @since   3.29
  */
 
 /**
@@ -16,6 +16,8 @@
 class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 	/**
 	 * Initialize.
+	 *
+	 * @since 4.0.6 Implemented Attribute Row, Title and Body Custom CSS fields.
 	 */
 	public function init() {
 		$this->name       = esc_html__( 'Woo Additional Info', 'et_builder' );
@@ -26,14 +28,14 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 		$this->settings_modal_toggles = array(
 			'general'  => array(
 				'toggles' => array(
-					'main_content' => esc_html__( 'Content', 'et_builder' ),
-					'elements'     => esc_html__( 'Elements', 'et_builder' ),
+					'main_content' => et_builder_i18n( 'Content' ),
+					'elements'     => et_builder_i18n( 'Elements' ),
 				),
 			),
 			'advanced' => array(
 				'toggles' => array(
-					'text' => array(
-						'title'             => esc_html__( 'Text', 'et_builder' ),
+					'text'   => array(
+						'title'             => et_builder_i18n( 'Text' ),
 						'priority'          => 45,
 						'tabbed_subtoggles' => true,
 						'bb_icons_support'  => true,
@@ -48,6 +50,9 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 							),
 						),
 					),
+					'header' => array(
+						'title' => esc_html__( 'Title Text', 'et_builder' ),
+					),
 				),
 			),
 		);
@@ -55,7 +60,7 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 		$this->advanced_fields = array(
 			'fonts'          => array(
 				'body'      => array(
-					'label'           => esc_html__( 'Text', 'et_builder' ),
+					'label'           => et_builder_i18n( 'Text' ),
 					'css'             => array(
 						'main'      => '%%order_class%% td',
 						'important' => array( 'line-height' ),
@@ -74,7 +79,7 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 					'hide_text_align' => true,
 				),
 				'link'      => array(
-					'label'           => esc_html__( 'Link', 'et_builder' ),
+					'label'           => et_builder_i18n( 'Link' ),
 					'css'             => array(
 						'main' => '%%order_class%% a',
 					),
@@ -89,7 +94,7 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 					'hide_text_align' => true,
 				),
 				'header'    => array(
-					'label'       => esc_html__( 'Title', 'et_builder' ),
+					'label'       => et_builder_i18n( 'Title' ),
 					'css'         => array(
 						'main' => '%%order_class%% h2',
 					),
@@ -99,6 +104,7 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 					'line_height' => array(
 						'default' => '1em',
 					),
+					'toggle_slug' => 'header',
 				),
 				'attribute' => array(
 					'label'       => esc_html__( 'Attribute', 'et_builder' ),
@@ -152,19 +158,31 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 		);
 
 		$this->custom_css_fields = array(
-			'title_text'   => array(
+			'title_text'      => array(
 				'label'    => esc_html__( 'Title Text', 'et_builder' ),
 				'selector' => 'h2',
 			),
-			'content_area' => array(
+			'content_area'    => array(
 				'label'    => esc_html__( 'Content Area', 'et_builder' ),
 				'selector' => '.shop_attributes',
+			),
+			'attribute_row'   => array(
+				'label'    => esc_html__( 'Attribute Row', 'et_builder' ),
+				'selector' => '.shop_attributes .woocommerce-product-attributes-item',
+			),
+			'attribute_title' => array(
+				'label'    => esc_html__( 'Attribute Title', 'et_builder' ),
+				'selector' => '.shop_attributes .woocommerce-product-attributes-item__label',
+			),
+			'attribute_text'  => array(
+				'label'    => esc_html__( 'Attribute Body', 'et_builder' ),
+				'selector' => '.shop_attributes .woocommerce-product-attributes-item__value',
 			),
 		);
 
 		$this->help_videos = array(
 			array(
-				'id'   => esc_html( '7X03vBPYJ1o' ),
+				'id'   => '7X03vBPYJ1o',
 				'name' => esc_html__( 'Divi WooCommerce Modules', 'et_builder' ),
 			),
 		);
@@ -178,7 +196,7 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 			'product'           => ET_Builder_Module_Helper_Woocommerce_Modules::get_field(
 				'product',
 				array(
-					'default'          => 'product' === $this->get_post_type() ? 'current' : 'latest',
+					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_product_default(),
 					'computed_affects' => array(
 						'__additional_info',
 					),
@@ -197,8 +215,8 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 				'type'             => 'yes_no_button',
 				'option_category'  => 'configuration',
 				'options'          => array(
-					'on'  => esc_html__( 'On', 'et_builder' ),
-					'off' => esc_html__( 'Off', 'et_builder' ),
+					'on'  => et_builder_i18n( 'On' ),
+					'off' => et_builder_i18n( 'Off' ),
 				),
 				'default_on_front' => 'on',
 				'toggle_slug'      => 'elements',
@@ -278,13 +296,18 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 	public function add_multi_view_attrs( $outer_wrapper_attrs, $this_class ) {
 		$multi_view = et_pb_multi_view_options( $this_class );
 
-		$multi_view_attrs = $multi_view->render_attrs( array(
-			'classes' => array(
-				'et_pb_hide_title' => array(
-					'show_title' => 'off',
+		$multi_view_attrs = $multi_view->render_attrs(
+			array(
+				'classes' => array(
+					'et_pb_hide_title' => array(
+						'show_title' => 'off',
+					),
 				),
 			),
-		), false, null, true );
+			false,
+			null,
+			true
+		);
 
 		if ( $multi_view_attrs && is_array( $multi_view_attrs ) ) {
 			$outer_wrapper_attrs = array_merge( $outer_wrapper_attrs, $multi_view_attrs );
@@ -302,15 +325,12 @@ class ET_Builder_Module_Woocommerce_Additional_Info extends ET_Builder_Module {
 	 *
 	 * @return string
 	 */
-	public function render( $attrs, $content = null, $render_slug ) {
+	public function render( $attrs, $content, $render_slug ) {
 		ET_Builder_Module_Helper_Woocommerce_Modules::process_background_layout_data( $render_slug, $this );
 
 		$this->add_classname( $this->get_text_orientation_classname() );
 
-		add_filter( "et_builder_module_{$render_slug}_outer_wrapper_attrs", array(
-			$this,
-			'add_multi_view_attrs',
-		), 10, 2 );
+		add_filter( "et_builder_module_{$render_slug}_outer_wrapper_attrs", array( $this, 'add_multi_view_attrs' ), 10, 2 );
 
 		$output = self::get_additional_info( $this->props );
 

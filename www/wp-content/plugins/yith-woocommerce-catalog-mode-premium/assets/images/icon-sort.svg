@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="27px" height="27px" viewBox="0 0 27 27" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>ic_zoom_out_map</title>
+    <defs>
+        <filter id="filter-1">
+            <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0.517380 0 0 0 0 0.517380 0 0 0 0 0.517380 0 0 0 1.000000 0"></feColorMatrix>
+        </filter>
+        <polygon id="path-2" points="0 0 19 0 19 19 0 19"></polygon>
+        <polygon id="path-4" points="0 0 19 0 19 19 0 19"></polygon>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Request-quote---form-options" transform="translate(-1082.000000, -718.000000)">
+            <g id="ic_zoom_out_map" transform="translate(86.000000, 652.000000)" filter="url(#filter-1)">
+                <g transform="translate(1009.500000, 79.500000) rotate(-45.000000) translate(-1009.500000, -79.500000) translate(1000.000000, 70.000000)" id="Icon-24px">
+                    <g id="Clipped">
+                        <mask id="mask-3" fill="white">
+                            <use xlink:href="#path-2"></use>
+                        </mask>
+                        <g id="a"></g>
+                        <path d="M11.875,2.375 L13.6958333,4.19583333 L11.4079167,6.46791667 L12.5320833,7.59208333 L14.8041667,5.30416667 L16.625,7.125 L16.625,2.375 L11.875,2.375 Z M2.375,7.125 L4.19583333,5.30416667 L6.46791667,7.59208333 L7.59208333,6.46791667 L5.30416667,4.19583333 L7.125,2.375 L2.375,2.375 L2.375,7.125 Z M7.125,16.625 L5.30416667,14.8041667 L7.59208333,12.5320833 L6.46791667,11.4079167 L4.19583333,13.6958333 L2.375,11.875 L2.375,16.625 L7.125,16.625 Z M16.625,11.875 L14.8041667,13.6958333 L12.5320833,11.4079167 L11.4079167,12.5320833 L13.6958333,14.8041667 L11.875,16.625 L16.625,16.625 L16.625,11.875 Z" id="Shape" fill="#000000" mask="url(#mask-3)"></path>
+                    </g>
+                    <g id="Clipped">
+                        <mask id="mask-5" fill="white">
+                            <use xlink:href="#path-4"></use>
+                        </mask>
+                        <g id="a"></g>
+                        <polygon id="Shape" mask="url(#mask-5)" points="0 0 19 0 19 19 0 19"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

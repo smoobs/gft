@@ -77,18 +77,18 @@ class ET_Core_Portability {
 
 		self::$_doing_import = true;
 
-		$timestamp               = $this->get_timestamp();
-		$filesystem              = $this->set_filesystem();
-		$temp_file_id            = sanitize_file_name( $timestamp );
-		$temp_file               = $this->has_temp_file( $temp_file_id, 'et_core_import' );
-		$include_custom_defaults = isset( $_POST['include_custom_defaults'] ) ? wp_validate_boolean( $_POST['include_custom_defaults'] ) : false;
-		$custom_defaults         = '';
+		$timestamp              = $this->get_timestamp();
+		$filesystem             = $this->set_filesystem();
+		$temp_file_id           = sanitize_file_name( $timestamp );
+		$temp_file              = $this->has_temp_file( $temp_file_id, 'et_core_import' );
+		$include_global_presets = isset( $_POST['include_global_presets'] ) ? wp_validate_boolean( $_POST['include_global_presets'] ) : false;
+		$global_presets         = '';
 
 		if ( $temp_file ) {
 			$import = json_decode( $filesystem->get_contents( $temp_file ), true );
 		} else {
-			if ( ! isset( $_FILES['file'] ) ) {
-				return false;
+			if ( ! isset( $_FILES['file']['name'] ) || ! et_()->ends_with( sanitize_file_name( $_FILES['file']['name'] ), '.json' ) ) {
+				return array( 'message' => 'invalideFile' );
 			}
 
 			if ( ! in_array( $file_context, array( 'upload', 'sideload' ) ) ) {
@@ -117,6 +117,8 @@ class ET_Core_Portability {
 			$import['data'] = $this->apply_query( $import['data'], 'set' );
 
 			if ( ! isset( $import['context'] ) || ( isset( $import['context'] ) && $import['context'] !== $this->instance->context ) ) {
+				$this->delete_temp_files( 'et_core_import' );
+
 				return array( 'message' => 'importContextFail' );
 			}
 
@@ -158,20 +160,56 @@ class ET_Core_Portability {
 			$success['postContent'] = reset( $data );
 			do_shortcode( $success['postContent'] );
 			$success['migrations']  = ET_Builder_Module_Settings_Migration::$migrated;
-			$success['defaults']    = isset( $import['defaults'] ) && is_array( $import['defaults'] ) ? $import['defaults'] : (object) array();
+			$success['presets']     = isset( $import['presets'] ) && is_array( $import['presets'] ) ? $import['presets'] : (object) array();
 		}
 
 		if ( 'post_type' === $this->instance->type ) {
-			if ( ! $include_custom_defaults ) {
-				foreach ( $data as &$post ) {
-					$shortcode_object = et_fb_process_shortcode( $post['post_content'] );
+			$preset_rewrite_map = array();
+			if ( ! empty( $import['presets'] ) && $include_global_presets ) {
+				$preset_rewrite_map = $this->prepare_to_import_layout_presets( $import['presets'] );
+				$global_presets = $import['presets'];
+			}
 
-					$this->apply_custom_defaults( $shortcode_object, $import['defaults'] );
+			foreach ( $data as &$post ) {
+				$shortcode_object = et_fb_process_shortcode( $post['post_content'] );
 
-					$post['post_content'] = et_fb_process_to_shortcode( $shortcode_object, array(), '', false );
+				if ( ! empty( $import['presets'] ) ) {
+					if ( $include_global_presets ) {
+						$this->rewrite_module_preset_ids( $shortcode_object, $import['presets'], $preset_rewrite_map );
+					} else {
+						$this->apply_global_presets( $shortcode_object, $import['presets'] );
+					}
 				}
-			} else {
-				$custom_defaults = $import['defaults'];
+
+				$post_content = et_fb_process_to_shortcode( $shortcode_object, array(), '', false );
+				// Add slashes for post content to avoid unwanted unslashing (by wp_unslash) while post is inserting.
+				$post['post_content'] = wp_slash( $post_content );
+
+				// Upload thumbnail image if exist.
+				if ( ! empty( $post['post_meta'] ) && ! empty( $post['post_meta']['_thumbnail_id'] ) ) {
+					$post_thumbnail_origin_id = (int) $post['post_meta']['_thumbnail_id'][0];
+
+					if ( ! empty( $import['thumbnails'] ) && ! empty( $import['thumbnails'][ $post_thumbnail_origin_id ] ) ) {
+						$post_thumbnail_new = $this->upload_images( $import['thumbnails'][ $post_thumbnail_origin_id ] );
+						$new_thumbnail_data = reset( $post_thumbnail_new );
+
+						// New thumbnail image was uploaded and it should be updated.
+						if ( isset( $new_thumbnail_data['replacement_id'] ) ) {
+							$new_thumbnail_id  = $new_thumbnail_data['replacement_id'];
+							$post['thumbnail'] = $new_thumbnail_id;
+
+							if ( ! function_exists( 'wp_crop_image' ) ) {
+								include ABSPATH . 'wp-admin/includes/image.php';
+							}
+
+							$thumbnail_path = get_attached_file( $new_thumbnail_id );
+
+							// Generate all the image sizes and update thumbnail metadata.
+							$new_metadata = wp_generate_attachment_metadata( $new_thumbnail_id, $thumbnail_path );
+							wp_update_attachment_metadata( $new_thumbnail_id, $new_metadata );
+						}
+					}
+				}
 			}
 
 			if ( ! $this->import_posts( $data ) ) {
@@ -190,8 +228,8 @@ class ET_Core_Portability {
 			}
 		}
 
-		if ( ! empty( $custom_defaults ) ) {
-			if ( ! $this->import_custom_defaults( $custom_defaults ) ) {
+		if ( ! empty( $global_presets ) ) {
+			if ( ! $this->import_global_presets( $global_presets ) ) {
 				if ( $error_message = apply_filters( 'et_core_portability_import_error_message', false ) ) {
 					$error_message = array( 'message' => $error_message );
 				}
@@ -200,6 +238,10 @@ class ET_Core_Portability {
 			}
 		}
 
+		if ( ! empty( $import['global_colors'] ) ) {
+			$this->import_global_colors( $import['global_colors'] );
+			$success['globalColors'] = et_builder_get_all_global_colors();
+		}
 
 		return $success;
 	}
@@ -217,16 +259,20 @@ class ET_Core_Portability {
 		$this->prevent_failure();
 		et_core_nonce_verified_previously();
 
-		$timestamp               = $this->get_timestamp();
-		$filesystem              = $this->set_filesystem();
-		$temp_file_id            = sanitize_file_name( $timestamp );
-		$temp_file               = $this->has_temp_file( $temp_file_id, 'et_core_export' );
-		$custom_defaults         = '';
+		$timestamp            = $this->get_timestamp();
+		$filesystem           = $this->set_filesystem();
+		$temp_file_id         = sanitize_file_name( $timestamp );
+		$temp_file            = $this->has_temp_file( $temp_file_id, 'et_core_export' );
+		$apply_global_presets = isset( $_POST['apply_global_presets'] ) ? wp_validate_boolean( $_POST['apply_global_presets'] ) : false;
+		$global_presets       = '';
+		$global_colors        = '';
+		$thumbnails           = '';
 
 		if ( $temp_file ) {
-			$file_data       = json_decode( $filesystem->get_contents( $temp_file ) );
-			$data            = (array) $file_data->data;
-			$custom_defaults = $file_data->defaults;
+			$file_data      = json_decode( $filesystem->get_contents( $temp_file ) );
+			$data           = (array) $file_data->data;
+			$global_presets = $file_data->presets;
+			$global_colors  = $file_data->global_colors;
 		} else {
 			$temp_file = $this->temp_file( $temp_file_id, 'et_core_export' );
 
@@ -258,8 +304,16 @@ class ET_Core_Portability {
 
 				$data = array( $post_data['ID'] => $post_data['post_content'] );
 
-				if ( isset( $_POST['custom_defaults'] ) ) {
-					$custom_defaults = json_decode( stripslashes( $_POST['custom_defaults'] ) );
+				if ( isset( $_POST['global_presets'] ) ) {
+					// phpcs:ignore ET.Sniffs.ValidatedSanitizedInput.InputNotSanitized -- filter_post_data() function does sanitation.
+					$post_global_presets = $this->_filter_post_data( $_POST['global_presets'] );
+					$global_presets      = json_decode( stripslashes( $post_global_presets ) );
+				}
+
+				if ( isset( $_POST['global_colors'] ) ) {
+					// phpcs:ignore ET.Sniffs.ValidatedSanitizedInput.InputNotSanitized -- filter_post_data() function does sanitation.
+					$post_global_colors = $this->_filter_post_data( $_POST['global_colors'] );
+					$global_colors      = json_decode( stripslashes( $post_global_colors ) );
 				}
 			}
 
@@ -270,19 +324,26 @@ class ET_Core_Portability {
 			$data = $this->apply_query( $data, 'set' );
 
 			if ( 'post_type' === $this->instance->type ) {
-				$used_custom_defaults  = array();
+				$used_global_presets = array();
+				$options             = array(
+					'apply_global_presets' => true,
+				);
 
 				foreach ( $data as $post ) {
 					$shortcode_object = et_fb_process_shortcode( $post->post_content );
 
-					$used_custom_defaults = array_merge(
-						$this->get_used_custom_defaults( $shortcode_object, $used_custom_defaults ),
-						$used_custom_defaults
-					);
+					if ( $apply_global_presets ) {
+						$post->post_content = et_fb_process_to_shortcode( $shortcode_object, $options, '', false );
+					} else {
+						$used_global_presets = array_merge(
+							$this->get_used_global_presets( $shortcode_object, $used_global_presets ),
+							$used_global_presets
+						);
+					}
 				}
 
-				if ( ! empty ( $used_custom_defaults ) ) {
-					$custom_defaults = (object) $used_custom_defaults;
+				if ( ! empty ( $used_global_presets ) ) {
+					$global_presets = (object) $used_global_presets;
 				}
 			}
 
@@ -290,18 +351,23 @@ class ET_Core_Portability {
 			// if images get paginated, this content will be brought back out
 			// of a temp file in paginated request
 			$file_data = array(
-				'data'     => $data,
-				'defaults' => $custom_defaults,
+				'data'          => $data,
+				'presets'       => $global_presets,
+				'global_colors' => $global_colors,
 			);
 			$filesystem->put_contents( $temp_file, wp_json_encode( $file_data ) );
 		}
 
+		$thumbnails = $this->_get_thumbnail_images( $data );
+
 		$images = $this->get_data_images( $data );
 		$data = array(
-			'context'  => $this->instance->context,
-			'data'     => $data,
-			'defaults' => $custom_defaults,
-			'images'   => $this->maybe_paginate_images( $images, 'encode_images', $timestamp ),
+			'context'       => $this->instance->context,
+			'data'          => $data,
+			'presets'       => $global_presets,
+			'global_colors' => $global_colors,
+			'images'        => $this->maybe_paginate_images( $images, 'encode_images', $timestamp ),
+			'thumbnails'    => $thumbnails,
 		);
 
 		// Return exported content instead of printing it
@@ -314,6 +380,396 @@ class ET_Core_Portability {
 		wp_send_json_success( array( 'timestamp' => $timestamp ) );
 	}
 
+	/**
+	 * Serialize a single layout post in chunks.
+	 *
+	 * @since 4.0
+	 *
+	 * @param integer $id Unique ID to represent this layout serialization.
+	 * @param integer $post_id
+	 * @param string $content
+	 * @param array $theme_builder_meta
+	 * @param integer $chunk
+	 *
+	 * @return array
+	 */
+	public function serialize_layout( $id, $post_id, $content, $theme_builder_meta = array(), $chunk = 0 ) {
+		$this->prevent_failure();
+
+		$fields_validatation = array(
+			// No post_content as the default case for no fields_validation will run it through perms based wp_kses_post, which is exactly what we want.
+			'ID' => 'intval',
+		);
+
+		$post_data = array(
+			// Need to run this through stripcslashes() as thats what wp_kses_post() expects.
+			'post_content' => stripcslashes( $content ),
+			'ID'           => $post_id,
+		);
+
+		$post_data = $this->validate( $post_data, $fields_validatation );
+		$data      = array( $post_data['ID'] => $post_data['post_content'] );
+		$data      = $this->apply_query( $data, 'set' );
+		$images    = $this->get_data_images( $data );
+		$images    = $this->chunk_images( $images, 'encode_images', $id, $chunk );
+		$data      = array(
+			'context'       => 'et_builder',
+			'data'          => $data,
+			'images'        => $images['images'],
+			'post_title'    => get_post_field( 'post_title', $post_id ),
+			'post_type'     => get_post_type( $post_id ),
+			'theme_builder' => $theme_builder_meta,
+		);
+		$chunks    = $images['chunks'];
+		$ready     = $images['ready'];
+
+		return array(
+			'ready'  => $ready,
+			'chunks' => $chunks,
+			'data'   => $data,
+		);
+	}
+
+	/**
+	 * Serialize Theme Builder templates in chunks.
+	 *
+	 * @since 4.0
+	 *
+	 * @param integer $id Unique ID to represent this theme builder serialization process.
+	 * @param array $step
+	 * @param integer $steps
+	 * @param integer $step_index
+	 * @param integer $chunk
+	 *
+	 * @return array|false
+	 */
+	public function serialize_theme_builder( $id, $step, $steps, $step_index = 0, $chunk = 0 ) {
+		if ( $step_index >= $steps ) {
+			return false;
+		}
+
+		$this->prevent_failure();
+
+		$temp_file_id = sanitize_file_name( 'et_theme_builder_' . $id );
+		$temp_file    = $this->has_temp_file( $temp_file_id, 'et_core_export' );
+
+		if ( $temp_file ) {
+			$data = json_decode( $this->get_filesystem()->get_contents( $temp_file ), true );
+		} else {
+			$temp_file = $this->temp_file( $temp_file_id, 'et_core_export' );
+			$data      = array(
+				'context'              => 'et_theme_builder',
+				'templates'            => array(),
+				'layouts'              => array(),
+				'presets'             => array(),
+				'has_default_template' => false,
+				'has_global_layouts'   => false,
+			);
+		}
+
+		$chunks = 1;
+
+		switch ( $step['type'] ) {
+			case 'template':
+				$header_id  = $step['data']['layouts']['header']['id'];
+				$body_id    = $step['data']['layouts']['body']['id'];
+				$footer_id  = $step['data']['layouts']['footer']['id'];
+				$is_default = $step['data']['default'];
+
+				if ( 0 !== $header_id && ! current_user_can( 'edit_post', $header_id ) ) {
+					$step['data']['layouts']['header']['id'] = 0;
+				}
+
+				if ( 0 !== $body_id && ! current_user_can( 'edit_post', $body_id ) ) {
+					$step['data']['layouts']['body']['id'] = 0;
+				}
+
+				if ( 0 !== $footer_id && ! current_user_can( 'edit_post', $footer_id ) ) {
+					$step['data']['layouts']['footer']['id'] = 0;
+				}
+
+				if ( $is_default ) {
+					$data['has_default_template'] = true;
+				}
+
+				$data['templates'][] = $step['data'];
+				break;
+
+			case 'layout':
+				$post_id   = $step['data']['post_id'];
+				$is_global = $step['data']['is_global'];
+
+				if ( ! current_user_can( 'edit_post', $post_id ) ) {
+					break;
+				}
+
+				if ( 0 === $chunk && isset( $data['layouts'][ $post_id ] ) ) {
+					// The layout is already exported.
+					break;
+				}
+
+				if ( $is_global ) {
+					$data['has_global_layouts'] = true;
+				}
+
+				$step_data = $this->serialize_layout(
+					$id,
+					$post_id,
+					get_post_field( 'post_content', $post_id ),
+					array(
+						'is_global' => $is_global,
+					),
+					$chunk
+				);
+
+				$step_data['data']['post_meta'] = array_merge(
+					et_()->array_get( $step_data, 'data.post_meta', array() ),
+					et_core_get_post_builder_meta( $post_id )
+				);
+
+				$data['layouts'][ $post_id ] = $step_data['data'];
+				$chunks = $step_data['chunks'];
+				break;
+
+			case 'presets':
+				$data['presets'] = $step['data'];
+				break;
+		}
+
+		$ready = ( $step_index + 1 >= $steps ) && ( $chunk + 1 >= $chunks );
+
+		if ( ! $ready ) {
+			$this->get_filesystem()->put_contents( $temp_file, wp_json_encode( $data ) );
+		} else {
+			$this->delete_temp_files( 'et_core_export', array( $temp_file_id => $temp_file ) );
+		}
+
+		return array(
+			'ready'  => $ready,
+			'chunks' => $chunks,
+			'data'   => $data,
+		);
+	}
+
+	/**
+	 * Export Theme Builder templates in chunks.
+	 *
+	 * @since 4.0
+	 *
+	 * @param integer $id Unique ID to represent this theme builder export process.
+	 * @param array $step
+	 * @param integer $steps
+	 * @param integer $step_index
+	 * @param integer $chunk
+	 *
+	 * @return array|false
+	 */
+	public function export_theme_builder( $id, $step, $steps, $step_index = 0, $chunk = 0 ) {
+		$result = $this->serialize_theme_builder( $id, $step, $steps, $step_index, $chunk );
+
+		if ( false === $result ) {
+			return false;
+		}
+
+		$temp_file_id = sanitize_file_name( 'et_theme_builder_export_' . $id );
+		$temp_file    = $this->temp_file( $temp_file_id, 'et_core_export' );
+
+		if ( $result['ready'] ) {
+			$this->get_filesystem()->put_contents( $temp_file, wp_json_encode( $result[ 'data' ] ) );
+		}
+
+		return array_merge( $result, array(
+			'temp_file'    => $temp_file,
+			'temp_file_id' => $temp_file_id,
+		) );
+	}
+
+	/**
+	 * Get whether an array represents a valid Theme Builder export.
+	 *
+	 * @since 4.0
+	 *
+	 * @param array $export
+	 *
+	 * @return boolean
+	 */
+	public function is_valid_theme_builder_export( $export ) {
+		$valid_context = isset( $export['context'] ) && $export['context'] === $this->instance->context;
+		$has_templates = isset( $export['templates'] ) && is_array( $export['templates'] );
+		$has_layouts   = isset( $export['layouts'] ) && is_array( $export['layouts'] );
+
+		return $valid_context && $has_templates && $has_layouts;
+	}
+
+	/**
+	 * Import a single layout in chunks.
+	 *
+	 * @since 4.0
+	 *
+	 * @param string $id Unique ID to represent this layout serialization.
+	 * @param array $layout
+	 * @param integer $chunk
+	 *
+	 * @return array|false
+	 */
+	public function import_layout( $id, $layout, $chunk = 0 ) {
+		$post_id = 0;
+		$import  = $this->validate( $layout );
+
+		if ( false === $import ) {
+			return false;
+		}
+
+		$import['data'] = $this->apply_query( $import['data'], 'set' );
+
+		if ( ! isset( $import['context'] ) || ( isset( $import['context'] ) && 'et_builder' !== $import['context'] ) ) {
+			return false;
+		}
+
+		$result = $this->chunk_images( self::$_->array_get( $import, 'images', array() ), 'upload_images', $id, $chunk );
+
+		if ( $result['ready'] ) {
+			$import['data']   = $this->replace_images_urls( $result['images'], $import['data'] );
+			$post_type        = self::$_->array_get( $import, 'post_type', 'post' );
+			$post_title       = self::$_->array_get( $import, 'post_title', '' );
+			$post_meta        = self::$_->array_get( $import, 'post_meta', array() );
+			$post_type_object = get_post_type_object( $post_type );
+
+			if ( ! $post_type_object || ! current_user_can( $post_type_object->cap->create_posts ) ) {
+				return false;
+			}
+
+			$content = array_values( $import['data'] );
+			$content = $content[0];
+			$args    = array(
+				'post_type'    => $post_type,
+				'post_content' => current_user_can( 'unfiltered_html' ) ? $content : wp_kses_post( $content ),
+			);
+
+			if ( ! empty( $post_title ) ) {
+				$args['post_title'] = current_user_can( 'unfiltered_html' ) ? $post_title : wp_kses( $post_title );
+			}
+
+			$post_id = et_theme_builder_insert_layout( $args );
+
+			if ( is_wp_error( $post_id ) ) {
+				return false;
+			}
+
+			foreach ( $post_meta as $entry ) {
+				update_post_meta( $post_id, $entry['key'], $entry['value'] );
+			}
+		}
+
+		return array(
+			'ready'   => $result['ready'],
+			'chunks'  => $result['chunks'],
+			'id'      => $post_id,
+		);
+	}
+
+	/**
+	 * Import Theme Builder templates in chunks.
+	 *
+	 * @since 4.0
+	 *
+	 * @param integer $id Unique ID to represent this theme builder import process.
+	 * @param array $step
+	 * @param integer $steps
+	 * @param integer $step_index
+	 * @param integer $chunk
+	 *
+	 * @return array|false
+	 */
+	public function import_theme_builder( $id, $step, $steps, $step_index = 0, $chunk = 0 ) {
+		if ( $step_index >= $steps ) {
+			return false;
+		}
+
+		$layout_id_map = array();
+		$chunks        = 1;
+
+		switch ( $step['type'] ) {
+			case 'layout':
+				$presets = et_()->array_get( $step, 'presets', array() );
+				$presets_rewrite_map = et_()->array_get( $step, 'presets_rewrite_map', array() );
+				$import_presets = et_()->array_get( $step, 'import_presets', false );
+				$layouts = et_()->array_get( $step['data'], 'data', array() );
+
+				// Apply any presets to the layouts' shortcodes prior to importing them.
+				if ( ! empty( $presets ) && ! empty( $layouts ) ) {
+					foreach ( $layouts as $key => $layout ) {
+						$shortcode_object = et_fb_process_shortcode( $layout );
+
+						if ( $import_presets ) {
+							$this->rewrite_module_preset_ids( $shortcode_object, $presets, $presets_rewrite_map );
+						} else {
+							$this->apply_global_presets( $shortcode_object, $presets );
+						}
+
+						$layouts[ $key ] = et_fb_process_to_shortcode( $shortcode_object, array(), '', false );
+					}
+
+					$step['data']['data'] = $layouts;
+				}
+
+				$result = $this->import_layout( $id, $step['data'], $chunk );
+
+				if ( false === $result ) {
+					break;
+				}
+
+				if ( $result['ready'] ) {
+					if ( ! isset( $layout_id_map[ $step['id'] ] ) ) {
+						$layout_id_map[ $step['id'] ] = array();
+					}
+
+					// Since a single layout can be duplicated multiple times if
+					// it's global we have to keep an array of duplicated ids.
+					$layout_id_map[ $step['id'] ][ $step['template_id'] ] = $result['id'];
+				}
+
+				$chunks = $result['chunks'];
+				break;
+		}
+
+		$ready = ( $step_index + 1 >= $steps ) && ( $chunk + 1 >= $chunks );
+
+		return array(
+			'ready'         => $ready,
+			'chunks'        => $chunks,
+			'layout_id_map' => $layout_id_map,
+		);
+	}
+
+	/**
+	 * Download temporary file.
+	 *
+	 * @since 4.0
+	 *
+	 * @param string $filename
+	 * @param string $temp_file_id
+	 * @param string $temp_file
+	 * @return void
+	 */
+	public function download_file( $filename, $temp_file_id, $temp_file ) {
+		$this->prevent_failure();
+
+		$filename = sanitize_file_name( $filename );
+
+		header( 'Content-Description: File Transfer' );
+		header( "Content-Disposition: attachment; filename=\"{$filename}.json\"" );
+		header( 'Content-Type: application/json' );
+		header( 'Pragma: no-cache' );
+
+		if ( file_exists( $temp_file ) ) {
+			echo et_core_esc_previously( $this->get_filesystem()->get_contents( $temp_file ) );
+		}
+
+		$this->delete_temp_files( 'et_core_export', array( $temp_file_id => $temp_file ) );
+
+		wp_die();
+	}
 
 	/**
 	 * Download Export Data.
@@ -548,37 +1004,110 @@ class ET_Core_Portability {
 	}
 
 	/**
-	 * Imports custom defaults
+	 * Imports Global Presets
 	 *
-	 * @param array $defaults - The array of the modules custom defaults
+	 * @since 4.0.10 Made public.
+	 *
+	 * @param array $presets - The Global Presets to be imported
 	 *
 	 * @return boolean
 	 */
-	protected function import_custom_defaults( $defaults ) {
-		if ( ! is_array( $defaults ) ) {
+	public function import_global_presets( $presets ) {
+		if ( ! is_array( $presets ) ) {
 			return false;
 		}
 
-		$custom_defaults_manager = ET_Builder_Custom_Defaults_Settings::instance();
-		$custom_defaults         = $custom_defaults_manager->get_custom_defaults();
+		$all_modules            = ET_Builder_Element::get_modules();
+		$module_presets_manager = ET_Builder_Global_Presets_Settings::instance();
+		$global_presets         = $module_presets_manager->get_global_presets();
+		$presets_to_import      = array();
 
-		// Merge existing custom defaults with imported
-		foreach ( $defaults as $module => $settings ) {
-			foreach ( $settings as $setting_name => $value ) {
-				$module_sanitized       = sanitize_text_field( $module );
-				$setting_name_sanitized = sanitize_text_field( $setting_name );
-				$value_sanitized        = sanitize_text_field( $value );
+		foreach ( $presets as $module_type => $module_presets ) {
+			$presets_to_import[ $module_type ] = array(
+				'presets' => array(),
+			);
 
-				$custom_defaults->$module_sanitized->$setting_name_sanitized = $value_sanitized;
+			if ( ! isset( $global_presets->$module_type->presets ) ) {
+				$initial_preset_structure = ET_Builder_Global_Presets_Settings::generate_module_initial_presets_structure( $module_type, $all_modules );
+
+				$global_presets->$module_type = $initial_preset_structure;
+			}
+
+			$local_presets      = $global_presets->$module_type->presets;
+			$local_preset_names = array();
+
+			foreach ( $local_presets as $preset ) {
+				array_push( $local_preset_names, $preset->name );
+			}
+
+			foreach ( $module_presets['presets'] as $preset_id => $preset ) {
+				$imported_name = sanitize_text_field( $preset['name'] );
+				$name          = in_array( $imported_name, $local_preset_names )
+					? $imported_name . ' ' . esc_html__( 'imported', 'et-core' )
+					: $imported_name;
+
+				$presets_to_import[ $module_type ]['presets'][ $preset_id ] = array(
+					'name'     => $name,
+					'created'  => time() * 1000,
+					'updated'  => time() * 1000,
+					'version'  => $preset['version'],
+					'settings' => $preset['settings'],
+				);
 			}
 		}
 
-		et_update_option( ET_Builder_Custom_Defaults_Settings::CUSTOM_DEFAULTS_OPTION, $custom_defaults );
 
-		$custom_defaults_history = ET_Builder_Custom_Defaults_History::instance();
-		$custom_defaults_history->add_history_record( $custom_defaults );
+		// Merge existing Global Presets with imported ones
+		foreach ( $presets_to_import as $module_type => $module_presets ) {
+			foreach ( $module_presets['presets'] as $preset_id => $preset ) {
+				$global_presets->$module_type->presets->$preset_id           = (object) array();
+				$global_presets->$module_type->presets->$preset_id->name     = sanitize_text_field( $preset['name'] );
+				$global_presets->$module_type->presets->$preset_id->created  = $preset['created'];
+				$global_presets->$module_type->presets->$preset_id->updated  = $preset['updated'];
+				$global_presets->$module_type->presets->$preset_id->version  = $preset['version'];
+				$global_presets->$module_type->presets->$preset_id->settings = (object) array();
+
+				foreach ( $preset['settings'] as $setting_name => $value ) {
+					$setting_name_sanitized = sanitize_text_field( $setting_name );
+					$value_sanitized        = sanitize_text_field( $value );
+
+					$global_presets->$module_type->presets->$preset_id->settings->$setting_name_sanitized = $value_sanitized;
+				}
+			}
+		}
+
+		et_update_option( ET_Builder_Global_Presets_Settings::GLOBAL_PRESETS_OPTION, $global_presets );
+
+		$global_presets_history = ET_Builder_Global_Presets_History::instance();
+		$global_presets_history->add_global_history_record( $global_presets );
 
 		return true;
+	}
+
+	/**
+	 * Import global colors.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @param array $incoming_global_colors Global Colors Array.
+	 *
+	 * @return void
+	 */
+	public function import_global_colors( $incoming_global_colors ) {
+		$global_colors = array();
+
+		foreach ( $incoming_global_colors as $incoming_gcolor ) {
+			$key                   = et_()->sanitize_text_fields( $incoming_gcolor[0] );
+			$global_colors[ $key ] = et_()->sanitize_text_fields( $incoming_gcolor[1] );
+		}
+
+		$stored_global_colors = et_builder_get_all_global_colors();
+
+		if ( ! empty( $stored_global_colors ) ) {
+			$global_colors = array_merge( $global_colors, $stored_global_colors );
+		}
+
+		et_update_option( 'et_global_colors', $global_colors );
 	}
 
 	/**
@@ -711,6 +1240,11 @@ class ET_Core_Portability {
 					update_post_meta( $post_id, $meta_key, $meta );
 				}
 			}
+
+			// Assign new thumbnail if provided.
+			if ( isset( $post['thumbnail'] ) ) {
+				set_post_thumbnail( $post_id, $post['thumbnail'] );
+			}
 		}
 
 		return true;
@@ -743,24 +1277,110 @@ class ET_Core_Portability {
 	}
 
 	/**
-	 * Injects the given custom default settings into the imported layout
+	 * Generates UUIDs for the presets to avoid collisions.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param array $global_presets - The Global Presets to be imported
+	 *
+	 * @return array - The list of module types for which preset ids have been changed
+	 */
+	public function prepare_to_import_layout_presets( &$global_presets ) {
+		$preset_rewrite_map = array();
+		$initial_preset_id = ET_Builder_Global_Presets_Settings::MODULE_INITIAL_PRESET_ID;
+
+		foreach ( $global_presets as $component_type => &$component_presets ) {
+			$preset_rewrite_map[ $component_type ] = array();
+			foreach ( $component_presets['presets'] as $preset_id => $preset ) {
+				$new_id = ET_Core_Data_Utils::uuid_v4();
+				$component_presets['presets'][ $new_id ] = $preset;
+				$preset_rewrite_map[ $component_type ][ $preset_id ] = $new_id;
+				unset( $component_presets['presets'][ $preset_id ] );
+			}
+
+			if ( $component_presets['default'] === $initial_preset_id && ! isset( $preset_rewrite_map[ $component_type ][ $initial_preset_id ] ) ) {
+				$new_id = ET_Core_Data_Utils::uuid_v4();
+				$component_presets['default'] = $new_id;
+				if ( isset( $component_presets['presets'][ $initial_preset_id ] ) ) {
+					$component_presets['presets'][ $new_id ] = $component_presets['presets'][ $initial_preset_id ];
+					unset( $component_presets['presets'][ $initial_preset_id ] );
+				}
+				$preset_rewrite_map[ $component_type ][ $initial_preset_id ] = $new_id;
+			} else {
+				$component_presets['default'] = $preset_rewrite_map[ $component_type ][ $component_presets['default'] ];
+			}
+		}
+
+		return $preset_rewrite_map;
+	}
+
+	/**
+	 * Injects the given Global Presets settings into the imported layout
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param array $shortcode_object - The multidimensional array representing a page/module structure
+	 * @param array $global_presets - The Global Presets to be imported
+	 * @param array $preset_rewrite_map - The list of module types for which preset ids have been changed
+	 */
+	protected function rewrite_module_preset_ids( &$shortcode_object, $global_presets, $preset_rewrite_map ) {
+		$global_presets_manager  = ET_Builder_Global_Presets_Settings::instance();
+		$module_preset_attribute = ET_Builder_Global_Presets_Settings::MODULE_PRESET_ATTRIBUTE;
+
+		foreach ( $shortcode_object as &$module ) {
+			$module_type      = $global_presets_manager->maybe_convert_module_type( $module['type'], $module['attrs'] );
+			$module_preset_id = et_()->array_get( $module, "attrs.{$module_preset_attribute}", 'default' );
+
+			if ( $module_preset_id === 'default' ) {
+				$module['attrs'][ $module_preset_attribute ] = et_()->array_get( $global_presets, "{$module_type}.default", 'default' );
+			} else {
+				if ( isset( $preset_rewrite_map[ $module_type ][ $module_preset_id ] ) ) {
+					$module['attrs'][ $module_preset_attribute ] = $preset_rewrite_map[ $module_type ][ $module_preset_id ];
+				} else {
+					$module['attrs'][ $module_preset_attribute ] = et_()->array_get( $global_presets, "{$module_type}.default", 'default' );
+				}
+			}
+
+			if ( is_array( $module['content'] ) ) {
+				$this->rewrite_module_preset_ids( $module['content'], $global_presets, $preset_rewrite_map );
+			}
+		}
+	}
+
+	/**
+	 * Injects the given Global Presets settings into the imported layout
 	 *
 	 * @since 3.26
 	 *
 	 * @param array $shortcode_object - The multidimensional array representing a page/module structure
-	 * @param array $custom_defaults  - The array of modules custom defaults
+	 * @param array $global_presets   - The Global Presets to be applied
 	 */
-	protected function apply_custom_defaults( &$shortcode_object, $custom_defaults ) {
-		$custom_defaults_manager = ET_Builder_Custom_Defaults_Settings::instance();
+	protected function apply_global_presets( &$shortcode_object, $global_presets ) {
+		$global_presets_manager  = ET_Builder_Global_Presets_Settings::instance();
+		$module_preset_attribute = ET_Builder_Global_Presets_Settings::MODULE_PRESET_ATTRIBUTE;
 
 		foreach ( $shortcode_object as &$module ) {
-			$module_type = $custom_defaults_manager->maybe_convert_module_type( $module['type'], $module['attrs'] );
-			if ( array_key_exists( $module_type, $custom_defaults ) ) {
-				$module['attrs'] = array_merge( $custom_defaults[ $module_type ], $module['attrs'] );
+			$module_type = $global_presets_manager->maybe_convert_module_type( $module['type'], $module['attrs'] );
+
+			if ( isset( $global_presets[ $module_type ] ) ) {
+				$default_preset_id = et_()->array_get( $global_presets, "{$module_type}.default", null );
+				$module_preset_id  = et_()->array_get( $module, "attrs.{$module_preset_attribute}", $default_preset_id );
+
+				if ( $module_preset_id === 'default' ) {
+					$module_preset_id = $default_preset_id;
+				}
+
+				if ( isset( $global_presets[ $module_type ]['presets'][ $module_preset_id ] ) ) {
+					$module['attrs'] = array_merge( $global_presets[ $module_type ]['presets'][ $module_preset_id ]['settings'], $module['attrs'] );
+				} else {
+					if ( isset( $global_presets[ $module_type ]['presets'][ $default_preset_id ]['settings'] ) ) {
+						$module['attrs'] = array_merge( $global_presets[ $module_type ]['presets'][ $default_preset_id ]['settings'], $module['attrs'] );
+					}
+				}
 			}
 
 			if ( is_array( $module['content'] ) ) {
-				$this->apply_custom_defaults( $module['content'], $custom_defaults );
+				$this->apply_global_presets( $module['content'], $global_presets );
 			}
 		}
 	}
@@ -793,6 +1413,61 @@ class ET_Core_Portability {
 	}
 
 	/**
+	 * Serialize images in chunks.
+	 *
+	 * @since 4.0
+	 *
+	 * @param array $images
+	 * @param string $method Method applied on images.
+	 * @param string $id Unique ID to use for temporary files.
+	 * @param integer $chunk
+	 *
+	 * @return array
+	 */
+	protected function chunk_images( $images, $method, $id, $chunk = 0 ) {
+		$images_per_chunk = 5;
+		$chunks           = 1;
+
+		/**
+		 * Filters whether or not images in the file being imported should be paginated.
+		 *
+		 * @since 3.0.99
+		 *
+		 * @param bool $paginate_images Default `true`.
+		 */
+		$paginate_images = apply_filters( 'et_core_portability_paginate_images', true );
+
+		if ( $paginate_images && count( $images ) > $images_per_chunk ) {
+			$chunks       = ceil( count( $images ) / $images_per_chunk );
+			$slice        = $images_per_chunk * $chunk;
+			$images       = array_slice( $images, $slice, $images_per_chunk );
+			$images       = $this->$method( $images );
+			$filesystem   = $this->get_filesystem();
+			$temp_file_id = sanitize_file_name( "images_{$id}" );
+			$temp_file    = $this->temp_file( $temp_file_id, 'et_core_export' );
+			$temp_images  = json_decode( $filesystem->get_contents( $temp_file ), true );
+
+			if ( is_array( $temp_images ) ) {
+				$images = array_merge( $temp_images, $images );
+			}
+
+			if ( $chunk + 1 < $chunks ) {
+				$filesystem->put_contents( $temp_file, wp_json_encode( (array) $images ) );
+			} else {
+				$this->delete_temp_files( 'et_core_export', array( $temp_file_id => $temp_file ) );
+			}
+		} else {
+			$images = $this->$method( $images );
+		}
+
+		return array(
+			'ready'  => $chunk + 1 >= $chunks,
+			'chunks' => $chunks,
+			'images' => $images,
+		);
+	}
+
+	/**
 	 * Paginate images processing.
 	 *
 	 * @since    1.0.0
@@ -807,46 +1482,48 @@ class ET_Core_Portability {
 	protected function maybe_paginate_images( $images, $method, $timestamp ) {
 		et_core_nonce_verified_previously();
 
-		/**
-		 * Filters whether or not images in the file being imported should be paginated.
-		 *
-		 * @since 3.0.99
-		 *
-		 * @param bool $paginate_images Default `true`.
-		 */
-		$paginate_images = apply_filters( 'et_core_portability_paginate_images', true );
+		$page = isset( $_POST['page'] ) ? (int) $_POST['page'] : 1;
+		$result = $this->chunk_images( $images, $method, $timestamp, max( $page - 1, 0 ) );
 
-		if ( $paginate_images && count( $images ) > 5 ) {
-			$total_pages = ceil( count( $images ) / 5 );
-			$page = isset( $_POST['page'] ) ? intval( $_POST['page'] ) : 1;
-			$slice = 5 * ( $page - 1 );
-			$images = array_slice( $images, $slice, 5 );
-			$images = $this->$method( $images );
-			$filesystem = $this->set_filesystem();
-			$temp_file_id = sanitize_file_name( "images_{$timestamp}" );
-			$temp_file = $this->temp_file( $temp_file_id, 'et_core_export' );
-			$temp_images = json_decode( $filesystem->get_contents( $temp_file ), true );
-
-			if ( is_array( $temp_images ) ){
-				$images = array_merge( $temp_images, $images );
-			}
-
-			if ( $page < $total_pages ) {
-				$filesystem->put_contents( $temp_file, wp_json_encode( (array) $images ) );
-
-				wp_send_json( array(
-					'page' => $page,
-					'total_pages' => $total_pages,
-					'timestamp' => $timestamp
-				) );
-			}
-
-			$this->delete_temp_files( 'et_core_export', array( $temp_file_id => $temp_file ) );
-		} else {
-			$images = $this->$method( $images );
+		if ( ! $result['ready'] ) {
+			wp_send_json( array(
+				'page'        => $page,
+				'total_pages' => $result['chunks'],
+				'timestamp'   => $timestamp,
+			) );
 		}
 
-		return $images;
+		return $result['images'];
+	}
+
+	/**
+	 * Get all thumbnail images in the data given.
+	 *
+	 * @since 4.7.4
+	 *
+	 * @param array $data Array of data.
+	 *
+	 * @return array
+	 */
+	protected function _get_thumbnail_images( $data ) {
+		$thumbnails = array();
+
+		foreach ( $data as $post_data ) {
+			// If post has thumbnail.
+			if ( ! empty( $post_data->post_meta ) && ! empty( $post_data->post_meta->_thumbnail_id ) ) {
+				$post_thumbnail = get_the_post_thumbnail_url( $post_data->ID );
+
+				// If thumbnail image found in the WP Media library.
+				if ( $post_thumbnail ) {
+					$thumbnail_id    = (int) $post_data->post_meta->_thumbnail_id[0];
+					$thumbnail_image = $this->encode_images( array( $thumbnail_id ) );
+
+					$thumbnails[ $thumbnail_id ] = $thumbnail_image;
+				}
+			}
+		}
+
+		return $thumbnails;
 	}
 
 	/**
@@ -1237,6 +1914,7 @@ class ET_Core_Portability {
 				$data[$key] = $this->validate( $value, $fields_validation );
 			} else {
 				if ( isset( $fields_validation[$key] ) ) {
+					// @phpcs:ignore Generic.PHP.ForbiddenFunctions.Found
 					$data[$key] = call_user_func( $fields_validation[$key], $value );
 				} else {
 					if ( current_user_can( 'unfiltered_html' ) ) {
@@ -1249,6 +1927,17 @@ class ET_Core_Portability {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Filters a variable with string filter
+	 *
+	 * @param mixed $data - Value to filter.
+	 *
+	 * @return mixed
+	 */
+	protected function _filter_post_data( $data ) {
+		return filter_var( $data, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES );
 	}
 
 	/**
@@ -1285,14 +1974,33 @@ class ET_Core_Portability {
 	}
 
 	/**
+	 * Proxy method for set_filesystem() to avoid calling it multiple times.
+	 *
+	 * @since 4.0
+	 *
+	 * @return WP_Filesystem_Direct
+	 */
+	protected function get_filesystem() {
+		static $filesystem = null;
+
+		if ( null === $filesystem ) {
+			$filesystem = $this->set_filesystem();
+		}
+
+		return $filesystem;
+	}
+
+	/**
 	 * Check if a temporary file is register. Returns temporary file if it exists.
+	 *
+	 * @since 4.0 Made method public.
 	 *
 	 * @param string $id    Unique id used when the temporary file was created.
 	 * @param string $group Group name in which files are grouped.
 	 *
-	 * @return bool
+	 * @return bool|string
 	 */
-	protected function has_temp_file( $id, $group ) {
+	public function has_temp_file( $id, $group ) {
 		$temp_files = get_option( '_et_core_portability_temp_files', array() );
 
 		if ( isset( $temp_files[$group][$id] ) && file_exists( $temp_files[$group][$id] ) ) {
@@ -1306,6 +2014,7 @@ class ET_Core_Portability {
 	 * Create a temp file and register it.
 	 *
 	 * @since 2.7.0
+	 * @since 4.0 Made method public. Added $content parameter.
 	 *
 	 * @param string      $id        Unique id reference for the temporary file.
 	 * @param string      $group     Group name in which files are grouped.
@@ -1313,7 +2022,7 @@ class ET_Core_Portability {
 	 *
 	 * @return bool|string
 	 */
-	protected function temp_file( $id, $group, $temp_file = false ) {
+	public function temp_file( $id, $group, $temp_file = false, $content = '' ) {
 		$temp_files = get_option( '_et_core_portability_temp_files', array() );
 
 		if ( ! isset( $temp_files[$group] ) ) {
@@ -1329,7 +2038,33 @@ class ET_Core_Portability {
 
 		update_option( '_et_core_portability_temp_files', $temp_files, false );
 
+		if ( ! empty( $content ) ) {
+			$this->get_filesystem()->put_contents( $temp_file, $content );
+		}
+
 		return $temp_file;
+	}
+
+	/**
+	 * Get temp file contents or an empty string if it does not exist.
+	 *
+	 * @since 4.0
+	 *
+	 * @param string $id    Unique id used when the temporary file was created.
+	 * @param string $group Group name in which files are grouped.
+	 *
+	 * @return string
+	 */
+	public function get_temp_file_contents( $id, $group ) {
+		$file = $this->has_temp_file( $id, $group );
+
+		if ( ! $file ) {
+			return '';
+		}
+
+		$content = $this->get_filesystem()->get_contents( $file );
+
+		return $content ? $content : '';
 	}
 
 	/**
@@ -1395,39 +2130,56 @@ class ET_Core_Portability {
 	}
 
 	/**
-	 * Returns Custom Defaults used for a given shortcode only
+	 * Returns Global Presets used for a given shortcode only
 	 *
 	 * @since 3.26
 	 *
-	 * @param array $shortcode_object     - The multidimensional array representing a page structure
-	 * @param array $used_custom_defaults
+	 * @param array $shortcode_object - The multidimensional array representing a page structure
+	 * @param array $used_global_presets
 	 *
-	 * @return array - The list of the Custom Defaults
+	 * @return array - The list of the Global Presets
 	 *
 	 */
-	protected function get_used_custom_defaults( $shortcode_object, $used_custom_defaults = array() ) {
-		$custom_defaults_manager = ET_Builder_Custom_Defaults_Settings::instance();
+	protected function get_used_global_presets( $shortcode_object, $used_global_presets = array() ) {
+		$global_presets_manager = ET_Builder_Global_Presets_Settings::instance();
 
 		foreach ( $shortcode_object as $module ) {
-			$module_type = $custom_defaults_manager->maybe_convert_module_type( $module['type'], $module['attrs'] );
-			if ( ! array_key_exists( $module_type, $used_custom_defaults ) ) {
-				$module_custom_defaults = $custom_defaults_manager->get_module_custom_defaults( $module_type );
-				if ( ! empty( $module_custom_defaults ) ) {
-					$used_custom_defaults[ $module_type ] = (object) $module_custom_defaults;
+			$module_type = $global_presets_manager->maybe_convert_module_type( $module['type'], $module['attrs'] );
+			$preset_id   = $global_presets_manager->get_module_preset_id( $module_type, $module['attrs'] );
+			$preset      = $global_presets_manager->get_module_preset( $module_type, $preset_id );
+
+			if ( $preset_id !== 'default' && count( (array) $preset ) !== 0 && count( (array) $preset->settings ) !== 0 ) {
+				if ( ! isset( $used_global_presets[ $module_type ] ) ) {
+					$used_global_presets[ $module_type ] = (object) array(
+						'presets' => (object) array(),
+					);
+				}
+
+				if ( ! isset( $used_global_presets[ $module_type ]->presets->$preset_id ) ) {
+					$used_global_presets[ $module_type ]->presets->$preset_id = (object) array(
+						'name'     => $preset->name,
+						'version'  => $preset->version,
+						'settings' => $preset->settings,
+					);
+				}
+
+				if ( ! isset( $used_global_presets[ $module_type ]->default ) ) {
+					$used_global_presets[ $module_type ]->default = $global_presets_manager->get_module_default_preset_id( $module_type );
 				}
 			}
 
 			if ( is_array( $module['content'] ) ) {
-				$used_custom_defaults = array_merge( $used_custom_defaults, $this->get_used_custom_defaults( $module['content'], $used_custom_defaults ) );
+				$used_global_presets = array_merge( $used_global_presets, $this->get_used_global_presets( $module['content'], $used_global_presets ) );
 			}
 		}
 
-		return $used_custom_defaults;
+		return $used_global_presets;
 	}
 
 	/**
 	 * Enqueue assets.
 	 *
+	 * @since ?.? Script `et-core-portability` now loads in footer along with `et-core-admin`.
 	 * @since 2.7.0
 	 */
 	public function assets() {
@@ -1436,12 +2188,20 @@ class ET_Core_Portability {
 		wp_enqueue_style( 'et-core-portability', ET_CORE_URL . 'admin/css/portability.css', array(
 			'et-core-admin',
 		), ET_CORE_VERSION );
-		wp_enqueue_script( 'et-core-portability', ET_CORE_URL . 'admin/js/portability.js', array(
-			'jquery',
-			'jquery-ui-tabs',
-			'jquery-form',
-			'et-core-admin',
-		), ET_CORE_VERSION );
+
+		wp_enqueue_script(
+			'et-core-portability',
+			ET_CORE_URL . 'admin/js/portability.js',
+			array(
+				'jquery',
+				'jquery-ui-tabs',
+				'jquery-form',
+				'et-core-admin',
+			),
+			ET_CORE_VERSION,
+			true
+		);
+
 		wp_localize_script( 'et-core-portability', 'etCorePortability', array(
 			'nonces'        => array(
 				'import' => wp_create_nonce( 'et_core_portability_import' ),
@@ -1478,6 +2238,8 @@ class ET_Core_Portability {
 
 		), admin_url() );
 
+		$is_etdev_plugin_activated = is_plugin_active( 'etdev/etdev.php' );
+
 		?>
 		<div class="et-core-modal-overlay et-core-form" data-et-core-portability="<?php echo esc_attr( $this->instance->context ); ?>">
 			<div class="et-core-modal">
@@ -1497,7 +2259,11 @@ class ET_Core_Portability {
 								<input type="text" name="" value="<?php echo esc_attr( $this->instance->name ); ?>">
 								<?php if ( 'post_type' === $this->instance->type ) : ?>
 									<div class="et-core-clearfix"></div>
-									<label><input type="checkbox" name="et-core-portability-posts"/><?php esc_html_e( 'Only export selected items', ET_CORE_TEXTDOMAIN ); ?></label>
+									<label><input type="checkbox" name="et-core-portability-posts" <?php echo $is_etdev_plugin_activated ? 'checked' : ''; ?> /><?php esc_html_e( 'Only export selected items', ET_CORE_TEXTDOMAIN ); ?></label>
+								<?php endif; ?>
+								<?php if ( $is_etdev_plugin_activated ) : ?>
+									<div class="et-core-clearfix"></div>
+									<label><input type="checkbox" name="et-core-portability-apply-presets" checked /><?php esc_html_e( 'Export Presets As Static Styles', ET_CORE_TEXTDOMAIN ); ?></label>
 								<?php endif; ?>
 							</form>
 						</div>
@@ -1523,7 +2289,7 @@ class ET_Core_Portability {
 									<label><input type="checkbox" name="et-core-portability-import-backup" /><?php esc_html_e( 'Download backup before importing', ET_CORE_TEXTDOMAIN ); ?></label>
 								<?php endif; ?>
 								<?php if ( 'post_type' === $this->instance->type ) : ?>
-									<label><input type="checkbox" name="et-core-portability-import-include-custom-defaults" /><?php esc_html_e( 'Apply Layout\'s Defaults To This Website', ET_CORE_TEXTDOMAIN ); ?></label>
+									<label><input type="checkbox" name="et-core-portability-import-include-global-presets" /><?php esc_html_e( 'Import Presets', ET_CORE_TEXTDOMAIN ); ?></label>
 								<?php endif; ?>
 							</form>
 						</div>
@@ -1668,6 +2434,8 @@ function et_core_portability_ajax_import() {
 	}
 
 	$context = sanitize_text_field( $_POST['context'] );
+	$post_id = isset( $_POST['post'] ) ? (int) $_POST['post'] : 0;
+	$replace = isset( $_POST['replace'] ) ? '1' === $_POST['replace'] : false;
 
 	if ( ! $capability = et_core_portability_cap( $context ) ) {
 		et_core_die();
@@ -1684,6 +2452,13 @@ function et_core_portability_ajax_import() {
 	} else if ( is_array( $result ) && isset( $result['message'] ) ) {
 		wp_send_json_error( $result );
 	} else if ( $result ) {
+		if ( $replace && $post_id > 0 && current_user_can( 'edit_post', $post_id ) ) {
+			wp_update_post( array(
+				'ID' => $post_id,
+				'post_content' => $result['postContent'],
+			) );
+		}
+
 		wp_send_json_success( $result );
 	}
 
@@ -1791,10 +2566,14 @@ function et_core_portability_cap( $context ) {
 		'et_divi_mods',
 		'et_extra_mods',
 	);
+	$post_contexts    = array(
+		'et_builder',
+		'et_theme_builder',
+	);
 
-	if ( in_array( $context, $options_contexts ) ) {
+	if ( in_array( $context, $options_contexts, true ) ) {
 		$capability = 'edit_theme_options';
-	} else if ( 'et_builder' === $context ) {
+	} else if ( in_array( $context, $post_contexts, true ) ) {
 		$capability = 'edit_posts';
 	}
 

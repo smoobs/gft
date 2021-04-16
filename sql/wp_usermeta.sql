@@ -20,7 +20,7 @@ CREATE TABLE `wp_usermeta` (
   PRIMARY KEY (`umeta_id`),
   KEY `user_id` (`user_id`),
   KEY `meta_key` (`meta_key`(191))
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 LOCK TABLES `wp_usermeta` WRITE;
@@ -38,14 +38,21 @@ INSERT INTO `wp_usermeta` VALUES (10,1,'wp_capabilities','a:1:{s:13:\"administra
 INSERT INTO `wp_usermeta` VALUES (11,1,'wp_user_level','10');
 INSERT INTO `wp_usermeta` VALUES (12,1,'dismissed_wp_pointers','');
 INSERT INTO `wp_usermeta` VALUES (13,1,'show_welcome_panel','1');
-INSERT INTO `wp_usermeta` VALUES (14,1,'session_tokens','a:1:{s:64:\"d04a71dde19be8c6f9369b2b948224fc95f1918588ac64c66a30992271ccca52\";a:4:{s:10:\"expiration\";i:1461251798;s:2:\"ip\";s:12:\"2.30.204.246\";s:2:\"ua\";s:65:\"Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0\";s:5:\"login\";i:1461078998;}}');
-INSERT INTO `wp_usermeta` VALUES (15,1,'wp_dashboard_quick_press_last_post_id','39');
+INSERT INTO `wp_usermeta` VALUES (14,1,'session_tokens','a:1:{s:64:\"0bd3aeb77dc2a8a1fd5e8c6e84a9f235c8cee032ad2b01acaf185c8905e14f0b\";a:4:{s:10:\"expiration\";i:1610644517;s:2:\"ip\";s:12:\"192.168.1.26\";s:2:\"ua\";s:120:\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36\";s:5:\"login\";i:1610471717;}}');
+INSERT INTO `wp_usermeta` VALUES (15,1,'wp_dashboard_quick_press_last_post_id','400');
 INSERT INTO `wp_usermeta` VALUES (16,1,'wporg_favorites','');
-INSERT INTO `wp_usermeta` VALUES (17,1,'wp_user-settings','editor=html&libraryContent=browse');
-INSERT INTO `wp_usermeta` VALUES (18,1,'wp_user-settings-time','1461092149');
+INSERT INTO `wp_usermeta` VALUES (17,1,'wp_user-settings','editor=tinymce&libraryContent=browse&imgsize=');
+INSERT INTO `wp_usermeta` VALUES (18,1,'wp_user-settings-time','1604511504');
 INSERT INTO `wp_usermeta` VALUES (19,1,'managenav-menuscolumnshidden','a:5:{i:0;s:11:\"link-target\";i:1;s:11:\"css-classes\";i:2;s:3:\"xfn\";i:3;s:11:\"description\";i:4;s:15:\"title-attribute\";}');
 INSERT INTO `wp_usermeta` VALUES (20,1,'metaboxhidden_nav-menus','a:5:{i:0;s:21:\"add-post-type-project\";i:1;s:12:\"add-post_tag\";i:2;s:15:\"add-post_format\";i:3;s:20:\"add-project_category\";i:4;s:15:\"add-project_tag\";}');
 INSERT INTO `wp_usermeta` VALUES (21,1,'nav_menu_recently_edited','2');
+INSERT INTO `wp_usermeta` VALUES (22,1,'community-events-location','a:1:{s:2:\"ip\";s:11:\"192.168.1.0\";}');
+INSERT INTO `wp_usermeta` VALUES (23,1,'_woocommerce_tracks_anon_id','woo:ATUsyQCxJdUxuhs4ou2Cl3eE');
+INSERT INTO `wp_usermeta` VALUES (24,1,'syntax_highlighting','true');
+INSERT INTO `wp_usermeta` VALUES (25,1,'locale','');
+INSERT INTO `wp_usermeta` VALUES (26,1,'last_update','1610473354');
+INSERT INTO `wp_usermeta` VALUES (27,1,'woocommerce_admin_activity_panel_inbox_last_read','1610473353971');
+INSERT INTO `wp_usermeta` VALUES (28,1,'wc_last_active','1610409600');
 /*!40000 ALTER TABLE `wp_usermeta` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

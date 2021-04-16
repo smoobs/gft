@@ -5,7 +5,10 @@ if ( ! function_exists( 'et_core_init' ) ):
  * {@see 'plugins_loaded' (9999999) Must run after cache plugins have been loaded.}
  */
 function et_core_init() {
+	ET_Core_API_Spam_Providers::instance();
+	ET_Core_Cache_Directory::instance();
 	ET_Core_PageResource::startup();
+	ET_Core_CompatibilityWarning::instance();
 
 	if ( defined( 'ET_CORE_UPDATED' ) ) {
 		global $wp_rewrite;
@@ -31,10 +34,33 @@ function et_core_init() {
 }
 endif;
 
+if ( ! function_exists( 'et_core_site_has_builder' ) ):
+	/**
+	 * Check is `et_core_site_has_builder` allowed.
+	 * We can clear cache managed by 3rd party plugins only
+	 * if Divi, Extra, or the Divi Builder plugin
+	 * is active when the core was called.
+	 *
+	 * @return boolean
+	 */
+	function et_core_site_has_builder() {
+		global $shortname;
+		$core_path                     = get_transient( 'et_core_path' );
+		$is_divi_builder_plugin_active = false;
+		if ( ! empty( $core_path ) && false !== strpos( $core_path, '/divi-builder/' ) && function_exists('is_plugin_active') ) {
+			$is_divi_builder_plugin_active = is_plugin_active( 'divi-builder/divi-builder.php' );
+		}
+		if( $is_divi_builder_plugin_active || in_array( $shortname, array( 'divi', 'extra' ) ) ) {
+			return true;
+		}
+
+		return false;
+	}
+endif;
 
 if ( ! function_exists( 'et_core_clear_wp_cache' ) ):
 function et_core_clear_wp_cache( $post_id = '' ) {
-	if ( ! wp_doing_cron() && ! et_core_security_check_passed( 'edit_posts' ) ) {
+	if ( ( ! wp_doing_cron() && ! et_core_security_check_passed( 'edit_posts' ) ) || ! et_core_site_has_builder() ) {
 		return;
 	}
 
@@ -80,13 +106,31 @@ function et_core_clear_wp_cache( $post_id = '' ) {
 			}
 		}
 
+		// Hummingbird
+		if ( has_action( 'wphb_clear_page_cache' ) ) {
+			'' !== $post_id ? do_action( 'wphb_clear_page_cache', $post_id ) : do_action( 'wphb_clear_page_cache' );
+		}
+
 		// WordPress Cache Enabler
 		if ( has_action( 'ce_clear_cache' ) ) {
 			'' !== $post_id ? do_action( 'ce_clear_post_cache', $post_id ) : do_action( 'ce_clear_cache' );
 		}
 
-		// LiteSpeed Cache
-		if ( is_callable( 'LiteSpeed_Cache::get_instance' ) ) {
+		// LiteSpeed Cache v3.0+.
+		if ( '' !== $post_id && has_action( 'litespeed_purge_post' ) ) {
+			do_action( 'litespeed_purge_post', $post_id );
+		} elseif ( '' === $post_id && has_action( 'litespeed_purge_all' ) ) {
+			do_action( 'litespeed_purge_all' );
+		}
+
+		// LiteSpeed Cache v1.1.3 until v3.0.
+		if ( '' !== $post_id && function_exists( 'litespeed_purge_single_post' ) ) {
+			litespeed_purge_single_post( $post_id );
+		} elseif ( '' === $post_id && is_callable( 'LiteSpeed_Cache_API::purge_all' ) ) {
+			LiteSpeed_Cache_API::purge_all();
+		} elseif ( is_callable( 'LiteSpeed_Cache::get_instance' ) ) {
+			// LiteSpeed Cache v1.1.3 below. LiteSpeed_Cache still exist on v2.9.9.2, but no
+			// longer exist on v3.0. Keep it here as backward compatibility for lower version.
 			$litespeed = LiteSpeed_Cache::get_instance();
 
 			if ( '' !== $post_id && method_exists( $litespeed, 'purge_post' ) ) {
@@ -94,13 +138,6 @@ function et_core_clear_wp_cache( $post_id = '' ) {
 			} else if ( '' === $post_id && method_exists( $litespeed, 'purge_all' ) ) {
 				$litespeed->purge_all();
 			}
-		}
-
-		// LiteSpeed Cache v1.1.3+
-		if ( '' !== $post_id && function_exists( 'litespeed_purge_single_post' ) ) {
-			litespeed_purge_single_post( $post_id );
-		} else if ( '' === $post_id && is_callable( 'LiteSpeed_Cache_API::purge_all' ) ) {
-			LiteSpeed_Cache_API::purge_all();
 		}
 
 		// Hyper Cache
@@ -152,12 +189,48 @@ function et_core_clear_wp_cache( $post_id = '' ) {
 			wp_doing_ajax() ? ET_Core_LIB_BluehostCache::get_instance()->clear( $post_id ) : do_action( 'epc_purge' );
 		}
 
+			// Pressable.
+			if ( isset( $GLOBALS['batcache'] ) && is_object( $GLOBALS['batcache'] ) ) {
+				wp_cache_flush();
+			}
+
+			// Cloudways - Breeze.
+			if ( class_exists( 'Breeze_Admin' ) ) {
+				$breeze_admin = new Breeze_Admin();
+				$breeze_admin->breeze_clear_all_cache();
+			}
+
+			// Kinsta.
+			if ( class_exists( '\Kinsta\Cache' ) && isset( $GLOBALS['kinsta_cache'] ) && is_object( $GLOBALS['kinsta_cache'] ) ) {
+				global $kinsta_cache;
+
+				if ( isset( $kinsta_cache->kinsta_cache_purge ) && method_exists( $kinsta_cache->kinsta_cache_purge, 'purge_complete_caches' ) ) {
+					$kinsta_cache->kinsta_cache_purge->purge_complete_caches();
+				}
+			}
+
+			// GoDaddy.
+			if ( class_exists( '\WPaaS\Cache' ) ) {
+				if ( ! \WPaaS\Cache::has_ban() ) {
+					remove_action( 'shutdown', array( '\WPaaS\Cache', 'purge' ), PHP_INT_MAX );
+					add_action( 'shutdown', array( '\WPaaS\Cache', 'ban' ), PHP_INT_MAX );
+				}
+			}
+
 		// Complimentary Performance Plugins
 		// Autoptimize
 		if ( is_callable( 'autoptimizeCache::clearall' ) ) {
 			autoptimizeCache::clearall();
 		}
 
+			// WP Optimize.
+			if ( class_exists( 'WP_Optimize' ) && defined( 'WPO_PLUGIN_MAIN_PATH' ) ) {
+				if ( '' !== $post_id && is_callable( 'WPO_Page_Cache::delete_single_post_cache' ) ) {
+					WPO_Page_Cache::delete_single_post_cache( $post_id );
+				} elseif ( is_callable( array( 'WP_Optimize', 'get_page_cache' ) ) && is_callable( array( WP_Optimize()->get_page_cache(), 'purge' ) ) ) {
+					WP_Optimize()->get_page_cache()->purge();
+				}
+			}
 	} catch( Exception $err ) {
 		ET_Core_Logger::error( 'An exception occurred while attempting to clear site cache.' );
 	}
@@ -268,8 +341,7 @@ if ( ! function_exists( 'et_core_page_resource_get' ) ):
  */
 function et_core_page_resource_get( $owner, $slug, $post_id = null, $priority = 10, $location = 'head-late', $type = 'style' ) {
 	$post_id = $post_id ? $post_id : et_core_page_resource_get_the_ID();
-	$global  = 'global' === $post_id ? '-global' : '';
-	$_slug   = "et-{$owner}-{$slug}{$global}-cached-inline-{$type}s";
+	$_slug   = "et-{$owner}-{$slug}-{$post_id}-cached-inline-{$type}s";
 
 	$all_resources = ET_Core_PageResource::get_resources();
 
@@ -303,7 +375,7 @@ function et_core_page_resource_maybe_output_fallback_script() {
 	}
 
 	$SITE_URL = get_site_url();
-	$SCRIPT   = file_get_contents( ET_CORE_PATH . 'admin/js/page-resource-fallback.min.js' );
+	$SCRIPT   = et_()->WPFS()->get_contents( ET_CORE_PATH . 'admin/js/page-resource-fallback.min.js' );
 
 	printf( "<script>var et_site_url='%s';var et_post_id='%d';%s</script>",
 		et_core_esc_previously( $SITE_URL ),
@@ -350,8 +422,21 @@ function et_debug( $msg, $bt_index = 4, $log_ajax = true ) {
 endif;
 
 
+if ( ! function_exists( 'et_wrong' ) ):
+function et_wrong( $msg, $error = false ) {
+	$msg = "You're Doing It Wrong! {$msg}";
+
+	if ( $error ) {
+		et_error( $msg );
+	} else {
+		et_debug( $msg );
+	}
+}
+endif;
+
+
 if ( ! function_exists( 'et_error' ) ):
 function et_error( $msg, $bt_index = 4 ) {
-	ET_Core_Logger::error( $msg, $bt_index );
+	ET_Core_Logger::error( "[ERROR]: {$msg}", $bt_index );
 }
 endif;

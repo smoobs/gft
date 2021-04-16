@@ -7,7 +7,7 @@
  *
  * @package Divi\Builder
  *
- * @since   ??
+ * @since   3.29
  */
 
 /**
@@ -26,51 +26,38 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 		$this->settings_modal_toggles = array(
 			'general'  => array(
 				'toggles' => array(
-					'main_content' => esc_html__( 'Content', 'et_builder' ),
+					'main_content' => et_builder_i18n( 'Content' ),
 				),
 			),
 			'advanced' => array(
 				'toggles' => array(
 					'text' => array(
-						'title'    => esc_html__( 'Text', 'et_builder' ),
+						'title'    => et_builder_i18n( 'Text' ),
 						'priority' => 45,
 					),
 				),
 			),
 		);
 
-		$this->main_css_element = '%%order_class%%';
+		$this->main_css_element = '%%order_class%% .woocommerce-message';
 
 		$this->advanced_fields = array(
 			'fonts'          => array(
 				'body' => array(
-					'label'       => esc_html__( 'Text', 'et_builder' ),
-					'css'         => array(
+					'label'           => et_builder_i18n( 'Text' ),
+					'css'             => array(
 						'main'      => '%%order_class%% .woocommerce-message',
 						// CPT style uses `!important` so outputting important is inevitable.
 						'important' => 'all',
 					),
-					'font_size'   => array(
+					'font_size'       => array(
 						'default' => '18px',
 					),
-					'line_height' => array(
+					'line_height'     => array(
 						'default' => '1.7em',
 					),
-					'toggle_slug' => 'text',
+					'toggle_slug'     => 'text',
 					'hide_text_align' => true,
-				),
-			),
-			'background'     => array(
-				'has_background_color_toggle' => true,
-				'use_background_color'        => true,
-				'options'                     => array(
-					'background_color'     => array(
-						'depends_show_if' => 'on',
-						'default'         => '#2ea3f2',
-					),
-					'use_background_color' => array(
-						'default' => 'on',
-					),
 				),
 			),
 			'max_width'      => array(
@@ -86,21 +73,22 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 				'custom_padding' => array(
 					'default' => '15px|15px|15px|15px|false|false',
 				),
-				'custom_margin' => array(
+				'custom_margin'  => array(
 					'default' => '0em|0em|2em|0em|false|false',
 				),
 			),
 			'button'         => array(
 				'button' => array(
-					'label'         => esc_html__( 'Button', 'et_builder' ),
-					'css'           => array(
-						'main' => '%%order_class%% .wc-forward',
+					'label'          => et_builder_i18n( 'Button' ),
+					'css'            => array(
+						'main'      => '%%order_class%% .wc-forward',
+						'important' => true,
 					),
-					'use_alignment' => false,
-					'border_width'  => array(
+					'use_alignment'  => false,
+					'border_width'   => array(
 						'default' => '0px',
 					),
-					'box_shadow'    => array(
+					'box_shadow'     => array(
 						'css' => array(
 							'main' => '%%order_class%% .wc-forward',
 						),
@@ -131,22 +119,37 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 				// Don't add text-shadow fields since they already are via font-options.
 				'default' => false,
 			),
+			'background'     => array(
+				'css' => array(
+					// Defined explicitly to solve
+					// @see https://github.com/elegantthemes/Divi/issues/17200#issuecomment-542140907
+					'main'      => '%%order_class%% .woocommerce-message',
+					// Important is required to override
+					// Appearance ⟶ Customize ⟶ Color schemes styles.
+					'important' => 'all',
+				),
+			),
+			'border'         => array(
+				'css' => array(
+					'important' => true,
+				),
+			),
 		);
 
 		$this->custom_css_fields = array(
 			'text'   => array(
-				'label'    => esc_html__( 'Text', 'et_builder' ),
+				'label'    => et_builder_i18n( 'Text' ),
 				'selector' => '.woocommerce-message',
 			),
 			'button' => array(
-				'label'    => esc_html__( 'Button', 'et_builder' ),
+				'label'    => et_builder_i18n( 'Button' ),
 				'selector' => '.wc-forward',
 			),
 		);
 
 		$this->help_videos = array(
 			array(
-				'id'   => esc_html( '7X03vBPYJ1o' ),
+				'id'   => '7X03vBPYJ1o',
 				'name' => esc_html__( 'Divi WooCommerce Modules', 'et_builder' ),
 			),
 		);
@@ -167,7 +170,7 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 		);
 
 		// Clear notices array which was modified during render.
-		add_action( 'et_builder_wc_product_after_render_layout', array( 'ET_Builder_Module_Woocommerce_Cart_Notice', 'clear_notices' ) );
+		add_action( 'wp_footer', array( 'ET_Builder_Module_Woocommerce_Cart_Notice', 'clear_notices' ) );
 	}
 
 	/**
@@ -178,7 +181,7 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 			'product'        => ET_Builder_Module_Helper_Woocommerce_Modules::get_field(
 				'product',
 				array(
-					'default'          => 'product' === $this->get_post_type() ? 'current' : 'latest',
+					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_product_default(),
 					'computed_affects' => array(
 						'__cart_notice',
 					),
@@ -221,7 +224,33 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 	public static function disable_default_notice() {
 		global $post;
 
+		$remove_default_notices = false;
+		$tb_layouts             = et_theme_builder_get_template_layouts();
+		$tb_layout_types        = et_theme_builder_get_layout_post_types();
+
+		// Check if a TB layout outputs the notices.
+		foreach ( $tb_layout_types as $post_type ) {
+			$id      = et_()->array_get( $tb_layouts, array( $post_type, 'id' ), 0 );
+			$enabled = et_()->array_get( $tb_layouts, array( $post_type, 'enabled' ), 0 );
+
+			if ( ! $id || ! $enabled ) {
+				continue;
+			}
+
+			$content = get_post_field( 'post_content', $id );
+
+			if ( has_shortcode( $content, 'et_pb_wc_cart_notice' ) ) {
+				$remove_default_notices = true;
+				break;
+			}
+		}
+
+		// Check if the product itself outputs the notices.
 		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'et_pb_wc_cart_notice' ) ) {
+			$remove_default_notices = true;
+		}
+
+		if ( $remove_default_notices ) {
 			remove_action( 'woocommerce_before_single_product', 'woocommerce_output_all_notices', 10 );
 		}
 	}
@@ -265,7 +294,7 @@ class ET_Builder_Module_Woocommerce_Cart_Notice extends ET_Builder_Module {
 	 *
 	 * @return string
 	 */
-	public function render( $attrs, $content = null, $render_slug ) {
+	public function render( $attrs, $content, $render_slug ) {
 		/*
 		 * In front end, do not print cart notice module if there is no notices exist.
 		 *

@@ -1,68 +1,6 @@
 <?php
-
-// Register assets that need to be fired at head
-function et_fb_enqueue_assets_head() {
-	// Setup WP media.
-	// Around 5.2-alpha, `wp_enqueue_media` started using a function defined in a file
-	// which is only included in admin. Unfortunately there's no safe/reliable way to conditionally
-	// load this other than checking the WP version.
-	if ( version_compare( $GLOBALS['wp_version'], '5.2-alpha-44947', '>=' ) ) {
-		require_once( ABSPATH . 'wp-admin/includes/post.php' );
-	}
-	wp_enqueue_media();
-
-	// Setup Builder Media Library
-	wp_enqueue_script( 'et_pb_media_library', ET_BUILDER_URI . '/scripts/ext/media-library.js', array( 'media-editor' ), ET_BUILDER_PRODUCT_VERSION, true );
-}
-
-add_action( 'wp_enqueue_scripts', 'et_fb_enqueue_assets_head' );
-
-// TODO, make this fire late enough, so that the_content has fired and ET_Builder_Element::get_computed_vars() is ready
-// currently its being called in temporary_app_boot() in view.php
-// add_action( 'wp_enqueue_scripts', 'et_fb_enqueue_assets' );
-function et_fb_enqueue_main_assets() {
-	$ver    = ET_BUILDER_VERSION;
-	$root   = ET_BUILDER_URI;
-	$assets = ET_FB_ASSETS_URI;
-
-	wp_register_style( 'et_pb_admin_date_css', "{$root}/styles/jquery-ui-1.10.4.custom.css", array(), $ver );
-	wp_register_style( 'et-fb-top-window', "{$assets}/css/fb-top-window.css", array(), $ver );
-
-	$conditional_deps = array();
-
-	if ( ! et_builder_bfb_enabled() ) {
-		$conditional_deps[] = 'et-fb-top-window';
-	}
-
-	// Enqueue the appropriate bundle CSS (hot/start/build)
-	et_fb_enqueue_bundle( 'et-frontend-builder', 'bundle.css', array_merge( array(
-		'et_pb_admin_date_css',
-		'wp-mediaelement',
-		'wp-color-picker',
-		'et-core-admin',
-	), $conditional_deps ) );
-
-	// Load Divi Builder style.css file with hardcore CSS resets and Full Open Sans font if the Divi Builder plugin is active
-	if ( et_is_builder_plugin_active() ) {
-		// `bundle.css` was removed from `divi-builder-style.css` and is now enqueued separately for the DBP as well.
-		wp_enqueue_style(
-			'et-builder-divi-builder-styles',
-			"{$assets}/css/divi-builder-style.css",
-			array_merge( array( 'et-core-admin', 'wp-color-picker' ), $conditional_deps ),
-			$ver
-		);
-	}
-
-	wp_enqueue_script( 'mce-view' );
-
-	if ( ! et_core_use_google_fonts() || et_is_builder_plugin_active() ) {
-		et_fb_enqueue_open_sans();
-	}
-
-	wp_enqueue_style( 'et-frontend-builder-failure-modal', "{$assets}/css/failure_modal.css", array(), $ver );
-	wp_enqueue_style( 'et-frontend-builder-notification-modal', "{$root}/styles/notification_popup_styles.css", array(), $ver );
-}
-add_action( 'wp_enqueue_scripts', 'et_fb_enqueue_main_assets' );
+add_action( 'wp_enqueue_scripts', 'et_builder_enqueue_assets_head' );
+add_action( 'wp_enqueue_scripts', 'et_builder_enqueue_assets_main' );
 
 function et_fb_enqueue_google_maps_dependency( $dependencies ) {
 
@@ -79,11 +17,14 @@ function et_fb_load_portability() {
 	et_core_load_component( 'portability' );
 
 	// Register the Builder individual layouts portability.
-	et_core_portability_register( 'et_builder', array(
-		'name' =>  esc_html__( 'Divi Builder Layout', 'et_builder' ),
-		'type' => 'post',
-		'view' => true,
-	) );
+	et_core_portability_register(
+		'et_builder',
+		array(
+			'name' => esc_html__( 'Divi Builder Layout', 'et_builder' ),
+			'type' => 'post',
+			'view' => true,
+		)
+	);
 }
 
 function et_fb_get_dynamic_asset( $prefix, $post_type = false, $update = false ) {
@@ -92,6 +33,8 @@ function et_fb_get_dynamic_asset( $prefix, $post_type = false, $update = false )
 		global $post;
 		$post_type = isset( $post->post_type ) ? $post->post_type : 'post';
 	}
+
+	$post_type = apply_filters( 'et_builder_cache_post_type', $post_type, $prefix );
 
 	$post_type = sanitize_file_name( $post_type );
 
@@ -124,7 +67,7 @@ function et_fb_get_dynamic_asset( $prefix, $post_type = false, $update = false )
 		$content = apply_filters( "et_fb_get_asset_$prefix", false, $post_type );
 		if ( $exists && $update ) {
 			// Compare with old one (when a previous version exists)
-			$update = file_get_contents( $file ) !== $content;
+			$update = et_()->WPFS()->get_contents( $file ) !== $content;
 		}
 		if ( ( $update || ! $exists ) ) {
 
@@ -144,7 +87,7 @@ function et_fb_get_dynamic_asset( $prefix, $post_type = false, $update = false )
 			$uniq = str_replace( '.', '', (string) microtime( true ) );
 			$file = sprintf( '%s/%s-%s-%s.js', $cache, $prefix, $post_type, $uniq );
 
-			if ( is_writable( dirname( $file ) ) && file_put_contents( $file, $content ) ) {
+			if ( wp_is_writable( dirname( $file ) ) && et_()->WPFS()->put_contents( $file, $content ) ) {
 				$updated = true;
 				$exists  = true;
 			}
@@ -152,9 +95,8 @@ function et_fb_get_dynamic_asset( $prefix, $post_type = false, $update = false )
 	}
 
 	$url = ! $exists ? false : sprintf(
-		'%s/%s/%s-%s-%s.js',
-		content_url( ET_Core_PageResource::get_cache_directory( 'relative' ) ),
-		$lang,
+		'%s/%s-%s-%s.js',
+		et_()->path( et_core_cache_dir()->url, $lang ),
 		$prefix,
 		$post_type,
 		$uniq
@@ -192,9 +134,12 @@ function et_fb_app_only_bundle_deps( $deps = null ) {
 			'react-tiny-mce',
 			'et_pb_admin_date_addon_js',
 			'google-maps-api',
+			'react',
+			'react-dom',
+			'wp-hooks',
 
 			// If minified JS is served, minified JS script name is outputted instead
-			apply_filters( 'et_builder_modules_script_handle', 'et-builder-modules-script' )
+			apply_filters( 'et_builder_modules_script_handle', 'et-builder-modules-script' ),
 		);
 		$_deps = array_diff( $deps, $top );
 	}
@@ -214,25 +159,6 @@ function et_fb_enqueue_assets() {
 
 	// Get WP major version
 	$wp_major_version = substr( $wp_version, 0, 3 );
-
-	// Register scripts.
-	wp_register_script( 'iris', admin_url( 'js/iris.min.js' ), array( 'jquery-ui-draggable', 'jquery-ui-slider', 'jquery-touch-punch' ), false, 1 );
-	wp_register_script( 'wp-color-picker', admin_url( 'js/color-picker.min.js' ), array( 'iris' ), false, 1 );
-
-	if ( version_compare( $wp_major_version, '4.9', '>=' ) ) {
-		wp_register_script( 'wp-color-picker-alpha', "{$root}/scripts/ext/wp-color-picker-alpha.min.js", array( 'jquery', 'wp-color-picker' ), ET_BUILDER_VERSION, true );
-	} else {
-		wp_register_script( 'wp-color-picker-alpha', "{$root}/scripts/ext/wp-color-picker-alpha-48.min.js", array( 'jquery', 'wp-color-picker' ), ET_BUILDER_VERSION, true );
-	}
-
-	$colorpicker_l10n = array(
-		'clear'         => esc_html__( 'Clear', 'et_builder' ),
-		'defaultString' => esc_html__( 'Default', 'et_builder' ),
-		'pick'          => esc_html__( 'Select Color', 'et_builder' ),
-		'current'       => esc_html__( 'Current Color', 'et_builder' ),
-	);
-
-	wp_localize_script( 'wp-color-picker', 'wpColorPickerL10n', $colorpicker_l10n );
 
 	wp_register_script( 'react-tiny-mce', "{$assets}/vendors/tinymce.min.js" );
 
@@ -289,13 +215,24 @@ function et_fb_enqueue_assets() {
 		$dependencies_list[] = 'et-shortcodes-js';
 	}
 
+	$cached_assets_deps = array();
 	if ( defined( 'ET_BUILDER_CACHE_ASSETS' ) && ET_BUILDER_CACHE_ASSETS ) {
 		// Use cached files for helpers and definitions
 		foreach ( array( 'helpers', 'definitions' ) as $asset ) {
 			if ( $url = et_()->array_get( et_fb_get_dynamic_asset( $asset ), 'url' ) ) {
 				// The asset exists, we can add it to bundle's dependencies
 				$key = "et-dynamic-asset-$asset";
-				wp_register_script( $key, $url, array(), ET_BUILDER_VERSION );
+				/**
+				 * Filters the dependencies of cached assets.
+				 *
+				 * @since ?
+				 *
+				 * @param array $deps.
+				 * @param string $key.
+				 */
+				$deps               = apply_filters( 'et_builder_dynamic_asset_deps', array(), $key );
+				$cached_assets_deps = array_merge( $cached_assets_deps, $deps );
+				wp_register_script( $key, $url, $deps, ET_BUILDER_VERSION );
 				$dependencies_list[] = $key;
 			}
 		}
@@ -305,7 +242,8 @@ function et_fb_enqueue_assets() {
 
 	// Adding concatenated script as dependencies for script debugging
 	if ( et_load_unminified_scripts() ) {
-		array_push( $fb_bundle_dependencies,
+		array_push(
+			$fb_bundle_dependencies,
 			'easypiechart',
 			'salvattore',
 			'hashchange'
@@ -313,7 +251,21 @@ function et_fb_enqueue_assets() {
 	}
 
 	if ( et_pb_enqueue_google_maps_script() ) {
-		wp_enqueue_script( 'google-maps-api', esc_url( add_query_arg( array( 'key' => et_pb_get_google_api_key(), 'callback' => 'initMap' ), is_ssl() ? 'https://maps.googleapis.com/maps/api/js' : 'http://maps.googleapis.com/maps/api/js' ) ), array(), '3', true );
+		wp_enqueue_script(
+			'google-maps-api',
+			esc_url(
+				add_query_arg(
+					array(
+						'key'      => et_pb_get_google_api_key(),
+						'callback' => 'initMap',
+					),
+					is_ssl() ? 'https://maps.googleapis.com/maps/api/js' : 'http://maps.googleapis.com/maps/api/js'
+				)
+			),
+			array(),
+			'3',
+			true
+		);
 	}
 
 	// enqueue the Avada script before 'et-frontend-builder' to make sure easypiechart ( and probably some others ) override the scripts from Avada.
@@ -330,9 +282,9 @@ function et_fb_enqueue_assets() {
 	$is_production   = file_exists( sprintf( '%sfrontend-builder/build/bundle.css', ET_BUILDER_DIR ) );
 	$external_assets = wp_script_is( 'et-dynamic-asset-helpers', 'registered' );
 
-	if ( $is_production && $external_assets && ! et_builder_bfb_enabled() ) {
+	if ( $is_production && $external_assets && ! et_builder_bfb_enabled() && ! et_builder_tb_enabled() ) {
 		// Set bundle deps.
-		et_fb_app_only_bundle_deps( $fb_bundle_dependencies );
+		et_fb_app_only_bundle_deps( array_merge( $fb_bundle_dependencies, $cached_assets_deps ) );
 		add_filter( 'script_loader_tag', 'et_fb_app_src', 10, 3 );
 		// Enqueue the top window VB boot script.
 		et_fb_enqueue_bundle( 'et-frontend-builder', 'boot.js', $fb_bundle_dependencies );
@@ -353,19 +305,27 @@ function et_fb_enqueue_assets() {
 		$additional_bundles[] = "{$app}/build/" . basename( $chunk );
 	}
 	// Pass bundle path and additional bundles to preload
-	wp_localize_script( 'et-frontend-builder', 'et_webpack_bundle', array(
-		'path'    => "{$app}/build/",
-		'preload' => $additional_bundles,
-	));
+	wp_localize_script(
+		'et-frontend-builder',
+		'et_webpack_bundle',
+		array(
+			'path'    => "{$app}/build/",
+			'preload' => $additional_bundles,
+		)
+	);
 
 	// Enqueue failure notice script.
 	wp_enqueue_script( 'et-frontend-builder-failure', "{$assets}/scripts/failure_notice.js", array(), ET_BUILDER_PRODUCT_VERSION, true );
-	wp_localize_script( 'et-frontend-builder-failure', 'et_fb_options', array(
-		'ajaxurl'                    => admin_url( 'admin-ajax.php' ),
-		'et_admin_load_nonce'        => wp_create_nonce( 'et_admin_load_nonce' ),
-		'memory_limit_increased'     => esc_html__( 'Your memory limit has been increased', 'et_builder' ),
-		'memory_limit_not_increased' => esc_html__( "Your memory limit can't be changed automatically", 'et_builder' ),
-	) );
+	wp_localize_script(
+		'et-frontend-builder-failure',
+		'et_fb_options',
+		array(
+			'ajaxurl'                    => admin_url( 'admin-ajax.php' ),
+			'et_admin_load_nonce'        => wp_create_nonce( 'et_admin_load_nonce' ),
+			'memory_limit_increased'     => esc_html__( 'Your memory limit has been increased', 'et_builder' ),
+			'memory_limit_not_increased' => esc_html__( "Your memory limit can't be changed automatically", 'et_builder' ),
+		)
+	);
 
 	// WP Auth Check (allows user to log in again when session expires).
 	wp_enqueue_style( 'wp-auth-check' );
@@ -384,7 +344,7 @@ function et_fb_app_src( $tag, $handle, $src ) {
 	}
 
 	// Only load (most) bundle deps in app window.
-	if ( in_array( $handle, et_fb_app_only_bundle_deps() )) {
+	if ( in_array( $handle, et_fb_app_only_bundle_deps(), true ) ) {
 		return sprintf( '<script data-et-vb-app-src="%1$s"></script>', esc_url( $src ) );
 	}
 	return $tag;
@@ -424,31 +384,8 @@ function et_fb_output_wp_auth_check_html() {
 function et_fb_set_editor_available_cookie() {
 	global $post;
 	$post_id = isset( $post->ID ) ? $post->ID : false;
-	if ( ! headers_sent() && !empty( $post_id ) ) {
+	if ( ! headers_sent() && ! empty( $post_id ) ) {
 		setcookie( 'et-editor-available-post-' . $post_id . '-fb', 'fb', time() + ( MINUTE_IN_SECONDS * 30 ), SITECOOKIEPATH, false, is_ssl() );
 	}
 }
 add_action( 'et_fb_framework_loaded', 'et_fb_set_editor_available_cookie' );
-
-
-if ( ! function_exists( 'et_fb_enqueue_react' ) ):
-function et_fb_enqueue_react() {
-	$DEBUG         = defined( 'ET_DEBUG' ) && ET_DEBUG;
-	$core_scripts  = ET_CORE_URL . 'admin/js';
-	$react_version = '16.7.0';
-
-	wp_dequeue_script( 'react' );
-	wp_dequeue_script( 'react-dom' );
-	wp_deregister_script( 'react' );
-	wp_deregister_script( 'react-dom' );
-
-	if ( $DEBUG || DiviExtensions::is_debugging_extension() ) {
-		wp_enqueue_script( 'react', "https://cdn.jsdelivr.net/npm/react@{$react_version}/umd/react.development.js", array(), $react_version, true );
-		wp_enqueue_script( 'react-dom', "https://cdn.jsdelivr.net/npm/react-dom@{$react_version}/umd/react-dom.development.js", array( 'react' ), $react_version, true );
-		add_filter( 'script_loader_tag', 'et_core_add_crossorigin_attribute', 10, 3 );
-	} else {
-		wp_enqueue_script( 'react', "{$core_scripts}/react.production.min.js", array(), $react_version, true );
-		wp_enqueue_script( 'react-dom', "{$core_scripts}/react-dom.production.min.js", array( 'react' ), $react_version, true );
-	}
-}
-endif;

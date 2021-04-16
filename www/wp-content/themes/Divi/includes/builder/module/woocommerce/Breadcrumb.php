@@ -7,7 +7,7 @@
  *
  * @package Divi\Builder
  *
- * @since   ??
+ * @since   3.29
  */
 
 /**
@@ -35,14 +35,14 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 			'general'  => array(
 				'toggles' => array(
 					'main_content' => array(
-						'title' => esc_html__( 'Content', 'et_builder' ),
+						'title' => et_builder_i18n( 'Content' ),
 					),
 				),
 			),
 			'advanced' => array(
 				'toggles' => array(
 					'text' => array(
-						'title'             => esc_html__( 'Text', 'et_builder' ),
+						'title'             => et_builder_i18n( 'Text' ),
 						'priority'          => 45,
 						'tabbed_subtoggles' => true,
 						'bb_icons_support'  => true,
@@ -64,7 +64,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 		$this->advanced_fields = array(
 			'fonts'          => array(
 				'body' => array(
-					'label'           => esc_html__( 'Text', 'et_builder' ),
+					'label'           => et_builder_i18n( 'Text' ),
 					'css'             => array(
 						'main'       => '%%order_class%%, %%order_class%% .et_pb_module_inner, %%order_class%% .woocommerce-breadcrumb, %%order_class%% .woocommerce-breadcrumb a',
 						'text_align' => '%%order_class%%',
@@ -80,7 +80,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 					'hide_text_align' => true,
 				),
 				'link' => array(
-					'label'           => esc_html__( 'Link', 'et_builder' ),
+					'label'           => et_builder_i18n( 'Link' ),
 					'css'             => array(
 						'main' => '%%order_class%%.et_pb_wc_breadcrumb a, %%order_class%%.et_pb_wc_breadcrumb .woocommerce-breadcrumb a',
 					),
@@ -101,15 +101,9 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 				),
 			),
 			'margin_padding' => array(
-				'css'            => array(
-					'margin'    => '%%order_class%%',
+				'css' => array(
+					'margin'    => '%%order_class%% .woocommerce-breadcrumb',
 					'important' => 'all',
-				),
-				'custom_margin'  => array(
-					'default' => '0em|0em|1em|0em|false|false',
-				),
-				'custom_padding' => array(
-					'default' => '0em|0em|0em|0em|false|false',
 				),
 			),
 			'text'           => array(
@@ -133,7 +127,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 
 		$this->help_videos = array(
 			array(
-				'id'   => esc_html( '7X03vBPYJ1o' ),
+				'id'   => '7X03vBPYJ1o',
 				'name' => esc_html__( 'Divi WooCommerce Modules', 'et_builder' ),
 			),
 		);
@@ -144,6 +138,8 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 	 *
 	 * Fields from Parent module that may be not needed are also removed.
 	 *
+	 * @since 4.0 Removed Hover options from Breadcrumb URL.
+	 *
 	 * @return array Parent's fields w/ module specific fields.
 	 */
 	public function get_fields() {
@@ -152,7 +148,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 			'product'              => ET_Builder_Module_Helper_Woocommerce_Modules::get_field(
 				'product',
 				array(
-					'default'          => 'product' === $this->get_post_type() ? 'current' : 'latest',
+					'default'          => ET_Builder_Module_Helper_Woocommerce_Modules::get_product_default(),
 					'computed_affects' => array(
 						'__breadcrumb',
 					),
@@ -185,7 +181,6 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 				'toggle_slug'     => 'main_content',
 				'default'         => get_home_url(),
 				'mobile_options'  => true,
-				'hover'           => 'tabs',
 				'dynamic_content' => 'url',
 			),
 			'breadcrumb_separator' => array(
@@ -246,8 +241,11 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 		 * Breadcrumb customization is not required when resolving dynamic content field.
 		 * Hence we exclude customizations if the AJAX request is to resolve dynamic content fields.
 		 */
-		if ( ! et_fb_is_resolve_post_content_callback_ajax()
-			 && ( et_fb_enabled() || et_fb_is_builder_ajax() || et_fb_is_computed_callback_ajax() ) ) {
+		$main_query_post_id = ET_Post_Stack::get_main_post_id();
+		$layout_post_id     = ET_Builder_Element::get_layout_id();
+		$is_fb              = et_core_is_fb_enabled() && $main_query_post_id === $layout_post_id;
+
+		if ( ! et_fb_is_resolve_post_content_callback_ajax() && ( $is_fb || et_fb_is_builder_ajax() || et_fb_is_computed_callback_ajax() ) ) {
 			$args = wp_parse_args(
 				array(
 					'breadcrumb_home_text' => '%HOME_TEXT%',
@@ -316,14 +314,19 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 		 * Breadcrumb separator cannot have Multi-view options as it is not enclosed in a HTML tag.
 		 * Element being enclose in a tag is essential for the Multi-view options to work.
 		 */
-		$multi_view_attrs = $multi_view->render_attrs( array(
-			'content' => '{{breadcrumb_home_text}}',
-			'attrs'   => array(
-				'href'                      => '{{breadcrumb_home_url}}',
-				'data-breadcrumb-separator' => '{{breadcrumb_separator}}',
+		$multi_view_attrs = $multi_view->render_attrs(
+			array(
+				'content' => '{{breadcrumb_home_text}}',
+				'attrs'   => array(
+					'href'                      => '{{breadcrumb_home_url}}',
+					'data-breadcrumb-separator' => '{{breadcrumb_separator}}',
+				),
+				'target'  => '%%order_class%% .woocommerce-breadcrumb a:first-child',
 			),
-			'target'  => '%%order_class%% .woocommerce-breadcrumb a:first-child',
-		), false, null, true );
+			false,
+			null,
+			true
+		);
 
 		if ( $multi_view_attrs && is_array( $multi_view_attrs ) ) {
 			$inner_wrapper_attrs = array_merge( $inner_wrapper_attrs, $multi_view_attrs );
@@ -341,7 +344,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 	 *
 	 * @return string
 	 */
-	public function render( $attrs, $content = null, $render_slug ) {
+	public function render( $attrs, $content, $render_slug ) {
 		ET_Builder_Module_Helper_Woocommerce_Modules::process_background_layout_data( $render_slug, $this );
 
 		$this->add_classname( $this->get_text_orientation_classname() );

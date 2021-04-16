@@ -132,7 +132,7 @@
       // Don't bother calculating; expiration will happen before the next check, so let's trigger deactivation now.
       $timer.html('0 minutes');
       // Go ahead and turn off the user (don't need to wait for WP Cron)
-      $etSupportUserToggle.click();
+      $etSupportUserToggle.trigger('click');
       return;
     }
 
@@ -211,7 +211,7 @@
     if ('activate' === postData.support_update) {
       var safeModeProduct = $toggle.parents('#et_card_safe_mode').data('et-product');
 
-      // Continue only if the product is in our whitelist
+      // Continue only if the product is in our allowlist
       switch (safeModeProduct) {
         case 'divi_builder_plugin':
         case 'divi_theme':
@@ -281,11 +281,46 @@
     }
   }
 
+  // Dismiss Card in the Support Center
+  function dismissCard($button) {
+    const postData = {
+      action:   'et_dismiss_support_center_card',
+      nonce:    etSupportCenter.nonce,
+      product:  $button.data('product'),
+      card_key: $button.data('key'),
+    };
+
+    // Dismiss the Card via AJAX
+    jQuery.ajax({
+      type:       'POST',
+      data:       postData,
+      dataType:   'json',
+      url:        etSupportCenter.ajaxURL,
+      beforeSend: function(xhr) {
+        $button.prop('disabled', true);
+        $save_message.addClass('et_loading').removeClass('success-animation');
+        $save_message.fadeIn('fast');
+      },
+      success:    function(response) {
+        $button.parent().remove();
+        $save_message.removeClass('et_loading').addClass('success-animation');
+
+        setTimeout(function() {
+          $save_message.fadeOut('slow');
+        }, removeDelay);
+      },
+    }).fail(function(data) {
+      $button.prop('disabled', false);
+      console.log(data.responseText);
+      $save_message.fadeOut('slow');
+    });
+  }
+
   $(window).on('resize', function() {
     resizeTimer = _.debounce(et_core_correct_video_proportions(), showHideDelay);
   });
 
-  $(document).ready(function() {
+  $(function() {
     /**
      * Support Center :: System Status
      */
@@ -309,7 +344,7 @@
 
     // System Status: Copy Full Report to Clipboard
     $('.full_report_copy').on('click', function() {
-      $('#et_system_status_plain').select();
+      $('#et_system_status_plain').trigger('select');
       document.execCommand('copy');
       confirmClipboardCopy();
     });
@@ -396,7 +431,7 @@
         var token = $(this).attr('data-token');
         var $temp = $('<input>');
         $('body').append($temp);
-        $temp.val(token).select();
+        $temp.val(token).trigger('select');
         document.execCommand('copy');
         $temp.remove();
         confirmClipboardCopy();
@@ -505,9 +540,28 @@
 
     // Logs: Copy Full WP_DEBUG Log to Clipboard
     $('.copy_debug_log').on('click', function() {
-      $('#et_logs_recent').select();
+      $('#et_logs_recent').trigger('select');
       document.execCommand('copy');
       confirmClipboardCopy();
     });
+
+    /**
+     * Support Center :: Divi Hosting Card
+     */
+
+    // Dismiss Card from the Support Center
+    $('.card.has-dismiss-button').on('click', '.et-dismiss-button', function(e) {
+      const $toggle = $(this);
+
+      dismissCard($toggle);
+    });
+
+    // Initialize Tippy when it's available
+    if (typeof tippy !== 'undefined') {
+      tippy('[data-tippy-content]', {
+        arrow: tippy.roundArrow,
+        theme: 'et-tippy',
+      });
+    }
   });
 })(jQuery);

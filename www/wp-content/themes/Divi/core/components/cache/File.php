@@ -35,7 +35,7 @@ class ET_Core_Cache_File {
 	 *
 	 * @since 3.27.3
 	 *
-	 * @var bool
+	 * @var array
 	 */
 	protected static $_dirty = array();
 
@@ -50,6 +50,10 @@ class ET_Core_Cache_File {
 	 * @return void
 	 */
 	public static function set( $cache_name, $data ) {
+		if ( self::is_disabled() ) {
+			return;
+		}
+
 		self::$_cache[ $cache_name ] = $data;
 		self::$_dirty[ $cache_name ] = $cache_name;
 	}
@@ -64,11 +68,15 @@ class ET_Core_Cache_File {
 	 * @return mixed
 	 */
 	public static function get( $cache_name ) {
+		if ( self::is_disabled() ) {
+			return array();
+		}
+
 		if ( ! isset( self::$_cache_loaded[ $cache_name ] ) ) {
 			$file = self::get_cache_file_name( $cache_name );
 
-			if ( is_readable( $file ) ) {
-				self::$_cache[ $cache_name ] = unserialize( file_get_contents( $file ) );
+			if ( et_()->WPFS()->is_readable( $file ) ) {
+				self::$_cache[ $cache_name ] = unserialize( et_()->WPFS()->get_contents( $file ) );
 			} else {
 				self::$_cache[ $cache_name ] = array();
 			}
@@ -87,7 +95,7 @@ class ET_Core_Cache_File {
 	 * @return void
 	 */
 	public static function save_cache() {
-		if ( ! self::$_dirty || ! self::$_cache ) {
+		if ( self::is_disabled() || ! self::$_dirty || ! self::$_cache ) {
 			return;
 		}
 
@@ -99,11 +107,11 @@ class ET_Core_Cache_File {
 			$data = self::$_cache[ $cache_name ];
 			$file = self::get_cache_file_name( $cache_name );
 
-			if ( ! is_writable( dirname( $file ) ) ) {
+			if ( ! wp_is_writable( dirname( $file ) ) ) {
 				continue;
 			}
 
-			file_put_contents( $file, serialize( $data ) );
+			et_()->WPFS()->put_contents( $file, serialize( $data ) );
 		}
 	}
 
@@ -120,6 +128,17 @@ class ET_Core_Cache_File {
 	 */
 	public static function get_cache_file_name( $cache_name ) {
 		return sprintf( '%1$s/%2$s.data', ET_Core_PageResource::get_cache_directory(), $cache_name );
+	}
+
+	/**
+	 * Check is file based caching is disabled.
+	 *
+	 * @since 4.0.8
+	 *
+	 * @return bool
+	 */
+	public static function is_disabled() {
+		return defined( 'ET_DISABLE_FILE_BASED_CACHE' ) && ET_DISABLE_FILE_BASED_CACHE;
 	}
 }
 

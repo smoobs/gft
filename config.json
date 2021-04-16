@@ -1,18 +1,29 @@
 {
-   "db" : {
-      "database" : "gft",
-      "host" : "localhost",
-      "pass" : "",
-      "prefix" : "wp_",
-      "user" : "root"
-   },
-   "dirs" : {
-      "sql" : "sql"
-   },
-   "site" : {
-      "emit" : {
-         "base" : "http://gft.tthtesting.co.uk",
-         "home" : "/opt/gft"
-      }
-   }
+  "db": {
+    "database": "gft",
+    "host": "localhost",
+    "pass": "",
+    "prefix": "wp_",
+    "user": "root"
+  },
+  "dirs": {
+    "sql": "sql"
+  },
+  "site": {
+    "http": {
+      "base": "http://www.goldenfleecetrading.co.uk"
+    },
+    "https": {
+      "canonical": true,
+      "base": "https://www.goldenfleecetrading.co.uk"
+    },
+    "emit-http": {
+      "base": "http://gft.tthtesting.co.uk",
+      "home": "/opt/gft"
+    },
+    "emit": {
+      "base": "https://gft.tthtesting.co.uk",
+      "home": "/opt/gft"
+    }
+  }
 }
